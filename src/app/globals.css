@@ -184,16 +184,6 @@
     }
   }
 
-  .loading-placeholder {
-    width: 100%;
-    min-height: inherit;
-    background: var(--muted);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .skeleton {
     background: linear-gradient(
       90deg,

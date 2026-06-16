@@ -1,6 +1,6 @@
 # MiStatus Komari
 
-一个基于 Next.js 15 + React 19 的现代化服务器监控主题，专为 Komari 服务端设计，使用 TypeScript、Tailwind CSS 4 和现代 React 技术栈构建。Vercel 风格 UI。
+一个基于 Next.js 15 + React 19 的现代化服务器监控主题，专为 Komari 服务端设计，使用 TypeScript、Tailwind CSS 4 和现代 React 技术栈构建。
 
 ## 功能特点
 
@@ -8,7 +8,7 @@
 - **实时监控**：CPU、内存、硬盘、SWAP、网络流量实时监控
 - **IPv4/IPv6 支持**：智能识别和显示双栈网络状态
 - **数据可视化**：折线图 + 渐变面积图、进度条和统计面板
-- **Vercel 风格 UI**：简洁扁平设计，Geist 字体，深色/浅色模式
+- **风格 UI**：简洁扁平设计，Geist 字体，深色/浅色模式
 - **响应式设计**：完美适配桌面、平板和移动设备
 - **高性能**：Turbopack 开发模式，优化的生产构建
 - **实时更新**：支持 WebSocket 连接

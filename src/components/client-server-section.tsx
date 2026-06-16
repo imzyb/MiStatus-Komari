@@ -30,7 +30,7 @@ export const ClientServerSection: React.FC = () => {
       <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
         <div className="flex items-center gap-4 min-h-[40px]">
           <h2
-            className="text-2xl font-bold tracking-tight"
+            className="text-xl font-bold tracking-tight"
             suppressHydrationWarning
           >
             服务器列表

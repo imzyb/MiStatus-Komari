@@ -1,15 +1,20 @@
+"use client";
+
+import React from "react";
+import { useServers } from "@/contexts/servers-context";
+import { ServerDashboardStats } from "@/components/server-dashboard-stats";
 import { ClientNavbar } from "@/components/client-navbar";
 import { ServerFooter } from "@/components/server-footer";
-import { ClientDashboardStats } from "@/components/client-dashboard-stats";
 import { ClientServerSection } from "@/components/client-server-section";
 
 export default function Home() {
+  const { data } = useServers();
   return (
     <div className="flex flex-col min-h-screen smooth-scroll">
       <ClientNavbar />
       <main className="flex-1 flex flex-col items-center smooth-scroll">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8 content-container animate-fade-in">
-          <ClientDashboardStats />
+          <ServerDashboardStats data={data} />
           <ClientServerSection />
         </div>
       </main>

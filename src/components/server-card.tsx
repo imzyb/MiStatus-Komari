@@ -48,7 +48,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className="relative h-full server-card rounded-lg border bg-card text-card-foreground"
+        className="relative h-full server-card rounded-lg border bg-card text-card-foreground hover:border-foreground/20 transition-colors"
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 
@@ -141,9 +141,9 @@ const ServerCardHeader: React.FC<ServerCardHeaderProps> = React.memo(
       <div className="p-4 pb-2 space-y-2">
         {/* 名称和状态行 */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 min-w-0 max-w-[70%]">
+          <div className="flex items-center gap-1.5 min-w-0 max-w-[80%]">
             <StatusIndicator isOnline={isOnline} />
-            <h3 className="text-xl truncate" suppressHydrationWarning>
+            <h3 className="text-base font-semibold truncate" suppressHydrationWarning>
               {server.alias || server.name}
             </h3>
           </div>

@@ -29,18 +29,14 @@ export const LazyRender: React.FC<LazyRenderProps> = ({
       return;
     }
 
-    let frameId: number | null = null;
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (frameId) cancelAnimationFrame(frameId);
-        frameId = requestAnimationFrame(() => {
-          if (entry.isIntersecting || entry.intersectionRatio > 0) {
-            setMounted(true);
-          } else if (unmountOnExit) {
-            setMounted(false);
-          }
-        });
+        if (entry.isIntersecting || entry.intersectionRatio > 0) {
+          setMounted(true);
+        } else if (unmountOnExit) {
+          setMounted(false);
+        }
       },
       { root: null, rootMargin, threshold: [0, 0.01, 0.1] }
     );
@@ -48,7 +44,6 @@ export const LazyRender: React.FC<LazyRenderProps> = ({
     observer.observe(element);
     return () => {
       observer.disconnect();
-      if (frameId) cancelAnimationFrame(frameId);
     };
   }, [rootMargin, unmountOnExit, initiallyMounted]);
 

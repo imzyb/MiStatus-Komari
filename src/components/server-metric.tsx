@@ -71,7 +71,7 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium">{label}</span>
+            <span className="text-xs font-medium">{label}</span>
             {!isUnconfigured && (
               <span
                 className={`text-xs font-semibold ${colorTheme.text}`}
@@ -82,7 +82,7 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
             )}
           </div>
           <span
-            className="text-sm text-muted-foreground"
+            className="text-xs text-muted-foreground"
             suppressHydrationWarning
           >
             {isUnconfigured

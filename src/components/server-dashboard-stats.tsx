@@ -93,22 +93,22 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
     return (
       <div className="stats-container">
         <div className="flex justify-between items-center dashboard-title">
-          <h1 className="text-2xl font-bold tracking-tight" suppressHydrationWarning>
+          <h1 className="text-xl font-bold tracking-tight" suppressHydrationWarning>
             监控概览
           </h1>
-          <div className="h-8 w-32 skeleton rounded-md" />
+          <div className="h-5 w-24 skeleton rounded-sm" />
         </div>
         <div className="stats-grid">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array(4).fill(null).map((_, i) => (
-              <div key={i} className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+              <div key={i} className="rounded-lg border bg-card p-6">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-xl bg-secondary mr-4">
-                    <div className="h-6 w-6 skeleton rounded" />
+                  <div className="mr-3">
+                    <div className="h-5 w-5 skeleton rounded" />
                   </div>
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 w-16 skeleton rounded" />
-                    <div className="h-6 w-24 skeleton rounded" />
+                    <div className="h-3 w-16 skeleton rounded" />
+                    <div className="h-5 w-24 skeleton rounded" />
                   </div>
                 </div>
               </div>
@@ -140,12 +140,12 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
               <div className="flex items-baseline">
                 {stats.totalServers > 0 ? (
                   <>
-                    <span className="text-2xl font-bold leading-tight transition-all duration-300">{stats.onlineServers}</span>
+                    <span className="text-xl font-bold leading-tight transition-all duration-300">{stats.onlineServers}</span>
                     <span className="text-xs opacity-70 mx-1.5">/</span>
-                    <span className="text-xl font-bold opacity-80 transition-all duration-300">{stats.totalServers}</span>
+                    <span className="text-base font-bold opacity-80 transition-all duration-300">{stats.totalServers}</span>
                   </>
                 ) : (
-                  <span className="text-xl font-bold text-muted-foreground">—</span>
+                  <span className="text-base font-bold text-muted-foreground">—</span>
                 )}
               </div>
             }
@@ -157,11 +157,11 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
               <div className="flex items-baseline">
                 {stats.totalServers > 0 ? (
                   <>
-                    <span className="text-2xl font-bold leading-tight transition-all duration-300">{stats.avgCpuUsage}</span>
+                    <span className="text-xl font-bold leading-tight transition-all duration-300">{stats.avgCpuUsage}</span>
                     <span className="text-xs opacity-70 ml-1">%</span>
                   </>
                 ) : (
-                  <span className="text-xl font-bold text-muted-foreground">—</span>
+                  <span className="text-base font-bold text-muted-foreground">—</span>
                 )}
               </div>
             }
@@ -175,15 +175,15 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
                   <>
                     <div className="flex items-baseline whitespace-nowrap">
                       <span className="text-sm font-medium opacity-70 flex-shrink-0">↓</span>
-                      <span className="text-lg font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkRx, 1)}</span>
+                      <span className="text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkRx, 1)}</span>
                     </div>
                     <div className="flex items-baseline whitespace-nowrap">
                       <span className="text-sm font-medium opacity-70 flex-shrink-0">↑</span>
-                      <span className="text-lg font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkTx, 1)}</span>
+                      <span className="text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkTx, 1)}</span>
                     </div>
                   </>
                 ) : (
-                  <span className="text-lg font-bold text-muted-foreground">—</span>
+                  <span className="text-sm font-bold text-muted-foreground">—</span>
                 )}
               </div>
             }

@@ -608,7 +608,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
       </div>
 
       {showTypeSelector && availableLoadTypes.length > 0 ? (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[10px] text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
           {availableLoadTypes.map((type) => {
             const config = LOAD_TYPE_CONFIG[type];
             const isActive = type === selectedLoadType;
@@ -636,7 +636,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
 
       {footerLabel ? (
         <div
-          className="mt-2 text-center text-[10px] text-muted-foreground sm:text-xs"
+          className="mt-2 text-center text-xs text-muted-foreground"
           suppressHydrationWarning
         >
           {footerLabel}
@@ -645,7 +645,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
 
       {lastUpdatedLabel ? (
         <div
-          className="mt-2 text-[10px] text-muted-foreground"
+          className="mt-2 text-xs text-muted-foreground"
           suppressHydrationWarning
         >
           更新于 {lastUpdatedLabel}
