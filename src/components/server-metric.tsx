@@ -16,22 +16,22 @@ const colors = {
   safe: {
     gradient: "from-emerald-400 via-emerald-500 to-cyan-500",
     glow: "shadow-emerald-500/30",
-    text: "text-emerald-400 dark:text-[var(--color-green)]",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   warning: {
     gradient: "from-amber-400 via-amber-500 to-orange-500",
     glow: "shadow-amber-500/30",
-    text: "text-amber-400 dark:text-[var(--color-amber)]",
+    text: "text-amber-600 dark:text-amber-400",
   },
   danger: {
     gradient: "from-rose-400 via-rose-500 to-red-500",
     glow: "shadow-rose-500/30",
-    text: "text-rose-400 dark:text-[var(--color-red)]",
+    text: "text-rose-600 dark:text-rose-400",
   },
   disabled: {
     gradient: "from-slate-400 via-slate-500 to-slate-600",
     glow: "shadow-slate-500/30",
-    text: "text-slate-400 dark:text-slate-500",
+    text: "text-slate-500 dark:text-slate-400",
   },
 };
 

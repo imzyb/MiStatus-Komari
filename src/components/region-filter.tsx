@@ -16,9 +16,11 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+  const [activeIndex, setActiveIndex] = useState(-1);
+
   const currentSelection = selectedRegion || '全部地区';
-  
+  const listItems = [null, ...regions];
+
   // 点击外部关闭下拉菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -26,60 +28,99 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
         setIsOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-  
+
+  useEffect(() => {
+    if (!isOpen) setActiveIndex(-1);
+  }, [isOpen]);
+
   const handleSelect = (region: string | null) => {
     onRegionChange(region);
     setIsOpen(false);
   };
-  
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case 'Escape':
+        setIsOpen(false);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!isOpen) { setIsOpen(true); break; }
+        setActiveIndex((prev) => Math.min(prev + 1, listItems.length - 1));
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        setActiveIndex((prev) => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        if (isOpen && activeIndex >= 0) {
+          event.preventDefault();
+          handleSelect(listItems[activeIndex]);
+        }
+        break;
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* 触发按钮 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-md hover:bg-secondary/50 transition-colors min-w-[140px] justify-between"
+        onKeyDown={handleKeyDown}
+        className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-md hover:bg-secondary/50 transition-colors min-w-[140px] justify-between focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">{currentSelection}</span>
         </div>
-        <ChevronDown 
+        <ChevronDown
           className={`h-4 w-4 text-muted-foreground transition-transform ${
             isOpen ? 'rotate-180' : ''
-          }`} 
+          }`}
         />
       </button>
-      
-      {/* 下拉菜单 */}
+
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-background border border-border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto animate-scale-in">
-          {/* 全部选项 */}
+        <div
+          className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-background border border-border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto animate-scale-in"
+          role="listbox"
+          aria-label="选择地区"
+        >
           <button
             onClick={() => handleSelect(null)}
-            className="w-full px-3 py-2 text-left hover:bg-secondary/50 flex items-center justify-between group transition-colors duration-150"
+            onMouseEnter={() => setActiveIndex(0)}
+            className={`w-full px-3 py-2 text-left flex items-center justify-between group transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+              activeIndex === 0 ? 'bg-secondary/50' : 'hover:bg-secondary/50'
+            }`}
+            role="option"
+            aria-selected={selectedRegion === null}
           >
             <span className="text-sm">全部地区</span>
             {selectedRegion === null && (
               <Check className="h-4 w-4 text-primary animate-fade-in" />
             )}
           </button>
-          
-          {/* 分隔线 */}
+
           {regions.length > 0 && (
             <div className="border-t border-border my-1" />
           )}
-          
-          {/* 地区选项 */}
+
           {regions.map((region, index) => (
             <button
               key={region}
               onClick={() => handleSelect(region)}
-              className="w-full px-3 py-2 text-left hover:bg-secondary/50 flex items-center justify-between group transition-colors duration-150"
-              style={{ animationDelay: `${index * 20}ms` }}
+              onMouseEnter={() => setActiveIndex(index + 1)}
+              className={`w-full px-3 py-2 text-left flex items-center justify-between group transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+                activeIndex === index + 1 ? 'bg-secondary/50' : 'hover:bg-secondary/50'
+              }`}
+              role="option"
+              aria-selected={selectedRegion === region}
             >
               <span className="text-sm">{region}</span>
               {selectedRegion === region && (

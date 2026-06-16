@@ -24,7 +24,7 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02] cursor-pointer">
+      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02]">
         <div className="flex items-center space-x-1.5 mb-1.5">
           <Wifi className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-150 hover:text-foreground" />
           <span className="text-xs font-medium">实时网络</span>
@@ -82,7 +82,7 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02] cursor-pointer">
+      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02]">
         <div className="flex items-center space-x-1.5 mb-1.5">
           <HardDrive className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-150 hover:text-foreground" />
           <span className="text-xs font-medium">总流量</span>

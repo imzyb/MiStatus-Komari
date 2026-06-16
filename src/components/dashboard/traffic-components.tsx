@@ -10,15 +10,18 @@ export interface TrafficDisplayProps {
 export const TrafficDisplay: React.FC<TrafficDisplayProps> = ({
   download,
   upload,
-}) => (
+}) => {
+  const formattedDownload = React.useMemo(() => formatBytes(download), [download]);
+  const formattedUpload = React.useMemo(() => formatBytes(upload), [upload]);
+  return (
   <div className="flex items-center justify-between w-full">
     <div className="flex items-center">
       <TrafficArrow
         direction="down"
         className="text-sm mr-0.5 text-muted-foreground"
       />
-      <span className="text-base font-bold text-foreground">
-        {formatBytes(download).split(" ").join("")}
+      <span className="text-base font-bold text-foreground font-mono">
+        {formattedDownload}
       </span>
     </div>
 
@@ -29,9 +32,10 @@ export const TrafficDisplay: React.FC<TrafficDisplayProps> = ({
         direction="up"
         className="text-sm mr-0.5 text-muted-foreground"
       />
-      <span className="text-base font-bold text-foreground">
-        {formatBytes(upload).split(" ").join("")}
+      <span className="text-base font-bold text-foreground font-mono">
+        {formattedUpload}
       </span>
     </div>
   </div>
-);
+  );
+};

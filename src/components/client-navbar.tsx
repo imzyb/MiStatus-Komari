@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { config } from "@/lib/config";
 import { useSiteInfo } from "@/contexts/site-info-context";
 import { ClientThemeToggle } from "@/components/client-theme-toggle";
@@ -10,7 +11,7 @@ const AdminLink = () => (
   <a
     href="/admin"
     title="进入管理后台"
-    className="inline-flex h-9 w-9 items-center justify-center rounded-md glass-light transition-colors hover:bg-secondary/50"
+    className="inline-flex h-11 min-w-11 items-center justify-center rounded-md glass-light transition-colors hover:bg-secondary/50"
   >
     <svg
       className="h-6 w-6"
@@ -55,9 +56,9 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
     <header className="sticky top-0 z-50 navbar-glass">
       <div className="flex h-14 items-center justify-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center space-x-2 font-bold">
+          <Link href="/" className="flex items-center space-x-2 font-bold no-underline hover:opacity-80 transition-opacity">
             <span className="text-xl">{siteTitle}</span>
-          </div>
+          </Link>
 
           <div className="flex items-center space-x-2">
             <ClientThemeToggle />

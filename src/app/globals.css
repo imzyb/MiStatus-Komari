@@ -1,9 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "../styles/fonts.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @custom-variant dark (&:is(.dark *));
 
@@ -62,31 +59,6 @@
   --ring: #d4d4d8;
 }
 
-/* 基础状态颜色 */
-.text-success {
-  color: #22c55e;
-}
-
-.text-warning {
-  color: #f59e0b;
-}
-
-.text-danger {
-  color: #ef4444;
-}
-
-.bg-success {
-  background-color: #22c55e;
-}
-
-.bg-warning {
-  background-color: #f59e0b;
-}
-
-.bg-danger {
-  background-color: #ef4444;
-}
-
 @layer base {
   html {
     font-family: "HarmonyOS Sans SC", ui-sans-serif, system-ui, -apple-system,
@@ -143,28 +115,7 @@
     transform: translateZ(0);
   }
 
-  .server-metric-progress {
-    @apply relative h-2 w-full overflow-hidden rounded-full bg-secondary;
-  }
-
-  .server-metric-progress-bar {
-    @apply absolute left-0 top-0 h-full rounded-full;
-  }
-
-  .server-metric-progress-bar.success {
-    background-color: #22c55e;
-  }
-
-  .server-metric-progress-bar.warning {
-    background-color: #f59e0b;
-  }
-
-  .server-metric-progress-bar.danger {
-    background-color: #ef4444;
-  }
-
-  /* 优化滚动性能 */
-  ::-webkit-scrollbar {
+@media (min-width: 768px) {
     width: 6px;
     height: 6px;
   }

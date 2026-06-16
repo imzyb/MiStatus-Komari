@@ -10,9 +10,10 @@ export const ServerListSkeleton: React.FC = () => {
         .map((_, index) => (
           <div
             key={index}
-            className="h-[300px] bg-muted/10 rounded-lg animate-pulse animate-slide-up"
-            style={{ animationDelay: `${index * 50}ms` }}
-          />
+            className="h-[300px] rounded-lg overflow-hidden"
+          >
+            <div className="h-full skeleton rounded-lg" />
+          </div>
         ))}
     </div>
   );

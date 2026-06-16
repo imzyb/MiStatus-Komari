@@ -84,19 +84,50 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
 
   const lastUpdated = React.useMemo(() => {
     if (!data?.updated) return '未知';
-    // 将秒级时间戳转换为毫秒级
     return formatDateTime(data.updated * 1000);
   }, [data?.updated]);
+
+  const isLoading = !data?.servers;
+
+  if (isLoading) {
+    return (
+      <div className="stats-container">
+        <div className="flex justify-between items-center dashboard-title">
+          <h1 className="text-3xl font-bold tracking-tight dashboard-main-title" suppressHydrationWarning>
+            监控概览
+          </h1>
+          <div className="h-8 w-32 skeleton rounded-md" />
+        </div>
+        <div className="stats-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array(4).fill(null).map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-xl bg-secondary mr-4">
+                    <div className="h-6 w-6 skeleton rounded" />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-16 skeleton rounded" />
+                    <div className="h-6 w-24 skeleton rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="stats-container">
       <div className="flex justify-between items-center dashboard-title">
-        <h2
+        <h1
           className="text-3xl font-bold tracking-tight dashboard-main-title"
           suppressHydrationWarning
         >
           监控概览
-        </h2>
+        </h1>
 
         <LastUpdated timestamp={lastUpdated} />
       </div>

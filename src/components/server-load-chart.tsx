@@ -514,13 +514,15 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
           </button>
         ) : hasAvailableData && polylinePoints ? (
           <>
-            <svg
-              viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-              width="100%"
-              height="100%"
-              preserveAspectRatio="none"
-              className="text-primary"
-            >
+<svg
+  viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+  width="100%"
+  height="100%"
+  preserveAspectRatio="none"
+  className="text-primary"
+  role="img"
+  aria-label={`${selectedLabel}历史曲线图`}
+>
               <path
                 d={`M ${polylinePoints}`}
                 fill="none"
@@ -605,7 +607,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
                 key={type}
                 type="button"
                 onClick={() => handleLoadTypeChange(type)}
-                className="group flex items-center gap-1 transition-transform hover:scale-105"
+                className="group flex items-center gap-1 transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-full"
                 aria-label={`查看${config.label}历史`}
               >
                 <span

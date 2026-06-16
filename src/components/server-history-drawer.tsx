@@ -112,7 +112,7 @@ export const ServerHistoryDrawer: React.FC = () => {
       <div
         className="pointer-events-auto w-full"
         role="dialog"
-        aria-modal="false"
+        aria-modal="true"
         aria-label="历史指标"
         style={{
           transform: isVisible
