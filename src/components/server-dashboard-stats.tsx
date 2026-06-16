@@ -93,7 +93,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
     return (
       <div className="stats-container">
         <div className="flex justify-between items-center dashboard-title">
-          <h1 className="text-3xl font-bold tracking-tight dashboard-main-title" suppressHydrationWarning>
+          <h1 className="text-2xl font-bold tracking-tight" suppressHydrationWarning>
             监控概览
           </h1>
           <div className="h-8 w-32 skeleton rounded-md" />
@@ -123,7 +123,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
     <div className="stats-container">
       <div className="flex justify-between items-center dashboard-title">
         <h1
-          className="text-3xl font-bold tracking-tight dashboard-main-title"
+          className="text-2xl font-bold tracking-tight"
           suppressHydrationWarning
         >
           监控概览
@@ -138,9 +138,15 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             title="服务器"
             value={
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold leading-tight">{stats.onlineServers}</span>
-                <span className="text-xs opacity-70 mx-1.5">/</span>
-                <span className="text-xl font-bold opacity-80">{stats.totalServers}</span>
+                {stats.totalServers > 0 ? (
+                  <>
+                    <span className="text-2xl font-bold leading-tight transition-all duration-300">{stats.onlineServers}</span>
+                    <span className="text-xs opacity-70 mx-1.5">/</span>
+                    <span className="text-xl font-bold opacity-80 transition-all duration-300">{stats.totalServers}</span>
+                  </>
+                ) : (
+                  <span className="text-xl font-bold text-muted-foreground">—</span>
+                )}
               </div>
             }
             icon={<Server className="h-6 w-6" />}
@@ -149,8 +155,14 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             title="平均CPU使用率"
             value={
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold leading-tight">{stats.avgCpuUsage}</span>
-                <span className="text-xs opacity-70 ml-1">%</span>
+                {stats.totalServers > 0 ? (
+                  <>
+                    <span className="text-2xl font-bold leading-tight transition-all duration-300">{stats.avgCpuUsage}</span>
+                    <span className="text-xs opacity-70 ml-1">%</span>
+                  </>
+                ) : (
+                  <span className="text-xl font-bold text-muted-foreground">—</span>
+                )}
               </div>
             }
             icon={<Cpu className="h-6 w-6" />}
@@ -159,14 +171,20 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             title="实时网络速率"
             value={
               <div className="flex items-baseline space-x-2 min-w-0">
-                <div className="flex items-baseline whitespace-nowrap">
-                  <span className="text-sm font-medium opacity-70 flex-shrink-0">↓</span>
-                  <span className="text-lg font-bold ml-1 font-mono leading-tight">{formatSpeed(stats.totalNetworkRx, 1)}</span>
-                </div>
-                <div className="flex items-baseline whitespace-nowrap">
-                  <span className="text-sm font-medium opacity-70 flex-shrink-0">↑</span>
-                  <span className="text-lg font-bold ml-1 font-mono leading-tight">{formatSpeed(stats.totalNetworkTx, 1)}</span>
-                </div>
+                {stats.totalServers > 0 ? (
+                  <>
+                    <div className="flex items-baseline whitespace-nowrap">
+                      <span className="text-sm font-medium opacity-70 flex-shrink-0">↓</span>
+                      <span className="text-lg font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkRx, 1)}</span>
+                    </div>
+                    <div className="flex items-baseline whitespace-nowrap">
+                      <span className="text-sm font-medium opacity-70 flex-shrink-0">↑</span>
+                      <span className="text-lg font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkTx, 1)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-lg font-bold text-muted-foreground">—</span>
+                )}
               </div>
             }
             icon={<Activity className="h-6 w-6" />}
@@ -174,10 +192,14 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
           <StatCard
             title="总流量"
             value={
-              <TrafficDisplay
-                download={stats.totalDownload}
-                upload={stats.totalUpload}
-              />
+              stats.totalServers > 0 ? (
+                <TrafficDisplay
+                  download={stats.totalDownload}
+                  upload={stats.totalUpload}
+                />
+              ) : (
+                <span className="text-lg font-bold text-muted-foreground">—</span>
+              )
             }
             icon={<Wifi className="h-6 w-6" />}
           />

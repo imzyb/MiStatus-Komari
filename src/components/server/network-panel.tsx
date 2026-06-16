@@ -24,9 +24,9 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02]">
+      <div className="p-2.5 rounded-xl bg-secondary h-full transition-colors duration-200 hover:bg-secondary/80">
         <div className="flex items-center space-x-1.5 mb-1.5">
-          <Wifi className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-150 hover:text-foreground" />
+          <Wifi className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">实时网络</span>
         </div>
 
@@ -34,11 +34,11 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
           <div className="flex items-center min-h-[18px] text-xs">
             <TrafficArrow
               direction="down"
-              className="text-sm flex-shrink-0 text-muted-foreground transition-all duration-150 hover:text-foreground hover:scale-110"
+              className="text-sm flex-shrink-0 text-muted-foreground"
             />
             <span className="font-medium ml-1 w-6 flex-shrink-0">下载</span>
             <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto transition-colors duration-150 hover:text-foreground"
+              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
               suppressHydrationWarning
             >
               {formattedDownload}
@@ -48,11 +48,11 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
           <div className="flex items-center min-h-[18px] text-xs">
             <TrafficArrow
               direction="up"
-              className="text-sm flex-shrink-0 text-muted-foreground transition-all duration-150 hover:text-foreground hover:scale-110"
+              className="text-sm flex-shrink-0 text-muted-foreground"
             />
             <span className="font-medium ml-1 w-6 flex-shrink-0">上传</span>
             <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto transition-colors duration-150 hover:text-foreground"
+              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
               suppressHydrationWarning
             >
               {formattedUpload}
@@ -82,9 +82,9 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-all duration-200 hover:bg-secondary/80 hover:scale-[1.02]">
+      <div className="p-2.5 rounded-xl bg-secondary h-full transition-colors duration-200 hover:bg-secondary/80">
         <div className="flex items-center space-x-1.5 mb-1.5">
-          <HardDrive className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-150 hover:text-foreground" />
+          <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">总流量</span>
         </div>
 
@@ -92,11 +92,11 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
           <div className="flex items-center min-h-[18px] text-xs">
             <TrafficArrow
               direction="down"
-              className="text-sm flex-shrink-0 text-muted-foreground transition-colors duration-150 hover:text-foreground"
+              className="text-sm flex-shrink-0 text-muted-foreground"
             />
             <span className="font-medium ml-1 w-6 flex-shrink-0">接收</span>
             <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto transition-colors duration-150 hover:text-foreground"
+              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
               suppressHydrationWarning
             >
               {formattedDownload}
@@ -106,11 +106,11 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
           <div className="flex items-center min-h-[18px] text-xs">
             <TrafficArrow
               direction="up"
-              className="text-sm flex-shrink-0 text-muted-foreground transition-colors duration-150 hover:text-foreground"
+              className="text-sm flex-shrink-0 text-muted-foreground"
             />
             <span className="font-medium ml-1 w-6 flex-shrink-0">发送</span>
             <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto transition-colors duration-150 hover:text-foreground"
+              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
               suppressHydrationWarning
             >
               {formattedUpload}

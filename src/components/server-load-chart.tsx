@@ -452,7 +452,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
           {selectedConfig ? (
             <>
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full bg-secondary/40 ${selectedConfig.color}`}
+                className={`flex h-5 w-5 items-center justify-center ${selectedConfig.color}`}
               >
                 {selectedConfig.icon}
               </span>
@@ -476,7 +476,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
         ) : null}
       </div>
 
-      <div className="mt-2 flex items-center justify-center text-[10px] text-muted-foreground">
+      <div className="mt-2 flex items-center justify-center text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           {TIME_RANGE_PRESETS.map((option) => (
             <button
@@ -523,6 +523,16 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
   role="img"
   aria-label={`${selectedLabel}历史曲线图`}
 >
+  <defs>
+    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
+      <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+    </linearGradient>
+  </defs>
+              <path
+                d={`M ${chartPoints[0]?.x.toFixed(2) ?? 0},${CHART_HEIGHT} L ${polylinePoints} L ${chartPoints[chartPoints.length - 1]?.x.toFixed(2) ?? 0},${CHART_HEIGHT} Z`}
+                fill="url(#areaGrad)"
+              />
               <path
                 d={`M ${polylinePoints}`}
                 fill="none"

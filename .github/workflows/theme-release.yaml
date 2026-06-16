@@ -189,7 +189,7 @@ jobs:
         with:
           name: Release ${{ steps.version.outputs.tag }}
           body: |
-            ## 🎨 ServerSentry Komari Theme Release
+            ## 🎨 MiStatus Komari Theme Release
 
             **Version:** ${{ steps.version.outputs.version }}
             **Commit:** ${{ steps.version.outputs.commit }}

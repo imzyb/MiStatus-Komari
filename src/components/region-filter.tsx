@@ -3,6 +3,70 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MapPin, ChevronDown, Check } from 'lucide-react';
 
+const FLAG_TO_NAME: Record<string, string> = {
+  '🇯🇵': '日本',
+  '🇺🇸': '美国',
+  '🇨🇳': '中国',
+  '🇭🇰': '香港',
+  '🇹🇼': '台湾',
+  '🇸🇬': '新加坡',
+  '🇰🇷': '韩国',
+  '🇬🇧': '英国',
+  '🇩🇪': '德国',
+  '🇫🇷': '法国',
+  '🇨🇦': '加拿大',
+  '🇦🇺': '澳大利亚',
+  '🇳🇱': '荷兰',
+  '🇷🇺': '俄罗斯',
+  '🇧🇷': '巴西',
+  '🇮🇳': '印度',
+  '🇮🇩': '印尼',
+  '🇻🇳': '越南',
+  '🇹🇭': '泰国',
+  '🇵🇭': '菲律宾',
+  '🇲🇾': '马来西亚',
+  '🇳🇿': '新西兰',
+  '🇮🇹': '意大利',
+  '🇪🇸': '西班牙',
+  '🇸🇪': '瑞典',
+  '🇳🇴': '挪威',
+  '🇫🇮': '芬兰',
+  '🇩🇰': '丹麦',
+  '🇵🇱': '波兰',
+  '🇺🇦': '乌克兰',
+  '🇿🇦': '南非',
+  '🇦🇪': '阿联酋',
+  '🇮🇱': '以色列',
+  '🇹🇷': '土耳其',
+  '🇨🇭': '瑞士',
+  '🇦🇹': '奥地利',
+  '🇧🇪': '比利时',
+  '🇮🇪': '爱尔兰',
+  '🇵🇹': '葡萄牙',
+  '🇬🇷': '希腊',
+  '🇨🇿': '捷克',
+  '🇭🇺': '匈牙利',
+  '🇷🇴': '罗马尼亚',
+  '🇦🇷': '阿根廷',
+  '🇲🇽': '墨西哥',
+  '🇪🇬': '埃及',
+  '🇸🇦': '沙特',
+};
+
+function formatRegion(raw: string): { flag: string; name: string } {
+  const flagMatch = raw.match(
+    /^([\u{1F1E6}-\u{1F1FF}]{2})/u
+  );
+  if (flagMatch) {
+    const flag = flagMatch[1];
+    const rest = raw.slice(flag.length).trim();
+    const knownName = FLAG_TO_NAME[flag];
+    const name = rest || knownName || flag;
+    return { flag, name };
+  }
+  return { flag: '', name: raw };
+}
+
 interface RegionSelectProps {
   regions: string[];
   selectedRegion: string | null;
@@ -19,6 +83,7 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const currentSelection = selectedRegion || '全部地区';
+  const currentDisplay = selectedRegion ? formatRegion(selectedRegion) : null;
   const listItems = [null, ...regions];
 
   // 点击外部关闭下拉菜单
@@ -77,7 +142,9 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
       >
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{currentSelection}</span>
+          <span className="text-sm font-medium">
+            {currentDisplay ? `${currentDisplay.flag} ${currentDisplay.name}` : currentSelection}
+          </span>
         </div>
         <ChevronDown
           className={`h-4 w-4 text-muted-foreground transition-transform ${
@@ -111,7 +178,9 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
             <div className="border-t border-border my-1" />
           )}
 
-          {regions.map((region, index) => (
+          {regions.map((region, index) => {
+            const { flag, name } = formatRegion(region);
+            return (
             <button
               key={region}
               onClick={() => handleSelect(region)}
@@ -122,12 +191,13 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
               role="option"
               aria-selected={selectedRegion === region}
             >
-              <span className="text-sm">{region}</span>
+              <span className="text-sm">{flag ? `${flag} ${name}` : name}</span>
               {selectedRegion === region && (
                 <Check className="h-4 w-4 text-primary animate-fade-in" />
               )}
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,9 +1,8 @@
 "use client";
 
+import { MapPin } from 'lucide-react';
 import { useState, Suspense, lazy } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
-import { ServerHistoryPanelProvider } from "@/contexts/server-history-panel-context";
-import { ServerHistoryDrawer } from "@/components/server-history-drawer";
 import { ServerListSkeleton } from "./server-list-skeleton";
 
 // 懒加载大的组件
@@ -28,7 +27,6 @@ export const ClientServerSection: React.FC = () => {
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
 
   return (
-    <ServerHistoryPanelProvider>
       <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
         <div className="flex items-center gap-4 min-h-[40px]">
           <h2
@@ -52,6 +50,12 @@ export const ClientServerSection: React.FC = () => {
                   onRegionChange={setSelectedRegion}
                 />
               </Suspense>
+            )}
+            {!isLoading && regions.length === 0 && (
+              <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md min-w-[140px] justify-between text-sm text-muted-foreground opacity-50">
+                <MapPin className="h-4 w-4" />
+                <span>无地区</span>
+              </div>
             )}
           </div>
         </div>
@@ -77,7 +81,5 @@ export const ClientServerSection: React.FC = () => {
         {/* 加载状态 */}
         {isLoading && <ServerListSkeleton />}
       </div>
-      <ServerHistoryDrawer />
-    </ServerHistoryPanelProvider>
   );
 };

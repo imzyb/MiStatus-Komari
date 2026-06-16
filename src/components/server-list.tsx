@@ -18,10 +18,7 @@ const VIRTUALIZATION_THRESHOLD = 50;
 export const ServerList: React.FC = React.memo(function ServerList() {
   const { data } = useServers();
 
-  const sortedServers = React.useMemo(() => {
-    if (!data?.servers) return [];
-    return [...data.servers];
-  }, [data?.servers]);
+  const sortedServers = data?.servers || [];
 
   if (!data?.servers) {
     return <ServerListSkeleton />;
@@ -56,7 +53,7 @@ const ServerCardItem: React.FC<{ server: Server; index: number }> = React.memo(
       <LazyRender rootMargin="800px 0px" unmountOnExit={true}>
         <div
           className="h-full animate-fade-in"
-          style={{ animationDelay: `${index * 50}ms` }}
+          style={{ animationDelay: `${Math.min(index, 12) * 50}ms` }}
         >
           <ServerCard server={server} />
         </div>

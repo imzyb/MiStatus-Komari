@@ -3,7 +3,6 @@
 import React from "react";
 import { RegionGroup } from "@/lib/api";
 import { ServerCard } from "./server-card";
-import { MapPin, Server } from "lucide-react";
 
 interface RegionGroupViewProps {
   regionGroups: RegionGroup[];
@@ -24,12 +23,11 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
         >
           {showRegionHeaders && (
             <div className="flex items-center gap-2 border-b pb-2">
-              <MapPin className="h-5 w-5 text-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
               <h3 className="text-xl font-semibold">{region}</h3>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Server className="h-4 w-4" />
-                <span>{servers.length} 台服务器</span>
-              </div>
+              <span className="text-sm text-muted-foreground">
+                {servers.length} 台服务器
+              </span>
             </div>
           )}
 
@@ -39,7 +37,7 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
                 key={server.gid}
                 className="animate-fade-in"
                 style={{
-                  animationDelay: `${groupIndex * 100 + serverIndex * 30}ms`,
+                  animationDelay: `${Math.min(groupIndex * 100 + serverIndex * 30, 800)}ms`,
                 }}
               >
                 <ServerCard server={server} />

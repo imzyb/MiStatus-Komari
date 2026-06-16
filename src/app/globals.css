@@ -173,14 +173,6 @@
     contain: layout;
   }
 
-  .dashboard-main-title {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    margin: 0;
-  }
-
   .server-grid-container {
     min-height: 200px;
     contain: layout;

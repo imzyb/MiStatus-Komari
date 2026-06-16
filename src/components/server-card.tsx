@@ -9,7 +9,6 @@ import {
   formatBytes,
 } from "@/lib/utils";
 import { ServerMetric } from "./server-metric";
-import { useServerHistoryPanel } from "@/contexts/server-history-panel-context";
 import { Clock, MapPin, Server as ServerIcon } from "lucide-react";
 
 // 导入拆分后的组件
@@ -25,62 +24,19 @@ interface ServerCardProps {
 }
 
 export const ServerCard: React.FC<ServerCardProps> = React.memo(
-  function ServerCard({ server }) {
+    function ServerCard({ server }) {
     const isOnline = server.online;
-    const hasHistory = Boolean(server.gid);
-    const { activeServer, toggleServerHistory, closePanel } =
-      useServerHistoryPanel();
-    const isHistoryOpen =
-      hasHistory && activeServer?.gid === server.gid && Boolean(server.gid);
-    const handleCardClick = React.useCallback(
-      (event: React.MouseEvent | React.KeyboardEvent) => {
-        const target = event.target as HTMLElement;
-        if (
-          target.closest("button") ||
-          target.closest("a") ||
-          target.closest("input") ||
-          target.closest("textarea") ||
-          target.closest("select") ||
-          target.closest("[data-prevent-history-toggle]")
-        ) {
-          return;
-        }
 
-        if (!hasHistory) return;
-        toggleServerHistory(server);
-      },
-      [hasHistory, server, toggleServerHistory]
-    );
-
-    const handleKeyDown = React.useCallback(
-      (event: React.KeyboardEvent) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          handleCardClick(event);
-        }
-      },
-      [handleCardClick]
-    );
-
-    React.useEffect(() => {
-      if (!hasHistory && isHistoryOpen) {
-        closePanel();
-      }
-    }, [hasHistory, isHistoryOpen, closePanel]);
-
-    // CPU 显示格式化，限制最多1位小数（移至 utils）
     const cpuFormatter = React.useMemo(
       () => createCpuFormatter("zh-CN", 1),
       []
     );
 
-    // SWAP特殊处理（移至 utils）
     const swapFormatter = React.useMemo(
       () => createSwapFormatter(server.swap_total),
       [server.swap_total]
     );
 
-    // 缓存格式化函数（移至 utils）
     const memoryFormatter = React.useCallback(
       (val: number) => formatBytes(val),
       []
@@ -92,28 +48,10 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className={`relative h-full server-card rounded-lg border bg-card text-card-foreground transition-all duration-200 ${
-          hasHistory
-            ? "cursor-pointer hover:border-primary/30 hover:shadow-sm"
-            : "cursor-default"
-        } ${isHistoryOpen ? "ring-1 ring-primary/30 border-primary/30" : ""}`}
-        onClick={handleCardClick}
-        onKeyDown={handleKeyDown}
-        role={hasHistory ? "button" : undefined}
-        tabIndex={hasHistory ? 0 : undefined}
-        aria-expanded={hasHistory ? isHistoryOpen : undefined}
-        aria-label={
-          hasHistory
-            ? isHistoryOpen
-              ? "收起历史指标"
-              : "查看历史指标"
-            : undefined
-        }
+        className="relative h-full server-card rounded-lg border bg-card text-card-foreground"
       >
-        {/* 服务器信息头部 */}
         <ServerCardHeader server={server} isOnline={isOnline} />
 
-        {/* 服务器指标内容 */}
         <div className="p-4 pt-0 space-y-3 flex-grow flex flex-col">
           <ServerMetric
             label="CPU"
@@ -205,9 +143,9 @@ const ServerCardHeader: React.FC<ServerCardHeaderProps> = React.memo(
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 min-w-0 max-w-[70%]">
             <StatusIndicator isOnline={isOnline} />
-            <span className="text-xl truncate" suppressHydrationWarning>
+            <h3 className="text-xl truncate" suppressHydrationWarning>
               {server.alias || server.name}
-            </span>
+            </h3>
           </div>
           <StatusBadge isOnline={isOnline} />
         </div>

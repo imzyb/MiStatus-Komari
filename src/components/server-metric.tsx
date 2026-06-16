@@ -14,8 +14,8 @@ interface ServerMetricProps {
 
 const colors = {
   safe: {
-    bar: "bg-green-500",
-    text: "text-green-600 dark:text-green-400",
+    bar: "bg-emerald-500",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   warning: {
     bar: "bg-amber-500",
@@ -92,7 +92,7 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
         </div>
         <div className="relative h-1 w-full overflow-hidden rounded-full bg-secondary">
           <div
-            className={`absolute left-0 top-0 h-full ${colorTheme.bar} rounded-full transition-all duration-300 ease-out`}
+            className={`absolute left-0 top-0 h-full ${colorTheme.bar} rounded-full transition-[width] duration-200 ease-out`}
             style={progressStyle}
           />
         </div>

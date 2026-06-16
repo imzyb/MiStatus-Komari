@@ -19,16 +19,12 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <Card 
-      className={cn(`
-        relative overflow-hidden border shadow-sm bg-card
-      `, className)}
+      className={cn(`relative overflow-hidden border bg-card`, className)}
     >
       <div className="relative z-10">
         <CardContent className="flex items-center p-6">
-          <div className="p-3 rounded-xl bg-secondary mr-4">
-            <div className="relative z-10 text-foreground">
-              {icon}
-            </div>
+          <div className="mr-3 text-muted-foreground">
+            {icon}
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
