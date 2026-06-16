@@ -88,7 +88,7 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-background border border-border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto animate-scale-in"
+          className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-background border border-border rounded-md z-50 max-h-60 overflow-y-auto animate-scale-in"
           role="listbox"
           aria-label="选择地区"
         >

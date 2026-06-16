@@ -138,7 +138,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             title="服务器"
             value={
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold">{stats.onlineServers}</span>
+                <span className="text-2xl font-bold leading-tight">{stats.onlineServers}</span>
                 <span className="text-xs opacity-70 mx-1.5">/</span>
                 <span className="text-xl font-bold opacity-80">{stats.totalServers}</span>
               </div>
@@ -149,7 +149,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             title="平均CPU使用率"
             value={
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold">{stats.avgCpuUsage}</span>
+                <span className="text-2xl font-bold leading-tight">{stats.avgCpuUsage}</span>
                 <span className="text-xs opacity-70 ml-1">%</span>
               </div>
             }
@@ -161,11 +161,11 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
               <div className="flex items-baseline space-x-2 min-w-0">
                 <div className="flex items-baseline whitespace-nowrap">
                   <span className="text-sm font-medium opacity-70 flex-shrink-0">↓</span>
-                  <span className="text-lg font-bold ml-1 font-mono">{formatSpeed(stats.totalNetworkRx, 1)}</span>
+                  <span className="text-lg font-bold ml-1 font-mono leading-tight">{formatSpeed(stats.totalNetworkRx, 1)}</span>
                 </div>
                 <div className="flex items-baseline whitespace-nowrap">
                   <span className="text-sm font-medium opacity-70 flex-shrink-0">↑</span>
-                  <span className="text-lg font-bold ml-1 font-mono">{formatSpeed(stats.totalNetworkTx, 1)}</span>
+                  <span className="text-lg font-bold ml-1 font-mono leading-tight">{formatSpeed(stats.totalNetworkTx, 1)}</span>
                 </div>
               </div>
             }

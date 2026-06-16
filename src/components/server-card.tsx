@@ -92,11 +92,11 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className={`relative h-full server-card card-glass glass-hover rounded-xl overflow-hidden transition-all duration-200 ${
+        className={`relative h-full server-card rounded-lg border bg-card text-card-foreground transition-all duration-200 ${
           hasHistory
-            ? "cursor-pointer hover:shadow-md hover:scale-[1.02]"
+            ? "cursor-pointer hover:border-primary/30 hover:shadow-sm"
             : "cursor-default"
-        } ${isHistoryOpen ? "ring-2 ring-primary/40 shadow-md" : ""}`}
+        } ${isHistoryOpen ? "ring-1 ring-primary/30 border-primary/30" : ""}`}
         onClick={handleCardClick}
         onKeyDown={handleKeyDown}
         role={hasHistory ? "button" : undefined}
@@ -258,8 +258,8 @@ UptimeDisplay.displayName = "UptimeDisplay";
 const ServerTypeTag: React.FC<{ label: string }> = React.memo(
   function ServerTypeTag({ label }) {
     return (
-      <span className="inline-flex items-center h-5 px-1 rounded-full text-[10px] font-medium bg-secondary/40 text-foreground/80 whitespace-nowrap">
-        <ServerIcon className="h-3 w-3 mr-0.5 text-muted-foreground" />
+      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground whitespace-nowrap">
+        <ServerIcon className="h-3 w-3" />
         <span className="truncate max-w-[6rem]" suppressHydrationWarning>
           {label}
         </span>
@@ -273,8 +273,8 @@ ServerTypeTag.displayName = "ServerTypeTag";
 const LocationTag: React.FC<{ label: string }> = React.memo(
   function LocationTag({ label }) {
     return (
-      <span className="inline-flex items-center h-5 px-1 rounded-full text-[10px] font-medium bg-secondary/40 text-foreground/80 whitespace-nowrap">
-        <MapPin className="h-3 w-3 mr-0.5 text-muted-foreground" />
+      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground whitespace-nowrap">
+        <MapPin className="h-3 w-3" />
         <span className="truncate max-w-[8rem]" suppressHydrationWarning>
           {label}
         </span>

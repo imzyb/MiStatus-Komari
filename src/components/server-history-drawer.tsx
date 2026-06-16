@@ -124,7 +124,7 @@ export const ServerHistoryDrawer: React.FC = () => {
           transformOrigin: "bottom center",
         }}
       >
-        <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl card-glass">
+        <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
           <div
             className="flex flex-col"
             style={{

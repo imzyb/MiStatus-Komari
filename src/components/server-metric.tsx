@@ -14,24 +14,20 @@ interface ServerMetricProps {
 
 const colors = {
   safe: {
-    gradient: "from-emerald-400 via-emerald-500 to-cyan-500",
-    glow: "shadow-emerald-500/30",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bar: "bg-green-500",
+    text: "text-green-600 dark:text-green-400",
   },
   warning: {
-    gradient: "from-amber-400 via-amber-500 to-orange-500",
-    glow: "shadow-amber-500/30",
+    bar: "bg-amber-500",
     text: "text-amber-600 dark:text-amber-400",
   },
   danger: {
-    gradient: "from-rose-400 via-rose-500 to-red-500",
-    glow: "shadow-rose-500/30",
-    text: "text-rose-600 dark:text-rose-400",
+    bar: "bg-red-500",
+    text: "text-red-600 dark:text-red-400",
   },
   disabled: {
-    gradient: "from-slate-400 via-slate-500 to-slate-600",
-    glow: "shadow-slate-500/30",
-    text: "text-slate-500 dark:text-slate-400",
+    bar: "bg-zinc-300 dark:bg-zinc-600",
+    text: "text-zinc-400 dark:text-zinc-500",
   },
 };
 
@@ -94,13 +90,11 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
               : `${formattedValue}${unit} / ${formattedTotal}${unit}`}
           </span>
         </div>
-        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary/40 border border-border/30">
+        <div className="relative h-1 w-full overflow-hidden rounded-full bg-secondary">
           <div
-            className={`absolute left-0 top-0 h-full bg-gradient-to-r ${colorTheme.gradient} rounded-full transition-all duration-300 ease-out`}
+            className={`absolute left-0 top-0 h-full ${colorTheme.bar} rounded-full transition-all duration-300 ease-out`}
             style={progressStyle}
-          >
-            <div className="absolute inset-0 bg-white/10 rounded-full"></div>
-          </div>
+          />
         </div>
       </div>
     );

@@ -422,7 +422,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
 
   const paddingClass =
     variant === "expanded" ? "p-4 sm:p-6" : "p-3";
-  const baseContainerClass = `flex flex-col rounded-lg border border-border/50 bg-background/80 shadow-sm ${paddingClass}`;
+  const baseContainerClass = `flex flex-col rounded-lg border bg-card text-card-foreground ${paddingClass}`;
   const containerClassName = className
     ? `${baseContainerClass} ${className}`
     : `mt-3 ${baseContainerClass}`;
@@ -483,11 +483,11 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
               key={option.hours}
               type="button"
               onClick={() => handleHoursChange(option.hours)}
-              className={`rounded-full border px-2 py-0.5 transition-colors ${
-                selectedHours === option.hours
-                  ? "border-primary/40 bg-primary/15 text-primary"
-                  : "border-transparent bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-              }`}
+className={`rounded-full border px-2 py-0.5 transition-colors text-xs ${
+                 selectedHours === option.hours
+                   ? "border-foreground bg-foreground text-background"
+                   : "border-border text-muted-foreground hover:text-foreground"
+               }`}
             >
               {option.label}
             </button>
@@ -497,9 +497,9 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
 
       <div
         ref={chartRef}
-        className={`relative mt-3 flex items-center justify-center overflow-hidden rounded-md bg-secondary/40 ${chartAreaHeightClass} ${
-          hasAvailableData ? "cursor-crosshair" : ""
-        }`}
+className={`relative mt-3 flex items-center justify-center overflow-hidden rounded-md bg-secondary ${chartAreaHeightClass} ${
+           hasAvailableData ? "cursor-crosshair" : ""
+         }`}
         onPointerMove={hasAvailableData ? handlePointerMove : undefined}
         onPointerDown={hasAvailableData ? handlePointerMove : undefined}
         onPointerLeave={hasAvailableData ? handlePointerLeave : undefined}
@@ -563,7 +563,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
                   transform: "translate(-50%, -120%)",
                 }}
               >
-                <div className="rounded-md bg-background/95 px-2 py-1 text-[10px] shadow-lg ring-1 ring-border/60">
+                <div className="rounded-md border bg-background px-2 py-1 text-[10px]">
                   <div className="text-[9px] text-muted-foreground">
                     {selectedLabel}
                   </div>

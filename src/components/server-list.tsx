@@ -36,7 +36,7 @@ export const ServerList: React.FC = React.memo(function ServerList() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 server-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 server-grid">
       {sortedServers.map((server, index) => (
         <ServerCardItem
           key={server.gid || server.name}
@@ -55,7 +55,7 @@ const ServerCardItem: React.FC<{ server: Server; index: number }> = React.memo(
     return (
       <LazyRender rootMargin="800px 0px" unmountOnExit={true}>
         <div
-          className="h-full animate-fade-in transform-gpu"
+          className="h-full animate-fade-in"
           style={{ animationDelay: `${index * 50}ms` }}
         >
           <ServerCard server={server} />

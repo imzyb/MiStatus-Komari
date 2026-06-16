@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['HarmonyOS Sans SC', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
       },
     },
   },

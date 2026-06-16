@@ -37,7 +37,7 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
             {servers.map((server, serverIndex) => (
               <div
                 key={server.gid}
-                className="animate-fade-in transform-gpu"
+                className="animate-fade-in"
                 style={{
                   animationDelay: `${groupIndex * 100 + serverIndex * 30}ms`,
                 }}

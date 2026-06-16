@@ -102,21 +102,13 @@ export default async function RootLayout({
           media="(prefers-color-scheme: dark)"
         />
         {/* API预连接：在未知部署子路径下可能指向错误，移除以避免绝对路径问题 */}
-        {/* 字体预加载：改为相对路径 */}
-        <link
-          rel="preload"
-          href="./fonts/HarmonyOS_Sans_SC_Medium.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin=""
-        />
         {/* 关键CSS内联 - 防止FOUC和CLS */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
             /* 基础重置 - 防止FOUC */
             *{box-sizing:border-box}
-            body{margin:0;background:#ffffff;color:#0a0a0a;font-family:'HarmonyOS Sans SC',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
+            body{margin:0;background:#ffffff;color:#000000;font-family:'Geist','Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
             html.dark body{background:#0a0a0a;color:#fafafa}
             /* LCP优化 - 立即显示标题 */
             .dashboard-title{min-height:48px;line-height:1.2;contain:layout;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif}
