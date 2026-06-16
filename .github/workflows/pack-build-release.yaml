@@ -1,0 +1,250 @@
+name: Pack Branch Build and Release
+
+on:
+  push:
+    branches:
+      - Pack
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build project
+        run: bun run build:theme
+
+      - name: Get version info
+        id: version
+        run: |
+          # Generate version info for pack branch
+          VERSION_DATE=$(date +"%y.%m.%d")
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          BRANCH_NAME="${{ github.ref_name }}"
+
+          # Check if this is triggered by a release event
+          if [ "${{ github.event_name }}" == "release" ]; then
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+            echo "version=${RELEASE_TAG}" >> $GITHUB_OUTPUT
+            echo "zip_name=serversentry-theme-${RELEASE_TAG}.zip" >> $GITHUB_OUTPUT
+            echo "tag=${RELEASE_TAG}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${VERSION_DATE}-pack" >> $GITHUB_OUTPUT
+            echo "zip_name=serversentry-theme-v${VERSION_DATE}-pack-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+            echo "tag=pack-${VERSION_DATE}-${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          fi
+
+          echo "commit=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+
+      - name: Verify required files
+        run: |
+          echo "=== Verifying required files ==="
+
+          files_missing=false
+
+          if [ ! -f "preview.png" ]; then
+            echo "❌ preview.png not found"
+            files_missing=true
+          else
+            echo "✅ preview.png found"
+          fi
+
+          if [ ! -f "komari-theme.json" ]; then
+            echo "❌ komari-theme.json not found"
+            files_missing=true
+          else
+            echo "✅ komari-theme.json found"
+          fi
+
+          if [ ! -f "komari-theme-server-sentry.zip" ]; then
+            echo "❌ komari-theme-server-sentry.zip not found"
+            files_missing=true
+          else
+            echo "✅ komari-theme-server-sentry.zip found"
+            ls -lh komari-theme-server-sentry.zip
+          fi
+
+          if [ "$files_missing" = true ]; then
+            echo "::error::Some required files are missing"
+            exit 1
+          fi
+
+      - name: Create theme package
+        run: |
+          echo "=== Creating theme package ==="
+
+          # Verify the original zip file exists (already compressed by build script)
+          if [ ! -f "komari-theme-server-sentry.zip" ]; then
+            echo "::error::Original zip file not found: komari-theme-server-sentry.zip"
+            exit 1
+          fi
+
+          # Simply rename the existing zip file (no additional compression needed)
+          mv komari-theme-server-sentry.zip "${{ steps.version.outputs.zip_name }}"
+
+          # Verify the renamed file exists
+          if [ ! -f "${{ steps.version.outputs.zip_name }}" ]; then
+            echo "::error::Failed to create package: ${{ steps.version.outputs.zip_name }}"
+            exit 1
+          fi
+
+          echo "✅ Created package: ${{ steps.version.outputs.zip_name }}"
+          ls -lh "${{ steps.version.outputs.zip_name }}"
+
+      - name: Ensure Dev pre-release exists
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_TAG="dev"
+          RELEASE_TITLE="Dev Build"
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "✅ Dev pre-release already exists"
+          else
+            echo "⚠️ Dev pre-release not found. Creating one now."
+            gh release create "$RELEASE_TAG" \
+              --title "$RELEASE_TITLE" \
+              --notes "Automated development build for the Pack branch." \
+              --prerelease
+            echo "✅ Dev pre-release created"
+          fi
+
+      - name: Clean Dev release assets
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_TAG="dev"
+          echo "=== Cleaning existing assets from $RELEASE_TAG release ==="
+
+          assets=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets[] | @base64')
+          if [ -z "$assets" ]; then
+            echo "No assets to delete."
+          else
+            while IFS= read -r asset; do
+              [ -z "$asset" ] && continue
+              asset_name=$(echo "$asset" | base64 --decode | jq -r '.name')
+              echo "Deleting asset: $asset_name"
+              gh release delete-asset "$RELEASE_TAG" "$asset_name" --yes
+            done <<< "$assets"
+            echo "✅ Removed previous assets from $RELEASE_TAG release"
+          fi
+
+      - name: Upload package to Dev release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_TAG="dev"
+          PACKAGE_PATH="${{ steps.version.outputs.zip_name }}"
+
+          echo "=== Uploading package to Dev pre-release ==="
+          gh release upload "$RELEASE_TAG" "$PACKAGE_PATH" --clobber
+          echo "✅ Uploaded $PACKAGE_PATH to $RELEASE_TAG pre-release"
+
+      - name: Create Release
+        if: inputs.create_release == 'true' && github.event_name != 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Pack Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## 🎨 MiStatus Komari Theme - Pack Branch Release
+
+            **Version:** ${{ steps.version.outputs.version }}
+            **Commit:** ${{ steps.version.outputs.commit }}
+            **Branch:** Pack
+
+            ### 📦 Installation
+            1. Download the theme package below
+            2. Upload it to your Komari instance
+            3. Apply the theme in settings
+
+            ### 📋 Theme Information
+            ```json
+            $(cat komari-theme.json)
+            ```
+          draft: false
+          prerelease: true
+          files: |
+            ${{ steps.version.outputs.zip_name }}
+          fail_on_unmatched_files: true
+
+      - name: Upload to existing release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.version.outputs.zip_name }}
+          fail_on_unmatched_files: true
+
+      - name: Upload theme package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: serversentry-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
+          path: ${{ steps.version.outputs.zip_name }}
+          retention-days: 30
+
+      - name: Generate build summary
+        run: |
+          echo "## 🎨 Pack Branch Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Version Information" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ steps.version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ steps.version.outputs.commit }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag | ${{ steps.version.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | \`${{ steps.version.outputs.zip_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📦 Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "Theme package created and uploaded as artifacts (retention: 30 days)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "✅ **Build files uploaded to existing release: ${{ steps.version.outputs.tag }}**" >> $GITHUB_STEP_SUMMARY
+            echo "📎 **ZIP file automatically uploaded to release**" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ inputs.create_release }}" == "true" ]; then
+            echo "✅ **GitHub Release created: ${{ steps.version.outputs.tag }}**" >> $GITHUB_STEP_SUMMARY
+            echo "📎 **ZIP file automatically uploaded to release**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No GitHub Release created (use workflow_dispatch with create_release=true to create one)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Theme Metadata" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat komari-theme.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Theme package created successfully!**" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,9 @@
+{
+  "name": "MiStatus Komari",
+  "short": "MiStatus",
+  "description": "基于 Next.js 的现代化服务器监控主题",
+  "version": "1.0.0",
+  "author": "imzyb",
+  "url": "https://github.com/imzyb/MiStatus-Komari",
+  "preview": "preview.png"
+}
