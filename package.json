@@ -1,0 +1,59 @@
+{
+  "name": "theme",
+  "version": "0.1.0",
+  "private": true,
+  "browserslist": {
+    "production": [
+      "> 1%",
+      "last 2 versions",
+      "not dead",
+      "not ie <= 11",
+      "not op_mini all",
+      "supports es6-module"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "bun": ">=1.0.0"
+  },
+  "scripts": {
+    "dev": "bunx next dev --turbopack",
+    "build": "bunx next build",
+    "build:fast": "bunx next build",
+    "build:ultra": "bunx next build",
+    "build:theme": "bun run build:ultra && bun run scripts/build-theme.js",
+    "build:theme:zip": "bun run build:ultra && bun run scripts/build-theme.js",
+    "start": "bunx next start",
+    "lint": "bunx next lint",
+    "clean": "rm -rf .next out dist",
+    "build:analyze": "ANALYZE=true bun run build"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.506.0",
+    "next": "15.3.1",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.2.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/archiver": "^6.0.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "archiver": "^7.0.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.2.8",
+    "typescript": "^5.9.3"
+  }
+}

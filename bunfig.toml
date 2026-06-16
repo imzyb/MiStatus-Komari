@@ -1,0 +1,30 @@
+[install]
+# 使用 npm 注册表
+registry = "https://registry.npmmirror.com"
+
+# 安装配置
+exact = false
+optional = true
+dev = true
+peer = true
+
+# 性能优化
+concurrency = 8  # 增加并发数
+cache = true
+saveLockfile = true
+saveExact = false
+
+[install.scopes]
+# 可以在这里配置私有包的作用域
+
+[run]
+# 运行脚本时的配置
+bun = true
+# 启用 Bun 的快速模式
+hot = true
+# 优化内存使用
+gc = true
+
+[test]
+# 测试配置
+preload = ["./test/setup.ts"]

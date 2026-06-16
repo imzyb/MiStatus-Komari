@@ -1,0 +1,252 @@
+name: Build and Release Theme
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: false
+        default: 'manual'
+        type: choice
+        options:
+          - manual
+          - beta
+          - alpha
+      create_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Verify theme metadata
+        run: |
+          echo "=== Current komari-theme.json content ==="
+          cat komari-theme.json
+          echo "=================================="
+
+      - name: Build project
+        run: bun run build:theme
+
+      - name: Get version info
+        id: version
+        run: |
+          # Generate version info matching build-theme.sh
+          VERSION_DATE=$(date +"%y.%m.%d")
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+
+          # Get tag name if available
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+            echo "version=${VERSION_DATE}" >> $GITHUB_OUTPUT
+            echo "zip_name=serversentry-theme-v${VERSION_DATE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+          else
+            # Manual dispatch
+            RELEASE_TYPE="${{ inputs.release_type }}"
+            TAG_NAME="manual-${RELEASE_TYPE}-${VERSION_DATE}"
+            echo "version=${VERSION_DATE}-${RELEASE_TYPE}" >> $GITHUB_OUTPUT
+            echo "zip_name=serversentry-theme-v${VERSION_DATE}-${RELEASE_TYPE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+          fi
+
+          echo "commit=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Verify required files
+        run: |
+          echo "=== Verifying required files ==="
+
+          files_missing=false
+
+          if [ ! -f "preview.png" ]; then
+            echo "❌ preview.png not found"
+            files_missing=true
+          else
+            echo "✅ preview.png found"
+          fi
+
+          if [ ! -f "komari-theme.json" ]; then
+            echo "❌ komari-theme.json not found"
+            files_missing=true
+          else
+            echo "✅ komari-theme.json found"
+          fi
+
+          if [ ! -f "komari-theme-server-sentry.zip" ]; then
+            echo "❌ komari-theme-server-sentry.zip not found"
+            files_missing=true
+          else
+            echo "✅ komari-theme-server-sentry.zip found"
+            ls -lh komari-theme-server-sentry.zip
+          fi
+
+          if [ "$files_missing" = true ]; then
+            echo "::error::Some required files are missing"
+            exit 1
+          fi
+
+      - name: Create theme package
+        run: |
+          echo "=== Creating theme package ==="
+
+          # Rename the existing zip file
+          cp komari-theme-server-sentry.zip "${{ steps.version.outputs.zip_name }}"
+
+          echo "✅ Created package: ${{ steps.version.outputs.zip_name }}"
+          ls -lh "${{ steps.version.outputs.zip_name }}"
+
+      - name: Prepare artifact for manual workflow
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "=== Preparing artifact for manual workflow ==="
+
+          # Create artifact directory
+          mkdir -p artifact-upload
+
+          # Copy the theme package to artifact directory
+          cp "${{ steps.version.outputs.zip_name }}" artifact-upload/
+
+          # List contents
+          echo "=== Artifact contents ==="
+          ls -la artifact-upload/
+
+          echo "✅ Artifact prepared for upload"
+
+      - name: Generate changelog and contributors
+        id: changelog
+        run: |
+          echo "=== Generating changelog ==="
+
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "${{ steps.version.outputs.tag }}" ]; then
+            echo "Previous tag: $PREV_TAG"
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s by @%an in %h" --no-merges)
+          else
+            echo "No previous tag found, including last 10 commits"
+            CHANGELOG=$(git log -10 --pretty=format:"- %s by @%an in %h" --no-merges)
+          fi
+
+          # Get new contributors
+          echo "=== Checking for new contributors ==="
+          NEW_CONTRIBUTORS=""
+
+          # Get all authors since the previous tag
+          if [ -n "$PREV_TAG" ]; then
+            # Get authors in this release
+            CURRENT_AUTHORS=$(git log ${PREV_TAG}..HEAD --pretty=format:"%an" --no-merges | sort -u)
+            # Get authors before this release
+            PREVIOUS_AUTHORS=$(git log ${PREV_TAG} --pretty=format:"%an" --no-merges | sort -u)
+
+            # Find new contributors
+            while IFS= read -r author; do
+              if [ -n "$author" ] && ! echo "$PREVIOUS_AUTHORS" | grep -q "^$author$"; then
+                FIRST_COMMIT=$(git log --author="$author" --pretty=format:"%h" --reverse | head -n1)
+                NEW_CONTRIBUTORS="${NEW_CONTRIBUTORS}- @${author} made their first contribution in ${FIRST_COMMIT}\n"
+              fi
+            done <<< "$CURRENT_AUTHORS"
+          fi
+
+          # Save changelog to file for the release
+          echo "$CHANGELOG" > changelog.txt
+
+          if [ -n "$NEW_CONTRIBUTORS" ]; then
+            echo "" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "## New Contributors" >> changelog.txt
+            echo -e "$NEW_CONTRIBUTORS" >> changelog.txt
+          fi
+
+          echo "=== Final changelog ==="
+          cat changelog.txt
+
+      - name: Create Release
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.create_release == 'true')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## 🎨 ServerSentry Komari Theme Release
+
+            **Version:** ${{ steps.version.outputs.version }}
+            **Commit:** ${{ steps.version.outputs.commit }}
+
+            ### 📦 Installation
+            1. Download the theme package below
+            2. Upload it to your Komari instance
+            3. Apply the theme in settings
+
+            ### 🔄 What's Changed
+            $(cat changelog.txt)
+
+            ### 📋 Theme Information
+            ```json
+            $(cat komari-theme.json)
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc') || inputs.release_type == 'beta' || inputs.release_type == 'alpha' }}
+          files: |
+            ${{ steps.version.outputs.zip_name }}
+          body_path: changelog.txt
+
+      - name: Upload theme package for manual workflow
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: serversentry-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
+          path: artifact-upload/
+          retention-days: 30
+
+      - name: Generate build summary
+        run: |
+          echo "## 🎨 Release Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Version Information" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ steps.version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ steps.version.outputs.commit }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag | ${{ steps.version.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | \`${{ steps.version.outputs.zip_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]; then
+            echo "### 🚀 Release Status" >> $GITHUB_STEP_SUMMARY
+            echo "Release will be created for tag: **${{ github.ref_name }}**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 📦 Manual Build" >> $GITHUB_STEP_SUMMARY
+            echo "Release Type: **${{ inputs.release_type }}**" >> $GITHUB_STEP_SUMMARY
+            echo "Create Release: **${{ inputs.create_release }}**" >> $GITHUB_STEP_SUMMARY
+            echo "Theme package created and uploaded as artifacts (retention: 30 days)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Theme Metadata" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat komari-theme.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Theme package created successfully!**" >> $GITHUB_STEP_SUMMARY

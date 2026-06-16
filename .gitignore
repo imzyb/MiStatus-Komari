@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+bun.lockb
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env*
+
+# Logs
+*.log
+
+# Theme build outputs
+komari-theme-server-sentry/
+komari-theme-server-sentry.zip
+
+# Editor and OS files
+.vscode/
+.DS_Store
+Thumbs.db
