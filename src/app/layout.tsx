@@ -3,6 +3,7 @@ import { cache } from "react";
 import "./globals.css";
 import { config } from "@/lib/config";
 import { Providers } from "./providers";
+import { DynamicTitle } from "@/components/dynamic-title";
 import { getKomariPublicInfo, type KomariResponse } from "@/lib/api";
 
 function resolveEnvBaseUrl(): string | undefined {
@@ -118,6 +119,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers initialSiteInfo={initialSiteInfo}>
+          <DynamicTitle fallbackTitle={config.siteTitle} />
           {children}
         </Providers>
       </body>
