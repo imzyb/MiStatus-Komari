@@ -13,14 +13,14 @@ interface ViewToggleProps {
 export const ViewToggle: React.FC<ViewToggleProps> = React.memo(
   function ViewToggle({ value, onChange }) {
     return (
-      <div className="flex items-center rounded-md border border-border overflow-hidden">
+      <div className="flex items-center rounded-full bg-muted/60 p-0.5">
         <button
           type="button"
           onClick={() => onChange("card")}
-          className={`inline-flex items-center justify-center h-8 w-8 transition-colors ${
+          className={`inline-flex items-center justify-center h-7 w-7 rounded-full transition-all duration-200 ${
             value === "card"
-              ? "bg-accent text-primary-foreground"
-              : "bg-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-white dark:bg-[#2c2c2c] shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           aria-label="卡片视图"
           title="卡片视图"
@@ -30,10 +30,10 @@ export const ViewToggle: React.FC<ViewToggleProps> = React.memo(
         <button
           type="button"
           onClick={() => onChange("list")}
-          className={`inline-flex items-center justify-center h-8 w-8 transition-colors ${
+          className={`inline-flex items-center justify-center h-7 w-7 rounded-full transition-all duration-200 ${
             value === "list"
-              ? "bg-accent text-primary-foreground"
-              : "bg-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-white dark:bg-[#2c2c2c] shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           aria-label="列表视图"
           title="列表视图"

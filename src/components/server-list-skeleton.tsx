@@ -38,7 +38,7 @@ export const ServerListSkeleton: React.FC<ServerListSkeletonProps> = ({
 }) => {
   if (viewMode === "list") {
     return (
-      <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="rounded-2xl bg-card shadow-sm overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 border-b border-hairline">
           {Array(6).fill(null).map((_, i) => (
             <div key={i} className="flex-1">
@@ -60,7 +60,7 @@ export const ServerListSkeleton: React.FC<ServerListSkeletonProps> = ({
         .map((_, index) => (
           <div
             key={index}
-            className="rounded-xl border bg-card text-card-foreground h-[300px]"
+            className="rounded-2xl bg-card shadow-sm text-card-foreground h-[300px]"
           >
             <div className="p-4 space-y-3 h-full">
               <div className="flex items-center justify-between">

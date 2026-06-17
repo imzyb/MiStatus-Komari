@@ -34,7 +34,7 @@ const PanelRow: React.FC<PanelRowProps> = React.memo(
       <div className="flex items-center text-xs leading-5">
         <span className="flex-shrink-0 text-muted-foreground">{arrow}</span>
         <span className="font-medium ml-1 w-6 flex-shrink-0">{label}</span>
-        <span className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto" suppressHydrationWarning>
+        <span className="font-medium text-foreground/70 font-mono whitespace-nowrap ml-auto" suppressHydrationWarning>
           {value}
         </span>
       </div>
@@ -58,7 +58,7 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary flex flex-col h-full">
+      <div className="p-3 rounded-2xl bg-muted/50 flex flex-col h-full">
         <PanelHeader icon={<Wifi className="h-3.5 w-3.5" />} label="实时网络" />
         <div className="flex-1 flex flex-col justify-center space-y-1">
           <PanelRow
@@ -89,7 +89,7 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary flex flex-col h-full">
+      <div className="p-3 rounded-2xl bg-muted/50 flex flex-col h-full">
         <PanelHeader icon={<HardDrive className="h-3.5 w-3.5" />} label="总流量" />
         <div className="flex-1 flex flex-col justify-center space-y-1">
           <PanelRow

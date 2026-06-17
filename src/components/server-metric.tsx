@@ -26,7 +26,7 @@ const colors = {
     text: "text-trading-down",
   },
   disabled: {
-    bar: "bg-muted-foreground/40",
+    bar: "bg-muted-foreground/20",
     text: "text-muted-foreground",
   },
 };

@@ -28,12 +28,12 @@ export const ServerDetailDrawer: React.FC = React.memo(
 
     return (
       <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
-        <div className="fixed inset-0 bg-black/60" onClick={closeDetail} />
-        <div className="relative w-full max-w-2xl bg-card border border-border rounded-t-xl sm:rounded-xl shadow-xl animate-slide-up max-h-[85vh] overflow-y-auto">
-          <div className="sticky top-0 bg-card border-b border-hairline px-4 py-3 flex items-center justify-between z-10">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={closeDetail} />
+        <div className="relative w-full max-w-2xl bg-white dark:bg-[#2c2c2c] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white/90 dark:bg-[#2c2c2c]/90 backdrop-blur-xl border-b border-hairline px-5 py-3 flex items-center justify-between z-10 rounded-t-3xl sm:rounded-t-3xl">
             <div className="flex items-center gap-2 min-w-0">
               <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
-                selectedServer.online ? "bg-trading-up shadow-[0_0_6px_rgba(14,203,129,0.4)]" : "bg-muted-foreground/40"
+                selectedServer.online ? "bg-trading-up shadow-[0_0_4px_rgba(0,181,120,0.3)]" : "bg-muted-foreground/30"
               }`} />
               <h2 className="text-base font-semibold truncate">
                 {selectedServer.alias || selectedServer.name}
@@ -42,14 +42,14 @@ export const ServerDetailDrawer: React.FC = React.memo(
             <button
               type="button"
               onClick={closeDetail}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="关闭"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="p-5 space-y-4">
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {selectedServer.type && (
                 <span className="flex items-center gap-1">

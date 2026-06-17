@@ -101,7 +101,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
         <div className="stats-grid">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array(4).fill(null).map((_, i) => (
-              <div key={i} className="rounded-lg border bg-card p-6">
+              <div key={i} className="rounded-2xl bg-card shadow-sm p-5">
                 <div className="flex items-center">
                   <div className="mr-3">
                     <div className="h-5 w-5 skeleton rounded" />

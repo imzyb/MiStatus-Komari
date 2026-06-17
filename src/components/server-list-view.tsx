@@ -11,7 +11,7 @@ interface ServerListViewProps {
 export const ServerListView: React.FC<ServerListViewProps> = React.memo(
   function ServerListView({ servers }) {
     return (
-      <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="rounded-2xl bg-card shadow-sm overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-muted-foreground uppercase tracking-wider border-b border-hairline">
           <span className="flex-[3] sm:flex-[2]">服务器</span>
           <span className="flex-1">CPU</span>

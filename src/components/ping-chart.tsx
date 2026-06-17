@@ -25,9 +25,9 @@ const TASK_LABELS: Record<number, string> = {
 };
 
 const TASK_COLORS: Record<number, string> = {
-  1: "#0ecb81",
-  2: "#fcd535",
-  3: "#f6465d",
+  1: "#00b578",
+  2: "#ff6a00",
+  3: "#ff3b30",
 };
 
 const MAX_PING_DISPLAY = 500;
@@ -80,10 +80,10 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               key={r.hours}
               type="button"
               onClick={() => setHours(r.hours)}
-              className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
+              className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
                 hours === r.hours
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                  : "bg-muted/60 text-muted-foreground hover:text-foreground"
               }`}
             >
               {r.label}

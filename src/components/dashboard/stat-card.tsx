@@ -11,24 +11,22 @@ export interface StatCardProps {
   className?: string;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ 
-  title, 
-  value, 
-  icon, 
+export const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon,
   className
 }) => {
   return (
-    <Card 
-      className={cn(`relative overflow-hidden border bg-card transition-colors hover:bg-secondary/50`, className)}
-    >
+    <Card className={cn("relative overflow-hidden shadow-sm", className)}>
       <div className="relative z-10">
-        <CardContent className="flex items-center p-6">
+        <CardContent className="flex items-center p-5">
           <div className="mr-3 text-muted-foreground">
             {icon}
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <div className="text-xl font-bold text-foreground font-mono">
+            <p className="text-xs font-medium text-muted-foreground">{title}</p>
+            <div className="text-xl font-semibold text-foreground font-mono">
               {value}
             </div>
           </div>
@@ -36,4 +34,4 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
     </Card>
   );
-}; 
+};

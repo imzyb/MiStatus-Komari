@@ -40,7 +40,7 @@ export const ClientThemeToggle: React.FC<ClientThemeToggleProps> = ({ className 
     return resolvedTheme === 'dark' ? <MoonIcon /> : <SunIcon />;
   }, [theme, resolvedTheme]);
 
-  const baseClass = 'inline-flex h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors';
+  const baseClass = 'inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors';
 
   if (!mounted) {
     return (

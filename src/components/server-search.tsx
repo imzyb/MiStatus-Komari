@@ -32,7 +32,7 @@ export const ServerSearch: React.FC<ServerSearchProps> = React.memo(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="搜索服务器..."
-          className="h-9 w-40 sm:w-56 rounded-md border border-border bg-background pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
+          className="h-9 w-40 sm:w-56 rounded-full bg-muted/60 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white dark:focus:bg-[#2c2c2c] transition-colors"
         />
         <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center justify-center h-4 px-1 rounded border border-border text-[10px] text-muted-foreground font-mono pointer-events-none">
           /

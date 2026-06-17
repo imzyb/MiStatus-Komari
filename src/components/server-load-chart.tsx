@@ -398,7 +398,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
 
   const paddingClass =
     variant === "expanded" ? "p-4 sm:p-6" : "p-3";
-  const baseContainerClass = `flex flex-col rounded-lg border bg-card text-card-foreground ${paddingClass}`;
+  const baseContainerClass = `flex flex-col rounded-2xl bg-card shadow-sm ${paddingClass}`;
   const containerClassName = className
     ? `${baseContainerClass} ${className}`
     : `mt-3 ${baseContainerClass}`;

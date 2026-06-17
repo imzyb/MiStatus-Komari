@@ -138,7 +138,7 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-md hover:bg-muted transition-colors min-w-[140px] justify-between focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex items-center gap-2 px-4 py-2 bg-muted/60 rounded-full hover:bg-muted transition-colors min-w-[140px] justify-between focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
@@ -160,7 +160,7 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-card border border-border rounded-xl z-50 max-h-60 overflow-y-auto animate-scale-in"
+          className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-white dark:bg-[#2c2c2c] border border-hairline rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto animate-scale-in"
           role="listbox"
           aria-label="选择地区"
         >

@@ -16,25 +16,13 @@ export const TrafficDisplay: React.FC<TrafficDisplayProps> = ({
   return (
   <div className="flex items-center justify-between w-full">
     <div className="flex items-center">
-      <TrafficArrow
-        direction="down"
-        className="text-sm mr-0.5 text-muted-foreground"
-      />
-      <span className="text-sm font-bold text-foreground font-mono">
-        {formattedDownload}
-      </span>
+      <TrafficArrow direction="down" className="text-sm mr-0.5 text-muted-foreground" />
+      <span className="text-sm font-semibold text-foreground font-mono">{formattedDownload}</span>
     </div>
-
-    <div className="h-5 w-[1px] mx-2 bg-border" />
-
+    <div className="h-4 w-[1px] mx-2 bg-border" />
     <div className="flex items-center">
-      <TrafficArrow
-        direction="up"
-        className="text-sm mr-0.5 text-muted-foreground"
-      />
-      <span className="text-sm font-bold text-foreground font-mono">
-        {formattedUpload}
-      </span>
+      <TrafficArrow direction="up" className="text-sm mr-0.5 text-muted-foreground" />
+      <span className="text-sm font-semibold text-foreground font-mono">{formattedUpload}</span>
     </div>
   </div>
   );

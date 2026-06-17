@@ -10,7 +10,7 @@ interface LatencyPanelProps {
 const MAX_LATENCY_DISPLAY = 500;
 
 function qualityColor(ms: number | undefined): string {
-  if (ms === undefined || ms === null) return "bg-muted-foreground/30";
+  if (ms === undefined || ms === null) return "bg-muted-foreground/20";
   if (ms < 50) return "bg-trading-up";
   if (ms < 150) return "bg-accent";
   return "bg-trading-down";
@@ -45,7 +45,7 @@ export const LatencyPanel: React.FC<LatencyPanelProps> = React.memo(
     const hasAny = ping10010 !== undefined || ping189 !== undefined || ping10086 !== undefined;
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary flex flex-col h-full">
+      <div className="p-3 rounded-2xl bg-muted/50 flex flex-col h-full">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Activity className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">延迟</span>
@@ -58,7 +58,7 @@ export const LatencyPanel: React.FC<LatencyPanelProps> = React.memo(
                 <div key={key} className="flex items-center gap-1.5 text-xs leading-5">
                   <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${qualityColor(val)}`} />
                   <span className="text-muted-foreground w-6 flex-shrink-0">{label}</span>
-                  <div className="flex-1 h-1 rounded-full bg-background/50 overflow-hidden mx-1">
+                  <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden mx-1">
                     <div
                       className={`h-full rounded-full ${qualityColor(val)} transition-[width] duration-300`}
                       style={{ width: barWidth(val) }}
