@@ -34,7 +34,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
     return (
       <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={closeDetail} />
-        <div className="relative w-full max-w-2xl sm:max-w-lg md:max-w-2xl bg-white dark:bg-[#2c2c2c] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[90vh] sm:max-h-[85vh] overflow-y-auto mx-0 sm:mx-0">
+        <div className="relative w-full max-w-3xl bg-white dark:bg-[#2c2c2c] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[92vh] sm:max-h-[88vh] overflow-y-auto mx-0 sm:mx-0">
           <div className="sticky top-0 bg-white/90 dark:bg-[#2c2c2c]/90 backdrop-blur-xl border-b border-hairline/50 px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between z-10 rounded-t-3xl">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
@@ -59,7 +59,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
             </button>
           </div>
 
-          <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
+          <div className="p-5 sm:p-6 space-y-5 sm:space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
