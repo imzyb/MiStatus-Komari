@@ -29,8 +29,13 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(
           ))}
         </div>
         {servers.length === 0 && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            暂无服务器
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground space-y-2">
+            <svg className="h-10 w-10 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="2" y="3" width="20" height="18" rx="2" />
+              <path d="M2 9h20" />
+              <path d="M9 21V9" />
+            </svg>
+            <p className="text-sm">暂无服务器</p>
           </div>
         )}
       </div>

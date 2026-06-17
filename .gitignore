@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+bun.lock
 bun.lockb
 pnpm-lock.yaml
 yarn.lock
@@ -23,7 +24,9 @@ komari-theme-server-sentry.zip
 
 # Editor and OS files
 .vscode/
+.idea/
 .DS_Store
 Thumbs.db
 
-DESIGN-binance.md
+# Docs (design reference)
+docs/DESIGN-binance.md
