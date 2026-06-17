@@ -17,6 +17,7 @@ import {
   StatusBadge,
   RealTimeNetworkPanel,
   TotalTrafficPanel,
+  LatencyPanel,
 } from "./server";
 
 interface ServerCardProps {
@@ -48,7 +49,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className="relative h-full server-card rounded-lg border bg-card text-card-foreground hover:border-foreground/20 transition-colors"
+        className="relative h-full server-card rounded-xl border bg-card text-card-foreground hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 
@@ -83,7 +84,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           />
 
           {/* 网络面板 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 mt-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 mt-auto">
             <RealTimeNetworkPanel
               downloadSpeed={server.network_rx}
               uploadSpeed={server.network_tx}
@@ -92,6 +93,12 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
             <TotalTrafficPanel
               totalDownload={server.network_in}
               totalUpload={server.network_out}
+            />
+
+            <LatencyPanel
+              ping10010={server.ping_10010}
+              ping189={server.ping_189}
+              ping10086={server.ping_10086}
             />
           </div>
         </div>
@@ -123,7 +130,10 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
       a.network_rx === b.network_rx &&
       a.network_tx === b.network_tx &&
       a.network_in === b.network_in &&
-      a.network_out === b.network_out
+      a.network_out === b.network_out &&
+      a.ping_10010 === b.ping_10010 &&
+      a.ping_189 === b.ping_189 &&
+      a.ping_10086 === b.ping_10086
     );
   }
 );

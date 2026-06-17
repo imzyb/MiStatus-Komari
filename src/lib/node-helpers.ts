@@ -53,6 +53,9 @@ export interface WsNodeRealtime {
   process?: number;
   message?: string;
   updated_at?: string;
+  ping_10010?: number;
+  ping_189?: number;
+  ping_10086?: number;
 }
 
 /**
@@ -184,6 +187,9 @@ export function createServerFromRealtimeData(
     custom: "",
     gid: uuid,
     latest_ts: latestTs,
+    ping_10010: realtimeData?.ping_10010,
+    ping_189: realtimeData?.ping_189,
+    ping_10086: realtimeData?.ping_10086,
     si: true,
   } as Server;
 }

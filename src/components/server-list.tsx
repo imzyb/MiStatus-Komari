@@ -3,9 +3,11 @@
 import React, { lazy, Suspense } from "react";
 import { useServers } from "@/contexts/servers-context";
 import { ServerCard } from "./server-card";
+import { ServerListView } from "./server-list-view";
 import { LazyRender } from "./lazy-render";
 import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
+import type { ViewMode } from "./view-toggle";
 
 const VirtualizedServerList = lazy(() =>
   import("./virtualized-server-list").then((module) => ({
@@ -15,7 +17,11 @@ const VirtualizedServerList = lazy(() =>
 
 const VIRTUALIZATION_THRESHOLD = 50;
 
-export const ServerList: React.FC = React.memo(function ServerList() {
+interface ServerListProps {
+  viewMode?: ViewMode;
+}
+
+export const ServerList: React.FC<ServerListProps> = React.memo(function ServerList({ viewMode = "card" }) {
   const { data } = useServers();
 
   const sortedServers = data?.servers || [];
@@ -24,12 +30,16 @@ export const ServerList: React.FC = React.memo(function ServerList() {
     return <ServerListSkeleton />;
   }
 
-  if (sortedServers.length >= VIRTUALIZATION_THRESHOLD) {
+  if (sortedServers.length >= VIRTUALIZATION_THRESHOLD && viewMode === "card") {
     return (
       <Suspense fallback={<ServerListSkeleton />}>
         <VirtualizedServerList />
       </Suspense>
     );
+  }
+
+  if (viewMode === "list") {
+    return <ServerListView servers={sortedServers} />;
   }
 
   return (
@@ -46,7 +56,6 @@ export const ServerList: React.FC = React.memo(function ServerList() {
 });
 ServerList.displayName = "ServerList";
 
-// ServerCardItem 组件，避免重复渲染
 const ServerCardItem: React.FC<{ server: Server; index: number }> = React.memo(
   function ServerCardItem({ server, index }) {
     return (

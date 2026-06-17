@@ -9,7 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['BinanceNova', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['BinancePlex', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },

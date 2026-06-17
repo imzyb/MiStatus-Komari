@@ -64,58 +64,33 @@ type LoadTypeConfig = {
   label: string;
   color: string;
   icon: React.ReactNode;
-  computePercent: (record: StatusRecord) => number | null;
 };
 
 const LOAD_TYPE_CONFIG: Record<LoadType, LoadTypeConfig> = {
   cpu: {
     label: "CPU",
-    color: "text-blue-500",
+    color: "text-trading-up",
     icon: <Cpu className="h-3 w-3" />,
-    computePercent: (record) =>
-      Number.isFinite(record.cpu) ? clampPercent(record.cpu) : null,
   },
   load: {
     label: "负载",
-    color: "text-orange-500",
+    color: "text-accent",
     icon: <Activity className="h-3 w-3" />,
-    computePercent: (record) =>
-      Number.isFinite(record.load) ? clampPercent(record.load * 100) : null,
   },
   ram: {
     label: "内存",
-    color: "text-green-500",
+    color: "text-trading-up",
     icon: <MemoryStick className="h-3 w-3" />,
-    computePercent: (record) => {
-      const total = record.ram_total;
-      const used = record.ram;
-      if (!Number.isFinite(used) || !Number.isFinite(total) || total <= 0)
-        return null;
-      return clampPercent((used / total) * 100);
-    },
   },
   temp: {
     label: "温度",
-    color: "text-red-500",
+    color: "text-trading-down",
     icon: <Thermometer className="h-3 w-3" />,
-    computePercent: (record) => {
-      if (!Number.isFinite(record.temp) || record.temp <= 0) {
-        return null;
-      }
-      return clampPercent(record.temp);
-    },
   },
   disk: {
     label: "磁盘",
-    color: "text-yellow-500",
+    color: "text-muted-foreground",
     icon: <HardDrive className="h-3 w-3" />,
-    computePercent: (record) => {
-      const total = record.disk_total;
-      const used = record.disk;
-      if (!Number.isFinite(used) || !Number.isFinite(total) || total <= 0)
-        return null;
-      return clampPercent((used / total) * 100);
-    },
   },
 };
 
@@ -419,6 +394,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
     : null;
   const selectedLabel = selectedConfig?.label ?? "历史指标";
   const hasAvailableData = seriesForSelectedType.length > 0;
+  const gradientId = React.useId();
 
   const paddingClass =
     variant === "expanded" ? "p-4 sm:p-6" : "p-3";
@@ -485,7 +461,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
               onClick={() => handleHoursChange(option.hours)}
 className={`rounded-full border px-2 py-0.5 transition-colors text-xs ${
                  selectedHours === option.hours
-                   ? "border-foreground bg-foreground text-background"
+                   ? "border-primary bg-primary text-primary-foreground"
                    : "border-border text-muted-foreground hover:text-foreground"
                }`}
             >
@@ -519,19 +495,19 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
   width="100%"
   height="100%"
   preserveAspectRatio="none"
-  className="text-primary"
+  className="text-trading-up"
   role="img"
   aria-label={`${selectedLabel}历史曲线图`}
 >
   <defs>
-    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
       <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
     </linearGradient>
   </defs>
               <path
                 d={`M ${chartPoints[0]?.x.toFixed(2) ?? 0},${CHART_HEIGHT} L ${polylinePoints} L ${chartPoints[chartPoints.length - 1]?.x.toFixed(2) ?? 0},${CHART_HEIGHT} Z`}
-                fill="url(#areaGrad)"
+                fill={`url(#${gradientId})`}
               />
               <path
                 d={`M ${polylinePoints}`}

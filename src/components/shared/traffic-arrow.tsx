@@ -7,5 +7,16 @@ export interface TrafficArrowProps {
 
 export const TrafficArrow: React.FC<TrafficArrowProps> = ({
   direction,
-  className = "text-sm text-muted-foreground",
-}) => <span className={className}>{direction === "down" ? "↓" : "↑"}</span>;
+  className,
+}) => (
+  <span
+    className={
+      className ||
+      (direction === "down"
+        ? "text-sm text-trading-down"
+        : "text-sm text-trading-up")
+    }
+  >
+    {direction === "down" ? "↓" : "↑"}
+  </span>
+);

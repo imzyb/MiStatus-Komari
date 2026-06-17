@@ -280,6 +280,9 @@ export const convertClientToServer = (
     custom: "",
     gid: client.uuid,
     latest_ts: Number.isFinite(parsedStatusTime) ? parsedStatusTime : undefined,
+    ping_10010: (status as unknown as { ping_10010?: number })?.ping_10010,
+    ping_189: (status as unknown as { ping_189?: number })?.ping_189,
+    ping_10086: (status as unknown as { ping_10086?: number })?.ping_10086,
     si: true,
   };
 };

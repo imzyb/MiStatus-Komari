@@ -14,22 +14,6 @@ interface RegionSelectionResult extends BaseRegionComputed {
   };
 }
 
-let lastServersSignature: string | null = null;
-let lastBaseResult: BaseRegionComputed | null = null;
-
-// 生成稳定签名：按 gid 排序，仅取影响地区分组与排序的关键字段
-const buildServersSignature = (servers: Server[]): string => {
-  // 只取 gid、location、latest_ts 三项，避免将会频繁波动但不影响分区结果的字段写入签名
-  const simplified = servers
-    .map((s) => ({
-      gid: s.gid,
-      location: s.location || "未知地区",
-      ts: s.latest_ts ?? 0,
-    }))
-    .sort((a, b) => a.gid.localeCompare(b.gid, "zh-CN"));
-  return JSON.stringify(simplified);
-};
-
 const computeBaseOnce = (servers: Server[]): BaseRegionComputed => {
   const groups = new Map<string, Server[]>();
   const regionSet = new Set<string>();
@@ -62,26 +46,6 @@ const computeBaseOnce = (servers: Server[]): BaseRegionComputed => {
   return { regions, allRegionGroups };
 };
 
-export const getRegionBaseMemoized = (
-  servers: Server[] | undefined | null
-): BaseRegionComputed => {
-  if (!servers || servers.length === 0) {
-    return { regions: [], allRegionGroups: [] };
-  }
-  const signature = buildServersSignature(servers);
-  if (lastServersSignature === signature && lastBaseResult) {
-    return lastBaseResult;
-  }
-  const computed = computeBaseOnce(servers);
-  lastServersSignature = signature;
-  lastBaseResult = computed;
-  return computed;
-};
-
-let lastSelectedRegion: string | null | undefined = undefined;
-let lastSelectionInput: BaseRegionComputed | null = null;
-let lastSelectionResult: RegionSelectionResult | null = null;
-
 export const selectRegionData = (
   servers: Server[] | undefined | null,
   selectedRegion?: string | null
@@ -96,16 +60,7 @@ export const selectRegionData = (
     };
   }
 
-  const base = getRegionBaseMemoized(servers);
-
-  if (
-    lastSelectionInput === base &&
-    lastSelectedRegion === selectedRegion &&
-    lastSelectionResult
-  ) {
-    return lastSelectionResult;
-  }
-
+  const base = computeBaseOnce(servers);
   let filteredServers: Server[];
   let regionGroups: RegionGroup[];
 
@@ -121,7 +76,7 @@ export const selectRegionData = (
     regionGroups = base.allRegionGroups;
   }
 
-  const result: RegionSelectionResult = {
+  return {
     regions: base.regions,
     allRegionGroups: base.allRegionGroups,
     regionGroups,
@@ -131,11 +86,6 @@ export const selectRegionData = (
       serversInSelectedRegion: filteredServers.length,
     },
   };
-
-  lastSelectionInput = base;
-  lastSelectedRegion = selectedRegion;
-  lastSelectionResult = result;
-  return result;
 };
 
 export type { RegionSelectionResult };

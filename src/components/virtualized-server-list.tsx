@@ -21,11 +21,11 @@ export const VirtualizedServerList: React.FC = React.memo(function VirtualizedSe
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 server-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 server-grid">
       {sortedServers.map((server, index) => (
         <div
           key={server.gid || server.name}
-          className="h-full animate-fade-in transform-gpu"
+          className="h-full animate-fade-in"
           style={{
             animationDelay: `${Math.min(index, MAX_ANIMATION_DELAY_ITEMS) * ANIMATION_DELAY_STEP_MS}ms`,
           }}

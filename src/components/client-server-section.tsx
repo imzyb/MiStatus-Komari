@@ -4,8 +4,9 @@ import { MapPin } from 'lucide-react';
 import { useState, Suspense, lazy } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
 import { ServerListSkeleton } from "./server-list-skeleton";
+import { ViewToggle } from "./view-toggle";
+import type { ViewMode } from "./view-toggle";
 
-// 懒加载大的组件
 const ServerList = lazy(() =>
   import("@/components/server-list").then((module) => ({
     default: module.ServerList,
@@ -25,6 +26,7 @@ const RegionGroupView = lazy(() =>
 export const ClientServerSection: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
 
   return (
       <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
@@ -36,12 +38,11 @@ export const ClientServerSection: React.FC = () => {
             服务器列表
           </h2>
 
-          {/* 地区选择下拉菜单 - 懒加载 */}
           <div className="min-w-[140px]">
             {!isLoading && regions.length > 0 && (
               <Suspense
                 fallback={
-                  <div className="h-9 w-[140px] bg-muted/20 rounded-md animate-pulse"></div>
+                  <div className="h-9 w-[140px] bg-muted rounded-md animate-pulse"></div>
                 }
               >
                 <RegionSelect
@@ -58,27 +59,28 @@ export const ClientServerSection: React.FC = () => {
               </div>
             )}
           </div>
+
+          <div className="ml-auto">
+            <ViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
         </div>
 
-        {/* 服务器列表 - 懒加载 */}
         {!isLoading && (
           <div className="animate-fade-in server-grid-container">
             <Suspense fallback={<ServerListSkeleton />}>
               {selectedRegion ? (
-                // 选择了特定地区时，只显示该地区的服务器，不显示地区标题
                 <RegionGroupView
                   regionGroups={regionGroups}
                   showRegionHeaders={false}
+                  viewMode={viewMode}
                 />
               ) : (
-                // 默认状态：显示所有服务器，使用原有ServerList组件
-                <ServerList />
+                <ServerList viewMode={viewMode} />
               )}
             </Suspense>
           </div>
         )}
 
-        {/* 加载状态 */}
         {isLoading && <ServerListSkeleton />}
       </div>
   );

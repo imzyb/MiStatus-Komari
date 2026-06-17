@@ -108,11 +108,10 @@ export default async function RootLayout({
             __html: `
             /* 基础重置 - 防止FOUC */
             *{box-sizing:border-box}
-            body{margin:0;background:#ffffff;color:#000000;font-family:'Geist','Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
-            html.dark body{background:#0a0a0a;color:#fafafa}
-            /* LCP优化 - 立即显示标题 */
-            .dashboard-title{min-height:48px;line-height:1.2;contain:layout;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif}
-            .dashboard-title h2{font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;font-size:1.875rem;line-height:2.25rem;font-weight:700;letter-spacing:-0.025em;margin:0}
+            body{margin:0;background:#0b0e11;color:#eaecef;font-family:'BinanceNova','Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
+            html.dark body{background:#0b0e11;color:#eaecef}
+            .dashboard-title{min-height:40px;line-height:1.2;contain:layout}
+            .dashboard-title h1{font-size:1.25rem;font-weight:700;letter-spacing:-0.025em;margin:0}
           `,
           }}
         />

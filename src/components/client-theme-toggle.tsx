@@ -55,11 +55,13 @@ export const ClientThemeToggle: React.FC<ClientThemeToggleProps> = ({ className 
     <button
       type="button"
       aria-label={`当前主题: ${label}`}
-      className={`${baseClass} transition-colors hover:bg-secondary/50 ${className || ''}`}
+      className={`${baseClass} ${className || ''}`}
       onClick={cycleTheme}
       title={`当前主题: ${label}`}
     >
-      {icon}
+      <span className="transition-transform duration-300 hover:scale-110">
+        {icon}
+      </span>
       <span className="sr-only">切换主题（当前: {label}）</span>
     </button>
   );

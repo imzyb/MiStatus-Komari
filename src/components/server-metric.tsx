@@ -14,20 +14,20 @@ interface ServerMetricProps {
 
 const colors = {
   safe: {
-    bar: "bg-emerald-500",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bar: "bg-trading-up",
+    text: "text-trading-up",
   },
   warning: {
-    bar: "bg-amber-500",
-    text: "text-amber-600 dark:text-amber-400",
+    bar: "bg-accent",
+    text: "text-accent",
   },
   danger: {
-    bar: "bg-red-500",
-    text: "text-red-600 dark:text-red-400",
+    bar: "bg-trading-down",
+    text: "text-trading-down",
   },
   disabled: {
-    bar: "bg-zinc-300 dark:bg-zinc-600",
-    text: "text-zinc-400 dark:text-zinc-500",
+    bar: "bg-muted-foreground/40",
+    text: "text-muted-foreground",
   },
 };
 

@@ -6,7 +6,7 @@ export interface LastUpdatedProps {
 }
 
 export const LastUpdated: React.FC<LastUpdatedProps> = ({ timestamp }) => (
-  <div className="text-xs text-muted-foreground flex items-center px-3 py-1.5 rounded-md border bg-secondary/30">
+  <div className="text-xs text-muted-foreground flex items-center px-2.5 py-1 rounded-md border bg-muted">
     <Clock className="h-3 w-3 mr-1.5 text-muted-foreground" />
     <span suppressHydrationWarning>更新于 {timestamp}</span>
   </div>
