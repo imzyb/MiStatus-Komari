@@ -47,11 +47,11 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
     }`}>
       <div className="flex h-14 items-center justify-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 font-semibold no-underline group">
-            <div className="flex items-center justify-center h-8 w-8 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-2.5 font-semibold no-underline group min-w-0">
+            <div className="flex items-center justify-center h-8 w-8 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:scale-105 transition-transform flex-shrink-0">
               {siteTitle.charAt(0).toUpperCase()}
             </div>
-            <span className="text-base max-sm:text-sm font-semibold tracking-tight">{siteTitle}</span>
+            <span className="text-base max-sm:text-sm font-semibold tracking-tight truncate">{siteTitle}</span>
           </Link>
 
           <div className="flex items-center gap-1.5">

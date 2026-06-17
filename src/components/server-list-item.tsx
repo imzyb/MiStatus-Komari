@@ -48,7 +48,7 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
 
     return (
       <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-hairline/50 hover:bg-muted/30 active:bg-muted/50 transition-colors text-xs cursor-pointer"
+        className="flex items-center gap-2 px-4 py-2.5 border-b border-hairline/50 hover:bg-muted/40 dark:hover:bg-muted/20 active:bg-muted/50 transition-colors text-xs cursor-pointer"
         onClick={() => openDetail(server)}
       >
         <div className="flex items-center gap-2 min-w-0 flex-[3] sm:flex-[2]">

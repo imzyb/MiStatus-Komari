@@ -48,12 +48,16 @@ bun run build:theme  # Build theme ZIP for Komari
 
 ### UI Design
 
-- Xiaomi HyperOS style: light-first, orange accent (#ff6a00), clean minimal
+- **Xiaomi HyperOS** design language: light-first, orange accent (#ff6a00), clean minimal
 - Status colors: green (#00b578) = online, red (#ff3b30) = offline
 - Font stack: MiSans + MiSans Mono (Xiaomi official font via CDN)
-- Rounded cards (`rounded-2xl`), pill buttons (`rounded-full`), soft shadows
+- Rounded cards (`rounded-2xl`), pill buttons/chips (`rounded-full`), soft shadows
 - Subtle backgrounds: `bg-muted/50` panels, `bg-muted/60` inputs/badges
-- Dark mode: `#1a1a1a` canvas, `#2c2c2c` cards
+- Dark mode: `#1a1a1a` canvas, `#2c2c2c` cards, `bg-primary/15` icon backgrounds
+- Header: scroll-responsive shadow, brand initial logo, connection status pill
+- Footer: minimal with decorative dots, `text-[11px]` typography
+- Detail drawer: 2×2 metric grid cards, enriched server info
+- Animated stat numbers via `useAnimatedNumber` hook (eased counter transition)
 - All animations respect `prefers-reduced-motion`
 
 ### Component Patterns
@@ -62,6 +66,8 @@ bun run build:theme  # Build theme ZIP for Komari
 - `LazyRender` (IntersectionObserver) for offscreen card unmounting
 - `lazy()` + `Suspense` for code splitting large components
 - View mode persistence via `localStorage`
+- `ProgressBar` shared component for list view consistency
+- Card/list click opens `ServerDetailDrawer` via `ServerDetailContext`
 
 ## Environment Variables
 

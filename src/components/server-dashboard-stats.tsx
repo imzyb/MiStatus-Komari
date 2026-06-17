@@ -4,6 +4,7 @@ import { formatDateTime } from '@/lib/utils';
 import { formatSpeed } from '@/lib/utils';
 import {
   StatCard,
+  AnimatedNumber,
   LastUpdated,
   TrafficDisplay
 } from './dashboard';
@@ -117,6 +118,10 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
     );
   }
 
+  const scrollToServers = () => {
+    document.querySelector('.server-grid-container')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="stats-container">
       <div className="flex justify-between items-center dashboard-title">
@@ -134,13 +139,14 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             title="服务器"
+            onClick={scrollToServers}
             value={
               <div className="flex items-baseline">
                 {stats.totalServers > 0 ? (
                   <>
-                    <span className="text-xl font-bold leading-tight transition-all duration-300">{stats.onlineServers}</span>
+                    <AnimatedNumber value={stats.onlineServers} className="text-xl font-bold leading-tight" />
                     <span className="text-xs opacity-70 mx-1.5">/</span>
-                    <span className="text-base font-bold opacity-80 transition-all duration-300">{stats.totalServers}</span>
+                    <AnimatedNumber value={stats.totalServers} className="text-base font-bold opacity-80" />
                   </>
                 ) : (
                   <span className="text-base font-bold text-muted-foreground">—</span>
@@ -155,7 +161,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
               <div className="flex items-baseline">
                 {stats.totalServers > 0 ? (
                   <>
-                    <span className="text-xl font-bold leading-tight transition-all duration-300">{stats.avgCpuUsage}</span>
+                    <AnimatedNumber value={stats.avgCpuUsage} className="text-xl font-bold leading-tight" />
                     <span className="text-xs opacity-70 ml-1">%</span>
                   </>
                 ) : (
