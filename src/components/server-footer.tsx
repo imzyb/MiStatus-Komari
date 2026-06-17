@@ -7,7 +7,7 @@ export const ServerFooter: React.FC = () => {
         <div className="flex items-center gap-1.5">
           <div className="h-1 w-1 rounded-full bg-primary/40" />
           <p className="text-[11px] text-muted-foreground/70 tracking-wide">
-            Powered by Komari · MiStatus
+            Powered by MiStatus
           </p>
           <div className="h-1 w-1 rounded-full bg-primary/40" />
         </div>
