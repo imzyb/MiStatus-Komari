@@ -60,7 +60,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <Cpu className="h-3 w-3" /> CPU

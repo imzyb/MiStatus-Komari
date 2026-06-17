@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Activity } from "lucide-react";
 import { rpcAdapter } from "@/lib/rpc-adapter";
 import type { PingRecordsResult, BasicInfo } from "@/lib/rpc-types";
@@ -9,9 +9,9 @@ interface PingChartProps {
   serverId: string;
 }
 
-const CHART_W = 600;
-const CHART_H = 200;
-const PAD_L = 30;
+const CHART_W = 560;
+const CHART_H = 240;
+const PAD_L = 28;
 const PAD_R = 8;
 const PAD_T = 16;
 const PAD_B = 20;
@@ -19,10 +19,10 @@ const PLOT_W = CHART_W - PAD_L - PAD_R;
 const PLOT_H = CHART_H - PAD_T - PAD_B;
 
 const TIME_RANGES = [
-  { hours: 1, label: "1H" },
   { hours: 6, label: "6H" },
   { hours: 12, label: "12H" },
   { hours: 24, label: "24H" },
+  { hours: 48, label: "48H" },
 ] as const;
 
 const TASK_CONFIG: Record<number, { label: string; color: string }> = {
@@ -44,7 +44,9 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
   function PingChart({ serverId }) {
     const [result, setResult] = useState<PingRecordsResult | null>(null);
     const [loading, setLoading] = useState(true);
-    const [hours, setHours] = useState(6);
+    const [hours, setHours] = useState(12);
+    const [hoverX, setHoverX] = useState<number | null>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
 
     const fetch = useCallback(async (h: number) => {
       setLoading(true);
@@ -122,9 +124,36 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       }).join(" ");
     };
 
+    const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * CHART_W;
+      if (x >= PAD_L && x <= PAD_L + PLOT_W) {
+        setHoverX(x);
+      } else {
+        setHoverX(null);
+      }
+    }, []);
+
+    const handleMouseLeave = useCallback(() => setHoverX(null), []);
+
+    const hoverData = useMemo(() => {
+      if (hoverX === null || taskIds.length === 0 || maxPoints === 0) return null;
+      const xRatio = (hoverX - PAD_L) / PLOT_W;
+      const timePoint = Math.round(xRatio * (maxPoints - 1));
+      const results: { label: string; color: string; value: number; time: string }[] = [];
+      for (const id of taskIds) {
+        const pts = grouped[id];
+        if (!pts || timePoint < 0 || timePoint >= pts.length) continue;
+        const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
+        results.push({ label: cfg.label, color: cfg.color, value: pts[timePoint].value, time: pts[timePoint].time });
+      }
+      return results.length > 0 ? { items: results, x: hoverX } : null;
+    }, [hoverX, taskIds, grouped, maxPoints]);
+
     return (
       <div className="space-y-3">
-        {/* 时间选择（左） + ISP 图例（右）同一行 */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-1">
             {TIME_RANGES.map((r) => (
@@ -164,22 +193,25 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-52 space-y-3">
+          <div className="flex flex-col items-center justify-center h-60 space-y-3">
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
         ) : !hasData ? (
-          <div className="flex flex-col items-center justify-center h-52 space-y-3 text-muted-foreground/50">
+          <div className="flex flex-col items-center justify-center h-60 space-y-3 text-muted-foreground/50">
             <Activity className="h-8 w-8" />
             <span className="text-xs">暂无延迟数据</span>
           </div>
         ) : (
           <svg
+            ref={svgRef}
             viewBox={`0 0 ${CHART_W} ${CHART_H}`}
             width="100%"
-            className="w-full h-52"
+            className="w-full h-60"
             role="img"
             aria-label="延迟监测曲线图"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
             {yTicks.map((v) => {
               const y = PAD_T + PLOT_H - (v / globalMax) * PLOT_H;
@@ -197,15 +229,64 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               if (!pts || pts.length < 2) return null;
               const points = toPolyline(id);
               return (
-                <g key={id}>
-                  <polyline fill="none" stroke={cfg.color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" points={points} />
-                </g>
+                <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" points={points} />
               );
             })}
 
             {timeLabels.map((t, i) => (
               <text key={i} x={t.x} y={CHART_H - 4} textAnchor="middle" fill="currentColor" opacity="0.35" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
+
+            {hoverX !== null && (
+              <>
+                <line x1={hoverX} x2={hoverX} y1={PAD_T} y2={PAD_T + PLOT_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
+                {hoverData && hoverData.items.map((item, idx) => {
+                  const n = maxPoints;
+                  const xRatio = (hoverX - PAD_L) / PLOT_W;
+                  const ptIdx = Math.round(xRatio * (n - 1));
+                  const pts = grouped[taskIds.find(id => (TASK_CONFIG[id] || {}).label === item.label) || taskIds[0]];
+                  if (!pts || ptIdx < 0 || ptIdx >= pts.length) return null;
+                  const x = PAD_L + (ptIdx / Math.max(n - 1, 1)) * PLOT_W;
+                  const y = PAD_T + PLOT_H - (Math.min(item.value, MAX_PING_DISPLAY) / globalMax) * PLOT_H;
+                  return (
+                    <g key={idx}>
+                      <circle cx={x} cy={y} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
+                    </g>
+                  );
+                })}
+              </>
+            )}
+
+            {hoverData && (
+              <g>
+                {(() => {
+                  const n = maxPoints;
+                  const xRatio = (hoverData.x - PAD_L) / PLOT_W;
+                  const ptIdx = Math.round(xRatio * (n - 1));
+                  const firstPts = grouped[taskIds[0]];
+                  const timeStr = firstPts && ptIdx >= 0 && ptIdx < firstPts.length ? formatTime(firstPts[ptIdx].time) : "";
+                  const boxW = 90;
+                  const boxH = 18 + hoverData.items.length * 16;
+                  let bx = hoverData.x + 12;
+                  if (bx + boxW > CHART_W - PAD_R) bx = hoverData.x - boxW - 12;
+                  const by = PAD_T;
+                  return (
+                    <g>
+                      <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="white" stroke="#e4e7ea" strokeWidth="1" />
+                      <text x={bx + 8} y={by + 13} fontSize="9" fill="#999" fontFamily="monospace">{timeStr}</text>
+                      {hoverData.items.map((item, i) => (
+                        <g key={i}>
+                          <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={item.color} />
+                          <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="#1a1a1a" fontFamily="monospace">
+                            {item.label} {item.value.toFixed(0)}ms
+                          </text>
+                        </g>
+                      ))}
+                    </g>
+                  );
+                })()}
+              </g>
+            )}
           </svg>
         )}
       </div>
