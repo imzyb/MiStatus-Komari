@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin } from 'lucide-react';
-import { useState, Suspense, lazy, useEffect, useMemo } from "react";
+import { useState, Suspense, lazy, useEffect, useMemo, useRef } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
 import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
@@ -46,6 +46,7 @@ function filterServers(servers: Server[], query: string): Server[] {
 }
 
 export const ClientServerSection: React.FC = () => {
+  const gridRef = useRef<HTMLDivElement>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,6 +66,12 @@ export const ClientServerSection: React.FC = () => {
     setViewMode(getStoredViewMode());
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [selectedRegion, mounted]);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -136,7 +143,7 @@ export const ClientServerSection: React.FC = () => {
         </div>
 
         {!isLoading && (
-          <div className="animate-fade-in server-grid-container">
+          <div ref={gridRef} className="animate-fade-in server-grid-container">
             <Suspense fallback={<ServerListSkeleton viewMode={viewMode} />}>
               {selectedRegion ? (
                 <RegionGroupView
