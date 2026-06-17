@@ -10,7 +10,8 @@ interface PingChartProps {
 }
 
 const CHART_W = 600;
-const CHART_H = 180;
+const CHART_H = 160;
+const BAR_GAP = 2;
 
 const TIME_RANGES = [
   { hours: 1, label: "1H" },
@@ -64,21 +65,25 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const taskIds = Object.keys(grouped).map(Number).sort();
     const hasData = !loading && result && taskIds.length > 0;
 
-    const allClamped = useMemo(() => {
-      const m: Record<number, { v: number }[]> = {};
-      for (const id of taskIds) {
-        m[id] = grouped[id].map((p) => ({ v: Math.min(p.value, MAX_PING_DISPLAY) }));
-      }
-      return m;
+    const maxPoints = useMemo(() => {
+      return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
 
     const globalMax = useMemo(() => {
       let mx = 10;
-      for (const pts of Object.values(allClamped)) {
-        for (const p of pts) mx = Math.max(mx, p.v);
+      for (const id of taskIds) {
+        for (const p of grouped[id]) mx = Math.max(mx, Math.min(p.value, MAX_PING_DISPLAY));
       }
       return mx;
-    }, [allClamped]);
+    }, [taskIds, grouped]);
+
+    const barW = useMemo(() => {
+      if (maxPoints <= 0 || taskIds.length <= 0) return 4;
+      const totalW = CHART_W;
+      const groupW = totalW / Math.max(maxPoints, 1);
+      const barW = Math.max((groupW - BAR_GAP * (taskIds.length - 1)) / taskIds.length, 2);
+      return Math.min(barW, 12);
+    }, [maxPoints, taskIds]);
 
     return (
       <div className="space-y-3">
@@ -118,7 +123,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 const info = basicInfoMap[id];
                 return (
                   <div key={id} className="flex items-center gap-1.5 text-[11px]">
-                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cfg.color }} />
+                    <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: cfg.color }} />
                     <span className="font-medium text-foreground/80">{cfg.label}</span>
                     {info && (
                       <span className="text-muted-foreground font-mono">
@@ -131,41 +136,17 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               })}
             </div>
 
-            {/* 合并曲线图 */}
+            {/* 直方图 */}
             <svg
               viewBox={`0 0 ${CHART_W} ${CHART_H}`}
               width="100%"
               height="100%"
               preserveAspectRatio="none"
-              className="w-full h-28"
+              className="w-full h-32"
               role="img"
-              aria-label="延迟监测合并曲线图"
+              aria-label="延迟监测直方图"
             >
-              {taskIds.map((id) => {
-                const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-                const pts = allClamped[id];
-                if (!pts || pts.length < 2) return null;
-                const polyline = pts
-                  .map((p, i) => {
-                    const x = (i / Math.max(pts.length - 1, 1)) * CHART_W;
-                    const y = ((globalMax - p.v) / globalMax) * CHART_H;
-                    return `${x},${y}`;
-                  })
-                  .join(" ");
-                return (
-                  <polyline
-                    key={id}
-                    fill="none"
-                    stroke={cfg.color}
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    points={polyline}
-                    opacity="0.85"
-                  />
-                );
-              })}
-              {/* Grid lines */}
+              {/* 网格线 */}
               {[0, 25, 50, 75, 100].map((pct) => (
                 <line
                   key={pct}
@@ -173,10 +154,35 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                   y1={(pct / 100) * CHART_H}
                   y2={(pct / 100) * CHART_H}
                   stroke="currentColor"
-                  strokeOpacity="0.06"
+                  strokeOpacity="0.05"
                   strokeWidth="1"
                 />
               ))}
+              {/* 柱状图 */}
+              {taskIds.map((id, tIdx) => {
+                const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+                const pts = grouped[id];
+                if (!pts || pts.length === 0) return null;
+                const groupW = CHART_W / Math.max(maxPoints, 1);
+                return pts.map((p, i) => {
+                  const v = Math.min(p.value, MAX_PING_DISPLAY);
+                  const barH = Math.max((v / globalMax) * CHART_H, 1);
+                  const x = i * groupW + tIdx * (barW + BAR_GAP);
+                  const y = CHART_H - barH;
+                  return (
+                    <rect
+                      key={`${id}-${i}`}
+                      x={x}
+                      y={y}
+                      width={barW}
+                      height={barH}
+                      fill={cfg.color}
+                      opacity="0.75"
+                      rx="1"
+                    />
+                  );
+                });
+              })}
             </svg>
           </>
         )}

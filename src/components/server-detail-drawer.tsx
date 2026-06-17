@@ -61,36 +61,36 @@ export const ServerDetailDrawer: React.FC = React.memo(
 
           <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              <div className="rounded-2xl bg-muted/40 p-2.5 sm:p-3 space-y-1">
+              <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <Cpu className="h-3 w-3" /> CPU
                 </div>
-                <div className="text-base sm:text-lg font-semibold font-mono leading-tight">{cpuP}%</div>
-                <div className="h-1 rounded-full bg-muted overflow-hidden">
+                <div className="text-base sm:text-lg font-bold font-mono leading-tight">{cpuP}%</div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full rounded-full ${cpuP >= 90 ? "bg-trading-down" : "bg-trading-up"}`} style={{ width: `${cpuP}%` }} />
                 </div>
               </div>
-              <div className="rounded-2xl bg-muted/40 p-2.5 sm:p-3 space-y-1">
+              <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <MemoryStick className="h-3 w-3" /> 内存
                 </div>
-                <div className="text-base sm:text-lg font-semibold font-mono leading-tight">{memP}%</div>
-                <div className="h-1 rounded-full bg-muted overflow-hidden">
+                <div className="text-base sm:text-lg font-bold font-mono leading-tight">{memP}%</div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full rounded-full ${memP >= 90 ? "bg-trading-down" : "bg-trading-up"}`} style={{ width: `${memP}%` }} />
                 </div>
                 <div className="text-[10px] text-muted-foreground font-mono truncate">{formatBytes(s.memory_used)} / {formatBytes(s.memory_total)}</div>
               </div>
-              <div className="rounded-2xl bg-muted/40 p-2.5 sm:p-3 space-y-1">
+              <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <HardDrive className="h-3 w-3" /> 硬盘
                 </div>
-                <div className="text-base sm:text-lg font-semibold font-mono leading-tight">{diskP}%</div>
-                <div className="h-1 rounded-full bg-muted overflow-hidden">
+                <div className="text-base sm:text-lg font-bold font-mono leading-tight">{diskP}%</div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full rounded-full ${diskP >= 90 ? "bg-trading-down" : "bg-trading-up"}`} style={{ width: `${diskP}%` }} />
                 </div>
                 <div className="text-[10px] text-muted-foreground font-mono truncate">{formatBytes(s.hdd_used)} / {formatBytes(s.hdd_total)}</div>
               </div>
-              <div className="rounded-2xl bg-muted/40 p-2.5 sm:p-3 space-y-1">
+              <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <Activity className="h-3 w-3" /> 网络
                 </div>

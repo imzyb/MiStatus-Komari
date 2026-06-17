@@ -40,10 +40,10 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+    <header className={`sticky top-0 z-50 transition-all duration-300 border-b ${
       scrolled
-        ? "bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-        : "bg-white/60 dark:bg-[#1a1a1a]/60 backdrop-blur-xl"
+        ? "bg-background/95 backdrop-blur-xl shadow-sm border-hairline/80"
+        : "bg-background/80 backdrop-blur-xl border-transparent"
     }`}>
       <div className="flex h-14 items-center justify-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
