@@ -74,9 +74,16 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
         </div>
 
         <div className="hidden xl:block min-w-0 w-[15%]">
-          <span className="font-mono text-muted-foreground text-[11px]" suppressHydrationWarning>
-            {server.network_rx ? formatBytes(server.network_rx) + "/s" : "—"}
-          </span>
+          <div className="font-mono text-muted-foreground text-[11px] space-y-0.5">
+            <div className="flex items-center gap-1">
+              <span className="text-trading-down">↓</span>
+              <span>{formatBytes(server.network_in)}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-trading-up">↑</span>
+              <span>{formatBytes(server.network_out)}</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
