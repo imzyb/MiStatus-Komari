@@ -10,11 +10,11 @@ interface PingChartProps {
 }
 
 const CHART_W = 600;
-const CHART_H = 160;
-const PAD_L = 35;
-const PAD_R = 10;
-const PAD_T = 18;
-const PAD_B = 22;
+const CHART_H = 200;
+const PAD_L = 30;
+const PAD_R = 8;
+const PAD_T = 16;
+const PAD_B = 20;
 const PLOT_W = CHART_W - PAD_L - PAD_R;
 const PLOT_H = CHART_H - PAD_T - PAD_B;
 
@@ -164,12 +164,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-44 space-y-3">
+          <div className="flex flex-col items-center justify-center h-52 space-y-3">
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
         ) : !hasData ? (
-          <div className="flex flex-col items-center justify-center h-44 space-y-3 text-muted-foreground/50">
+          <div className="flex flex-col items-center justify-center h-52 space-y-3 text-muted-foreground/50">
             <Activity className="h-8 w-8" />
             <span className="text-xs">暂无延迟数据</span>
           </div>
@@ -177,7 +177,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           <svg
             viewBox={`0 0 ${CHART_W} ${CHART_H}`}
             width="100%"
-            className="w-full h-44"
+            className="w-full h-52"
             role="img"
             aria-label="延迟监测曲线图"
           >
@@ -196,16 +196,8 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const pts = grouped[id];
               if (!pts || pts.length < 2) return null;
               const points = toPolyline(id);
-              const areaPoints = `${PAD_L},${PAD_T + PLOT_H} ${points} ${PAD_L + PLOT_W},${PAD_T + PLOT_H}`;
               return (
                 <g key={id}>
-                  <defs>
-                    <linearGradient id={`area-${id}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={cfg.color} stopOpacity="0.12" />
-                      <stop offset="100%" stopColor={cfg.color} stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <polygon points={areaPoints} fill={`url(#area-${id})`} />
                   <polyline fill="none" stroke={cfg.color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" points={points} />
                 </g>
               );
