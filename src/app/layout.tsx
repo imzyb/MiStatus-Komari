@@ -118,7 +118,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers initialSiteInfo={initialSiteInfo}>
-          <DynamicTitle fallbackTitle={config.siteTitle} />
+          <DynamicTitle />
           {children}
         </Providers>
       </body>
