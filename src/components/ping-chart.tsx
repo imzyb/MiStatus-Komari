@@ -11,12 +11,6 @@ interface PingChartProps {
 
 const CHART_W = 600;
 const CHART_H = 280;
-const PAD_L = 28;
-const PAD_R = 8;
-const PAD_T = 14;
-const PAD_B = 18;
-const PLOT_W = CHART_W - PAD_L - PAD_R;
-const PLOT_H = CHART_H - PAD_T - PAD_B;
 
 const TIME_RANGES = [
   { hours: 6, label: "6H" },
@@ -90,36 +84,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
 
-    const yTicks = useMemo(() => {
-      const step = globalMax <= 50 ? 10 : globalMax <= 200 ? 50 : 100;
-      const ticks: number[] = [];
-      for (let v = 0; v <= globalMax; v += step) ticks.push(v);
-      return ticks;
-    }, [globalMax]);
-
-    const timeLabels = useMemo(() => {
-      if (taskIds.length === 0 || maxPoints === 0) return [];
-      const pts = grouped[taskIds[0]];
-      if (!pts) return [];
-      const labels: { x: number; label: string }[] = [];
-      const n = pts.length;
-      const maxLabels = Math.min(n, 8);
-      const step = Math.max(Math.floor(n / maxLabels), 1);
-      for (let i = 0; i < n; i += step) {
-        labels.push({ x: PAD_L + (i / Math.max(n - 1, 1)) * PLOT_W, label: formatTime(pts[i].time) });
-      }
-      if (n > 1 && (n - 1) % step !== 0) {
-        labels.push({ x: PAD_L + PLOT_W, label: formatTime(pts[n - 1].time) });
-      }
-      return labels;
-    }, [taskIds, grouped, maxPoints]);
-
     const toPolyline = (id: number) => {
       const pts = grouped[id];
       if (!pts || pts.length < 2) return "";
       return pts.map((p, i) => {
-        const x = PAD_L + (i / (pts.length - 1)) * PLOT_W;
-        const y = PAD_T + PLOT_H - (Math.min(p.value, MAX_PING_DISPLAY) / globalMax) * PLOT_H;
+        const x = (i / (pts.length - 1)) * CHART_W;
+        const y = CHART_H - (Math.min(p.value, MAX_PING_DISPLAY) / globalMax) * CHART_H;
         return `${x},${y}`;
       }).join(" ");
     };
@@ -129,7 +99,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * CHART_W;
-      if (x >= PAD_L && x <= PAD_L + PLOT_W) {
+      if (x >= 0 && x <= CHART_W) {
         setHoverX(x);
       } else {
         setHoverX(null);
@@ -140,7 +110,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     const hoverData = useMemo(() => {
       if (hoverX === null || taskIds.length === 0 || maxPoints === 0) return null;
-      const xRatio = (hoverX - PAD_L) / PLOT_W;
+      const xRatio = hoverX / CHART_W;
       const timePoint = Math.round(xRatio * (maxPoints - 1));
       const results: { label: string; color: string; value: number; time: string }[] = [];
       for (const id of taskIds) {
@@ -208,50 +178,33 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             viewBox={`0 0 ${CHART_W} ${CHART_H}`}
             width="100%"
             className="w-full h-72"
+            preserveAspectRatio="none"
             role="img"
             aria-label="延迟监测曲线图"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
-            {yTicks.map((v) => {
-              const y = PAD_T + PLOT_H - (v / globalMax) * PLOT_H;
-              return (
-                <g key={v}>
-                  <line x1={PAD_L} x2={CHART_W - PAD_R} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
-                  <text x={PAD_L - 4} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.35" fontSize="9" fontFamily="monospace">{v}</text>
-                </g>
-              );
-            })}
-
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
               const pts = grouped[id];
               if (!pts || pts.length < 2) return null;
               const points = toPolyline(id);
               return (
-                <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" points={points} />
+                <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={points} />
               );
             })}
 
-            {timeLabels.map((t, i) => (
-              <text key={i} x={t.x} y={CHART_H - 4} textAnchor="middle" fill="currentColor" opacity="0.35" fontSize="8" fontFamily="monospace">{t.label}</text>
-            ))}
-
             {hoverX !== null && (
               <>
-                <line x1={hoverX} x2={hoverX} y1={PAD_T} y2={PAD_T + PLOT_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
+                <line x1={hoverX} x2={hoverX} y1={0} y2={CHART_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
                 {hoverData && hoverData.items.map((item, idx) => {
                   const n = maxPoints;
-                  const xRatio = (hoverX - PAD_L) / PLOT_W;
+                  const xRatio = hoverX / CHART_W;
                   const ptIdx = Math.round(xRatio * (n - 1));
-                  const pts = grouped[taskIds.find(id => (TASK_CONFIG[id] || {}).label === item.label) || taskIds[0]];
-                  if (!pts || ptIdx < 0 || ptIdx >= pts.length) return null;
-                  const x = PAD_L + (ptIdx / Math.max(n - 1, 1)) * PLOT_W;
-                  const y = PAD_T + PLOT_H - (Math.min(item.value, MAX_PING_DISPLAY) / globalMax) * PLOT_H;
+                  const x = (ptIdx / Math.max(n - 1, 1)) * CHART_W;
+                  const y = CHART_H - (Math.min(item.value, MAX_PING_DISPLAY) / globalMax) * CHART_H;
                   return (
-                    <g key={idx}>
-                      <circle cx={x} cy={y} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
-                    </g>
+                    <circle key={idx} cx={x} cy={y} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
                   );
                 })}
               </>
@@ -261,15 +214,15 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               <g>
                 {(() => {
                   const n = maxPoints;
-                  const xRatio = (hoverData.x - PAD_L) / PLOT_W;
+                  const xRatio = hoverData.x / CHART_W;
                   const ptIdx = Math.round(xRatio * (n - 1));
                   const firstPts = grouped[taskIds[0]];
                   const timeStr = firstPts && ptIdx >= 0 && ptIdx < firstPts.length ? formatTime(firstPts[ptIdx].time) : "";
                   const boxW = 90;
                   const boxH = 18 + hoverData.items.length * 16;
                   let bx = hoverData.x + 12;
-                  if (bx + boxW > CHART_W - PAD_R) bx = hoverData.x - boxW - 12;
-                  const by = PAD_T;
+                  if (bx + boxW > CHART_W) bx = hoverData.x - boxW - 12;
+                  const by = 4;
                   return (
                     <g>
                       <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="white" stroke="#e4e7ea" strokeWidth="1" />
