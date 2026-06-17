@@ -189,12 +189,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
         {loading ? (
           <div className="flex flex-col items-center justify-center h-72 space-y-3">
-            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
         ) : !hasData ? (
           <div className="flex flex-col items-center justify-center h-72 space-y-3 text-muted-foreground/50">
-            <Activity className="h-8 w-8" />
+            <Activity className="h-6 w-6" />
             <span className="text-xs">暂无延迟数据</span>
           </div>
         ) : (
@@ -214,14 +214,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               return (
                 <g key={v}>
                   <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" />
-                  <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.35" fontSize="9" fontFamily="monospace">{v}</text>
+                  <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.5" fontSize="9" fontFamily="monospace">{v}</text>
                 </g>
               );
             })}
 
             {/* X 轴时间标签 */}
             {timeLabels.map((t, i) => (
-              <text key={i} x={toX(t.i, maxPoints)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.35" fontSize="8" fontFamily="monospace">{t.label}</text>
+              <text key={i} x={toX(t.i, maxPoints)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.5" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
             {/* 曲线 */}
@@ -255,12 +255,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const by = PAD_T + 2;
               return (
                 <g>
-                  <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="white" stroke="#e4e7ea" strokeWidth="1" />
-                  <text x={bx + 8} y={by + 13} fontSize="9" fill="#999" fontFamily="monospace">{timeStr}</text>
+                  <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="var(--background)" stroke="var(--border)" strokeWidth="1" />
+                  <text x={bx + 8} y={by + 13} fontSize="9" fill="var(--muted-foreground)" fontFamily="monospace">{timeStr}</text>
                   {hoverItems.map((item, i) => (
                     <g key={i}>
                       <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={item.color} />
-                      <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="#1a1a1a" fontFamily="monospace">
+                      <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="var(--foreground)" fontFamily="monospace">
                         {item.label} {item.value.toFixed(0)}ms
                       </text>
                     </g>
