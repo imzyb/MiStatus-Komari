@@ -10,7 +10,7 @@ interface PingChartProps {
 }
 
 const CHART_W = 600;
-const CHART_H = 280;
+const CHART_H = 260;
 
 const TIME_RANGES = [
   { hours: 6, label: "6H" },
@@ -83,6 +83,30 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const maxPoints = useMemo(() => {
       return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
+
+    const yTicks = useMemo(() => {
+      const step = globalMax <= 50 ? 10 : globalMax <= 200 ? 50 : 100;
+      const ticks: number[] = [];
+      for (let v = 0; v <= globalMax; v += step) ticks.push(v);
+      return ticks;
+    }, [globalMax]);
+
+    const timeLabels = useMemo(() => {
+      if (taskIds.length === 0 || maxPoints === 0) return [];
+      const pts = grouped[taskIds[0]];
+      if (!pts) return [];
+      const labels: { x: number; label: string }[] = [];
+      const n = pts.length;
+      const maxLabels = Math.min(n, 8);
+      const step = Math.max(Math.floor(n / maxLabels), 1);
+      for (let i = 0; i < n; i += step) {
+        labels.push({ x: (i / Math.max(n - 1, 1)) * 100, label: formatTime(pts[i].time) });
+      }
+      if (n > 1 && (n - 1) % step !== 0) {
+        labels.push({ x: 100, label: formatTime(pts[n - 1].time) });
+      }
+      return labels;
+    }, [taskIds, grouped, maxPoints]);
 
     const toPolyline = (id: number) => {
       const pts = grouped[id];
@@ -173,74 +197,95 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             <span className="text-xs">暂无延迟数据</span>
           </div>
         ) : (
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-            width="100%"
-            className="w-full h-72"
-            preserveAspectRatio="none"
-            role="img"
-            aria-label="延迟监测曲线图"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-          >
-            {taskIds.map((id) => {
-              const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const pts = grouped[id];
-              if (!pts || pts.length < 2) return null;
-              const points = toPolyline(id);
-              return (
-                <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={points} />
-              );
-            })}
+          <div className="relative">
+            {/* Y 轴标签 */}
+            <div className="absolute left-0 top-0 bottom-6 w-8 flex flex-col justify-between pointer-events-none z-10">
+              {yTicks.slice().reverse().map((v) => (
+                <span key={v} className="text-[9px] text-muted-foreground/40 font-mono leading-none">{v}</span>
+              ))}
+            </div>
 
-            {hoverX !== null && (
-              <>
-                <line x1={hoverX} x2={hoverX} y1={0} y2={CHART_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
-                {hoverData && hoverData.items.map((item, idx) => {
-                  const n = maxPoints;
-                  const xRatio = hoverX / CHART_W;
-                  const ptIdx = Math.round(xRatio * (n - 1));
-                  const x = (ptIdx / Math.max(n - 1, 1)) * CHART_W;
-                  const y = CHART_H - (Math.min(item.value, MAX_PING_DISPLAY) / globalMax) * CHART_H;
+            {/* 图表区域 */}
+            <div className="ml-8 mb-5 relative">
+              <svg
+                ref={svgRef}
+                viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+                width="100%"
+                className="w-full h-72"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label="延迟监测曲线图"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
+                {taskIds.map((id) => {
+                  const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+                  const pts = grouped[id];
+                  if (!pts || pts.length < 2) return null;
+                  const points = toPolyline(id);
                   return (
-                    <circle key={idx} cx={x} cy={y} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
+                    <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={points} />
                   );
                 })}
-              </>
-            )}
 
-            {hoverData && (
-              <g>
-                {(() => {
-                  const n = maxPoints;
-                  const xRatio = hoverData.x / CHART_W;
-                  const ptIdx = Math.round(xRatio * (n - 1));
-                  const firstPts = grouped[taskIds[0]];
-                  const timeStr = firstPts && ptIdx >= 0 && ptIdx < firstPts.length ? formatTime(firstPts[ptIdx].time) : "";
-                  const boxW = 90;
-                  const boxH = 18 + hoverData.items.length * 16;
-                  let bx = hoverData.x + 12;
-                  if (bx + boxW > CHART_W) bx = hoverData.x - boxW - 12;
-                  const by = 4;
-                  return (
-                    <g>
-                      <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="white" stroke="#e4e7ea" strokeWidth="1" />
-                      <text x={bx + 8} y={by + 13} fontSize="9" fill="#999" fontFamily="monospace">{timeStr}</text>
-                      {hoverData.items.map((item, i) => (
-                        <g key={i}>
-                          <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={item.color} />
-                          <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="#1a1a1a" fontFamily="monospace">
-                            {item.label} {item.value.toFixed(0)}ms
-                          </text>
+                {hoverX !== null && (
+                  <>
+                    <line x1={hoverX} x2={hoverX} y1={0} y2={CHART_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
+                    {hoverData && hoverData.items.map((item, idx) => {
+                      const n = maxPoints;
+                      const xRatio = hoverX / CHART_W;
+                      const ptIdx = Math.round(xRatio * (n - 1));
+                      const x = (ptIdx / Math.max(n - 1, 1)) * CHART_W;
+                      const y = CHART_H - (Math.min(item.value, MAX_PING_DISPLAY) / globalMax) * CHART_H;
+                      return (
+                        <circle key={idx} cx={x} cy={y} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
+                      );
+                    })}
+                  </>
+                )}
+
+                {hoverData && (
+                  <g>
+                    {(() => {
+                      const n = maxPoints;
+                      const xRatio = hoverData.x / CHART_W;
+                      const ptIdx = Math.round(xRatio * (n - 1));
+                      const firstPts = grouped[taskIds[0]];
+                      const timeStr = firstPts && ptIdx >= 0 && ptIdx < firstPts.length ? formatTime(firstPts[ptIdx].time) : "";
+                      const boxW = 90;
+                      const boxH = 18 + hoverData.items.length * 16;
+                      let bx = hoverData.x + 12;
+                      if (bx + boxW > CHART_W) bx = hoverData.x - boxW - 12;
+                      const by = 4;
+                      return (
+                        <g>
+                          <rect x={bx} y={by} width={boxW} height={boxH} rx="6" fill="white" stroke="#e4e7ea" strokeWidth="1" />
+                          <text x={bx + 8} y={by + 13} fontSize="9" fill="#999" fontFamily="monospace">{timeStr}</text>
+                          {hoverData.items.map((item, i) => (
+                            <g key={i}>
+                              <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={item.color} />
+                              <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="#1a1a1a" fontFamily="monospace">
+                                {item.label} {item.value.toFixed(0)}ms
+                              </text>
+                            </g>
+                          ))}
                         </g>
-                      ))}
-                    </g>
-                  );
-                })()}
-              </g>
-            )}
-          </svg>
+                      );
+                    })()}
+                  </g>
+                )}
+              </svg>
+            </div>
+
+            {/* X 轴时间标签 */}
+            <div className="ml-8 flex justify-between px-0">
+              {timeLabels.map((t, i) => (
+                <span key={i} className="text-[9px] text-muted-foreground/40 font-mono" style={{ left: `${t.x}%` }}>
+                  {t.label}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     );
