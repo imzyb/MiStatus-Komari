@@ -1,6 +1,6 @@
 # MiStatus Komari
 
-基于 Next.js 15 + React 19 的 Komari 监控主题，Binance 风格 UI，深色为主，支持卡片/列表双视图、实时数据、延迟监测。
+基于 Next.js 15 + React 19 的 Komari 监控主题，小米 HyperOS 风格 UI，支持卡片/列表双视图、实时数据、延迟监测。
 
 ## 功能
 
@@ -82,7 +82,7 @@ src/
 | 数据获取 | RPC + REST API 回退 |
 | 实时通信 | WebSocket + JSON-RPC2 |
 | 图标 | Lucide React |
-| 字体 | BinanceNova (Geist) + BinancePlex (GeistMono) |
+| 字体 | MiSans + MiSans Mono |
 
 ## 许可证
 

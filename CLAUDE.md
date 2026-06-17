@@ -48,11 +48,12 @@ bun run build:theme  # Build theme ZIP for Komari
 
 ### UI Design
 
-- Binance-style dark-first design (canvas: #0b0e11, accent: #fcd535)
-- Trading semantics: green (#0ecb81) = up/online, red (#f6465d) = down/offline
-- Font stack: BinanceNova (Geist) + BinancePlex (GeistMono)
-- Flat surfaces with hairline borders (#2b3139), no glassmorphism
-- `rounded-xl` for cards, `rounded-md` for buttons/inputs
+- Xiaomi HyperOS style: light-first, orange accent (#ff6a00), clean minimal
+- Status colors: green (#00b578) = online, red (#ff3b30) = offline
+- Font stack: MiSans + MiSans Mono (Xiaomi official font via CDN)
+- Rounded cards (`rounded-2xl`), pill buttons (`rounded-full`), soft shadows
+- Subtle backgrounds: `bg-muted/50` panels, `bg-muted/60` inputs/badges
+- Dark mode: `#1a1a1a` canvas, `#2c2c2c` cards
 - All animations respect `prefers-reduced-motion`
 
 ### Component Patterns

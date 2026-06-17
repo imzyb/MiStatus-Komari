@@ -103,12 +103,10 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
             {Array(4).fill(null).map((_, i) => (
               <div key={i} className="rounded-2xl bg-card shadow-sm p-5">
                 <div className="flex items-center">
-                  <div className="mr-3">
-                    <div className="h-5 w-5 skeleton rounded" />
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-3 w-16 skeleton rounded" />
-                    <div className="h-5 w-24 skeleton rounded" />
+                  <div className="mr-3 h-10 w-10 rounded-2xl skeleton" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-3 w-14 skeleton rounded-full" />
+                    <div className="h-5 w-20 skeleton rounded-full" />
                   </div>
                 </div>
               </div>
