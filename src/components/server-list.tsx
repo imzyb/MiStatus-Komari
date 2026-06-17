@@ -72,11 +72,10 @@ export const ServerList: React.FC<ServerListProps> = React.memo(function ServerL
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 server-grid">
-      {filteredServers.map((server, index) => (
+      {filteredServers.map((server) => (
         <ServerCardItem
           key={server.gid || server.name}
           server={server}
-          index={index}
         />
       ))}
     </div>
@@ -84,14 +83,11 @@ export const ServerList: React.FC<ServerListProps> = React.memo(function ServerL
 });
 ServerList.displayName = "ServerList";
 
-const ServerCardItem: React.FC<{ server: Server; index: number }> = React.memo(
-  function ServerCardItem({ server, index }) {
+const ServerCardItem: React.FC<{ server: Server }> = React.memo(
+  function ServerCardItem({ server }) {
     return (
-      <LazyRender rootMargin="800px 0px" unmountOnExit={true}>
-        <div
-          className="h-full animate-fade-in"
-          style={{ animationDelay: `${Math.min(index, 12) * 50}ms` }}
-        >
+      <LazyRender rootMargin="800px 0px" unmountOnExit={false}>
+        <div className="h-full animate-fade-in">
           <ServerCard server={server} />
         </div>
       </LazyRender>

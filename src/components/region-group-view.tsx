@@ -37,13 +37,10 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
 
           {viewMode === "card" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 server-grid">
-              {servers.map((server, serverIndex) => (
+              {servers.map((server) => (
                 <div
                   key={server.gid}
                   className="animate-fade-in"
-                  style={{
-                    animationDelay: `${Math.min(groupIndex * 100 + serverIndex * 30, 800)}ms`,
-                  }}
                 >
                   <ServerCard server={server} />
                 </div>
