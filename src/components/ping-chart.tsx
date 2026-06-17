@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { Activity } from "lucide-react";
 import { rpcAdapter } from "@/lib/rpc-adapter";
 import type { PingRecordsResult, BasicInfo } from "@/lib/rpc-types";
 
@@ -92,12 +93,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-            加载延迟数据...
+          <div className="flex flex-col items-center justify-center h-40 space-y-3">
+            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
         ) : !result || taskIds.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-            暂无延迟数据
+          <div className="flex flex-col items-center justify-center h-40 space-y-3 text-muted-foreground/50">
+            <Activity className="h-8 w-8" />
+            <span className="text-xs">暂无延迟数据</span>
           </div>
         ) : (
           taskIds.map((taskId) => {

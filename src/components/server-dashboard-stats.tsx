@@ -131,7 +131,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
       </div>
 
       <div className="stats-grid">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             title="服务器"
             value={
