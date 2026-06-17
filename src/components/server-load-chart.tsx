@@ -584,7 +584,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
       </div>
 
       {showTypeSelector && availableLoadTypes.length > 0 ? (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-1 text-xs text-muted-foreground">
           {availableLoadTypes.map((type) => {
             const config = LOAD_TYPE_CONFIG[type];
             const isActive = type === selectedLoadType;
@@ -593,17 +593,15 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
                 key={type}
                 type="button"
                 onClick={() => handleLoadTypeChange(type)}
-                className="group flex items-center gap-1 transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-full"
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-muted/60"
+                }`}
                 aria-label={`查看${config.label}历史`}
               >
-                <span
-                  className={`block h-2.5 w-2.5 rounded-full transition-all ${
-                    isActive
-                      ? `${config.color} scale-125`
-                      : "bg-muted-foreground/40 group-hover:bg-muted-foreground/70"
-                  }`}
-                />
-                <span className="hidden sm:inline">{config.label}</span>
+                <span className={`block h-1.5 w-1.5 rounded-full ${isActive ? config.color : "bg-muted-foreground/30"}`} />
+                <span>{config.label}</span>
               </button>
             );
           })}

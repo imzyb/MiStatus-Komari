@@ -50,7 +50,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className="relative h-full server-card rounded-2xl bg-card shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        className="relative h-full server-card rounded-2xl bg-card shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
         onClick={() => openDetail(server)}
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
