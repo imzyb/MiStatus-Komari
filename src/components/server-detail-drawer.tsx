@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X, MapPin, Clock, Server as ServerIcon } from "lucide-react";
 import { useServerDetail } from "@/contexts/server-detail-context";
 import { PingChart } from "./ping-chart";
@@ -9,6 +9,13 @@ import { formatDurationEnShort } from "@/lib/utils";
 export const ServerDetailDrawer: React.FC = React.memo(
   function ServerDetailDrawer() {
     const { selectedServer, closeDetail } = useServerDetail();
+
+    useEffect(() => {
+      if (!selectedServer) return;
+      const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeDetail(); };
+      window.addEventListener("keydown", handler);
+      return () => window.removeEventListener("keydown", handler);
+    }, [selectedServer, closeDetail]);
 
     if (!selectedServer) return null;
 

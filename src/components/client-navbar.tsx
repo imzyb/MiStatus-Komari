@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { config } from "@/lib/config";
 import { useSiteInfo } from "@/contexts/site-info-context";
+import { useServers } from "@/contexts/servers-context";
 import { ClientThemeToggle } from "@/components/client-theme-toggle";
 
 // 独立的管理后台链接组件
@@ -48,6 +49,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
   fallbackTitle = config.siteTitle,
 }) => {
   const { siteInfo } = useSiteInfo();
+  const { isConnected, reconnectCount } = useServers();
 
   // 使用站点信息中的 sitename，如果没有则使用 fallbackTitle
   const siteTitle = siteInfo?.sitename?.trim() || fallbackTitle;
@@ -61,6 +63,10 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
           </Link>
 
           <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1.5 px-2" title={isConnected ? "已连接" : `未连接${reconnectCount > 0 ? ` (已重连 ${reconnectCount} 次)` : ""}`}>
+              <div className={`h-1.5 w-1.5 rounded-full ${isConnected ? "bg-trading-up" : "bg-trading-down"} transition-colors`} />
+              <span className="text-[10px] text-muted-foreground hidden sm:inline max-sm:hidden">{isConnected ? "实时" : "离线"}</span>
+            </div>
             <ClientThemeToggle />
             <div className="max-sm:hidden"><AdminLink /></div>
           </div>

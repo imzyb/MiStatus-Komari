@@ -53,6 +53,14 @@ export const ClientServerSection: React.FC = () => {
 
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
 
+  const regionCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const g of regionGroups) {
+      counts[g.region] = g.servers.length;
+    }
+    return counts;
+  }, [regionGroups]);
+
   useEffect(() => {
     setViewMode(getStoredViewMode());
     setMounted(true);
@@ -108,6 +116,7 @@ export const ClientServerSection: React.FC = () => {
                   regions={regions}
                   selectedRegion={selectedRegion}
                   onRegionChange={setSelectedRegion}
+                  regionCounts={regionCounts}
                 />
               </Suspense>
             )}

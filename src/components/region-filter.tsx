@@ -71,12 +71,14 @@ interface RegionSelectProps {
   regions: string[];
   selectedRegion: string | null;
   onRegionChange: (region: string | null) => void;
+  regionCounts?: Record<string, number>;
 }
 
 export const RegionSelect: React.FC<RegionSelectProps> = ({
   regions,
   selectedRegion,
   onRegionChange,
+  regionCounts,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -145,6 +147,9 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
           <span className="text-sm font-medium">
             {currentDisplay ? `${currentDisplay.flag} ${currentDisplay.name}` : currentSelection}
           </span>
+          {selectedRegion && regionCounts?.[selectedRegion] !== undefined && (
+            <span className="text-[10px] text-muted-foreground font-mono">{regionCounts[selectedRegion]}</span>
+          )}
         </div>
         <ChevronDown
           className={`h-4 w-4 text-muted-foreground transition-transform ${
@@ -192,9 +197,14 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
               aria-selected={selectedRegion === region}
             >
               <span className="text-sm">{flag ? `${flag} ${name}` : name}</span>
-              {selectedRegion === region && (
-                <Check className="h-4 w-4 text-primary animate-fade-in" />
-              )}
+              <div className="flex items-center gap-1.5">
+                {regionCounts?.[region] !== undefined && (
+                  <span className="text-[10px] text-muted-foreground font-mono">{regionCounts[region]}</span>
+                )}
+                {selectedRegion === region && (
+                  <Check className="h-4 w-4 text-primary animate-fade-in" />
+                )}
+              </div>
             </button>
             );
           })}
