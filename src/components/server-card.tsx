@@ -145,22 +145,19 @@ const ServerCardHeader: React.FC<ServerCardHeaderProps> = React.memo(
   function ServerCardHeader({ server, isOnline }) {
     return (
       <div className="p-4 pb-2 space-y-2">
-        {/* 名称和状态行 */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 min-w-0 max-w-[80%]">
+          <div className="flex items-center gap-2 min-w-0 max-w-[80%]">
             <StatusIndicator isOnline={isOnline} />
-            <h3 className="text-base font-semibold truncate" suppressHydrationWarning>
+            <h3 className="text-sm font-semibold truncate" suppressHydrationWarning>
               {server.alias || server.name}
             </h3>
           </div>
           <StatusBadge isOnline={isOnline} />
         </div>
 
-        {/* 运行时间和标签行 */}
         <div className="flex items-center justify-between">
           <UptimeDisplay uptime={server.uptime} />
-
-          <div className="flex items-center gap-0.5 overflow-hidden">
+          <div className="flex items-center gap-1 overflow-hidden">
             {server.type && <ServerTypeTag label={server.type} />}
             {server.location && <LocationTag label={server.location} />}
           </div>
@@ -202,26 +199,21 @@ UptimeDisplay.displayName = "UptimeDisplay";
 const ServerTypeTag: React.FC<{ label: string }> = React.memo(
   function ServerTypeTag({ label }) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground whitespace-nowrap">
-        <ServerIcon className="h-3 w-3" />
-        <span className="truncate max-w-[6rem]" suppressHydrationWarning>
-          {label}
-        </span>
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-muted/60 text-muted-foreground whitespace-nowrap">
+        <ServerIcon className="h-2.5 w-2.5" />
+        <span className="truncate max-w-[5rem]" suppressHydrationWarning>{label}</span>
       </span>
     );
   }
 );
 ServerTypeTag.displayName = "ServerTypeTag";
 
-// 位置标签
 const LocationTag: React.FC<{ label: string }> = React.memo(
   function LocationTag({ label }) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground whitespace-nowrap">
-        <MapPin className="h-3 w-3" />
-        <span className="truncate max-w-[8rem]" suppressHydrationWarning>
-          {label}
-        </span>
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-muted/60 text-muted-foreground whitespace-nowrap">
+        <MapPin className="h-2.5 w-2.5" />
+        <span className="truncate max-w-[7rem]" suppressHydrationWarning>{label}</span>
       </span>
     );
   }

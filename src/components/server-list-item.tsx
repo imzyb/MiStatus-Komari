@@ -32,7 +32,7 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
     }, [server.uptime]);
 
     return (
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-hairline hover:bg-muted/50 transition-colors text-xs">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-hairline/50 hover:bg-muted/30 transition-colors text-xs">
         <div className="flex items-center gap-2 min-w-0 flex-[3] sm:flex-[2]">
           <StatusIndicator isOnline={isOnline} />
           <span className="font-medium text-foreground truncate" suppressHydrationWarning>
@@ -41,7 +41,7 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
         </div>
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="w-12 sm:w-16 h-1 rounded-full bg-secondary overflow-hidden flex-shrink-0">
+          <div className="w-12 sm:w-16 h-1 rounded-full bg-muted overflow-hidden flex-shrink-0">
             <div
               className={`h-full rounded-full transition-[width] duration-200 ${
                 cpuPercent >= 90 ? "bg-trading-down" : cpuPercent >= 70 ? "bg-accent" : "bg-trading-up"

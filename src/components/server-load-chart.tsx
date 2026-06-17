@@ -459,10 +459,10 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
               key={option.hours}
               type="button"
               onClick={() => handleHoursChange(option.hours)}
-className={`rounded-full border px-2 py-0.5 transition-colors text-xs ${
+className={`rounded-full px-2.5 py-0.5 transition-all duration-200 text-xs ${
                  selectedHours === option.hours
-                   ? "border-primary bg-primary text-primary-foreground"
-                   : "border-border text-muted-foreground hover:text-foreground"
+                   ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
                }`}
             >
               {option.label}
@@ -473,7 +473,7 @@ className={`rounded-full border px-2 py-0.5 transition-colors text-xs ${
 
       <div
         ref={chartRef}
-className={`relative mt-3 flex items-center justify-center overflow-hidden rounded-md bg-secondary ${chartAreaHeightClass} ${
+className={`relative mt-3 flex items-center justify-center overflow-hidden rounded-xl bg-muted/40 ${chartAreaHeightClass} ${
            hasAvailableData ? "cursor-crosshair" : ""
          }`}
         onPointerMove={hasAvailableData ? handlePointerMove : undefined}
@@ -495,7 +495,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
   width="100%"
   height="100%"
   preserveAspectRatio="none"
-  className="text-trading-up"
+  className="text-primary"
   role="img"
   aria-label={`${selectedLabel}历史曲线图`}
 >
@@ -549,7 +549,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
                   transform: "translate(-50%, -120%)",
                 }}
               >
-                <div className="rounded-md border bg-background px-2 py-1 text-[10px]">
+                <div className="rounded-2xl bg-white dark:bg-[#2c2c2c] shadow-md px-2.5 py-1 text-[10px]">
                   <div className="text-[9px] text-muted-foreground">
                     {selectedLabel}
                   </div>

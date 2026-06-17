@@ -26,11 +26,11 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
           style={{ animationDelay: `${groupIndex * 100}ms` }}
         >
           {showRegionHeaders && (
-            <div className="flex items-center gap-2 border-b border-hairline pb-2">
-              <div className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-              <h3 className="text-base font-semibold">{region}</h3>
-              <span className="text-xs text-muted-foreground">
-                {servers.length} 台服务器
+            <div className="flex items-center gap-2 px-1 py-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <h3 className="text-sm font-semibold">{region}</h3>
+              <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded-full bg-muted/60">
+                {servers.length}
               </span>
             </div>
           )}
