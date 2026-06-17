@@ -1,11 +1,12 @@
 "use client";
 
 import { MapPin } from 'lucide-react';
-import { useState, Suspense, lazy } from "react";
+import { useState, Suspense, lazy, useEffect, useMemo } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
+import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
-import { ViewToggle } from "./view-toggle";
-import type { ViewMode } from "./view-toggle";
+import { ViewToggle, type ViewMode } from "./view-toggle";
+import { ServerSearch } from "./server-search";
 
 const ServerList = lazy(() =>
   import("@/components/server-list").then((module) => ({
@@ -23,10 +24,62 @@ const RegionGroupView = lazy(() =>
   }))
 );
 
+const STORAGE_KEY = "mistatus_view_mode";
+
+function getStoredViewMode(): ViewMode {
+  if (typeof window === "undefined") return "card";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored === "list" ? "list" : "card";
+}
+
+function filterServers(servers: Server[], query: string): Server[] {
+  if (!query.trim()) return servers;
+  const q = query.toLowerCase();
+  return servers.filter(
+    (s) =>
+      (s.alias || s.name).toLowerCase().includes(q) ||
+      s.name.toLowerCase().includes(q) ||
+      (s.location || "").toLowerCase().includes(q)
+  );
+}
+
 export const ClientServerSection: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
+
+  useEffect(() => {
+    setViewMode(getStoredViewMode());
+    setMounted(true);
+  }, []);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, mode);
+    }
+  };
+
+  const filteredRegionGroups = useMemo(() => {
+    if (!searchQuery.trim()) return regionGroups;
+    return regionGroups
+      .map((g) => ({
+        ...g,
+        servers: filterServers(g.servers, searchQuery),
+      }))
+      .filter((g) => g.servers.length > 0);
+  }, [regionGroups, searchQuery]);
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
+        <ServerListSkeleton />
+      </div>
+    );
+  }
 
   return (
       <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
@@ -60,22 +113,27 @@ export const ClientServerSection: React.FC = () => {
             )}
           </div>
 
+          <ServerSearch value={searchQuery} onChange={setSearchQuery} />
+
           <div className="ml-auto">
-            <ViewToggle value={viewMode} onChange={setViewMode} />
+            <ViewToggle value={viewMode} onChange={handleViewModeChange} />
           </div>
         </div>
 
         {!isLoading && (
           <div className="animate-fade-in server-grid-container">
-            <Suspense fallback={<ServerListSkeleton />}>
+            <Suspense fallback={<ServerListSkeleton viewMode={viewMode} />}>
               {selectedRegion ? (
                 <RegionGroupView
-                  regionGroups={regionGroups}
+                  regionGroups={filteredRegionGroups}
                   showRegionHeaders={false}
                   viewMode={viewMode}
                 />
               ) : (
-                <ServerList viewMode={viewMode} />
+                <ServerList
+                  viewMode={viewMode}
+                  searchQuery={searchQuery}
+                />
               )}
             </Suspense>
           </div>
