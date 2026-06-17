@@ -20,7 +20,7 @@ interface ServerListItemProps {
 
 function ProgressBar({ percent }: { percent: number }) {
   return (
-    <div className="w-10 sm:w-14 h-1 rounded-full bg-muted overflow-hidden flex-shrink-0">
+    <div className="w-10 sm:w-12 h-1 rounded-full bg-muted overflow-hidden flex-shrink-0">
       <div
         className={`h-full rounded-full transition-[width] duration-300 ${
           percent >= 90 ? "bg-trading-down" : percent >= 70 ? "bg-accent" : "bg-trading-up"
@@ -48,43 +48,45 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
 
     return (
       <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-hairline/50 hover:bg-muted/40 dark:hover:bg-muted/20 active:bg-muted/50 transition-colors text-xs cursor-pointer"
+        className="flex items-center gap-2 px-4 py-3 rounded-xl bg-card shadow-sm hover:shadow-md active:scale-[0.99] transition-all duration-200 cursor-pointer text-xs"
         onClick={() => openDetail(server)}
       >
-        <div className="flex items-center gap-2 min-w-0 flex-[3] sm:flex-[2]">
+        <div className="flex items-center gap-2 min-w-0 w-[35%] sm:w-[25%]">
           <StatusIndicator isOnline={isOnline} />
           <span className="font-medium text-foreground truncate text-[11px]" suppressHydrationWarning>
             {server.alias || server.name}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 w-[20%] sm:w-[15%]">
           <ProgressBar percent={cpuPercent} />
           <span className="font-mono text-muted-foreground w-7 text-right flex-shrink-0 text-[11px] hidden sm:block">{cpuPercent}%</span>
         </div>
 
-        <div className="hidden md:flex items-center gap-1.5 flex-1 min-w-0">
+        <div className="hidden md:flex items-center gap-1.5 min-w-0 w-[15%]">
           <ProgressBar percent={memPercent} />
           <span className="font-mono text-muted-foreground w-7 text-right flex-shrink-0 text-[11px]">{memPercent}%</span>
         </div>
 
-        <div className="hidden lg:flex items-center gap-1.5 flex-1 min-w-0">
+        <div className="hidden lg:flex items-center gap-1.5 min-w-0 w-[15%]">
           <ProgressBar percent={diskPercent} />
           <span className="font-mono text-muted-foreground w-7 text-right flex-shrink-0 text-[11px]">{diskPercent}%</span>
         </div>
 
-        <div className="hidden xl:block flex-1 min-w-0">
+        <div className="hidden xl:block min-w-0 w-[15%]">
           <span className="font-mono text-muted-foreground text-[11px]" suppressHydrationWarning>
             {server.network_rx ? formatBytes(server.network_rx) + "/s" : "—"}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="hidden sm:flex items-center gap-0.5 text-muted-foreground text-[11px]">
+        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+          <div className="hidden sm:flex items-center gap-0.5 text-muted-foreground text-[11px] w-[56px] justify-end">
             <Clock className="h-3 w-3" />
             <span suppressHydrationWarning>{uptime}</span>
           </div>
-          <StatusBadge isOnline={isOnline} />
+          <div className="w-[40px] flex justify-end">
+            <StatusBadge isOnline={isOnline} />
+          </div>
         </div>
       </div>
     );
