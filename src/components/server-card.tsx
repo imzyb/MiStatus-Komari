@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils";
 import { ServerMetric } from "./server-metric";
 import { Clock, MapPin, Server as ServerIcon } from "lucide-react";
+import { useServerDetail } from "@/contexts/server-detail-context";
 
 // 导入拆分后的组件
 import {
@@ -17,7 +18,6 @@ import {
   StatusBadge,
   RealTimeNetworkPanel,
   TotalTrafficPanel,
-  LatencyPanel,
 } from "./server";
 
 interface ServerCardProps {
@@ -27,6 +27,7 @@ interface ServerCardProps {
 export const ServerCard: React.FC<ServerCardProps> = React.memo(
     function ServerCard({ server }) {
     const isOnline = server.online;
+    const { openDetail } = useServerDetail();
 
     const cpuFormatter = React.useMemo(
       () => createCpuFormatter("zh-CN", 1),
@@ -49,7 +50,8 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className="relative h-full server-card rounded-xl border bg-card text-card-foreground hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+        className="relative h-full server-card rounded-xl border bg-card text-card-foreground hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 cursor-pointer"
+        onClick={() => openDetail(server)}
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 
@@ -84,7 +86,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           />
 
           {/* 网络面板 */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 mt-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 mt-auto">
             <RealTimeNetworkPanel
               downloadSpeed={server.network_rx}
               uploadSpeed={server.network_tx}
@@ -93,12 +95,6 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
             <TotalTrafficPanel
               totalDownload={server.network_in}
               totalUpload={server.network_out}
-            />
-
-            <LatencyPanel
-              ping10010={server.ping_10010}
-              ping189={server.ping_189}
-              ping10086={server.ping_10086}
             />
           </div>
         </div>

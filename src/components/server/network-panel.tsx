@@ -5,7 +5,44 @@ import { Wifi, HardDrive } from "lucide-react";
 import { formatBytes, formatSpeed } from "@/lib/utils";
 import { TrafficArrow } from "@/components/shared/traffic-arrow";
 
-// 实时网络面板
+interface PanelHeaderProps {
+  icon: React.ReactNode;
+  label: string;
+}
+
+const PanelHeader: React.FC<PanelHeaderProps> = React.memo(
+  function PanelHeader({ icon, label }) {
+    return (
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="text-xs font-medium">{label}</span>
+      </div>
+    );
+  }
+);
+PanelHeader.displayName = "PanelHeader";
+
+interface PanelRowProps {
+  arrow: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+const PanelRow: React.FC<PanelRowProps> = React.memo(
+  function PanelRow({ arrow, label, value }) {
+    return (
+      <div className="flex items-center text-xs leading-5">
+        <span className="flex-shrink-0 text-muted-foreground">{arrow}</span>
+        <span className="font-medium ml-1 w-6 flex-shrink-0">{label}</span>
+        <span className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto" suppressHydrationWarning>
+          {value}
+        </span>
+      </div>
+    );
+  }
+);
+PanelRow.displayName = "PanelRow";
+
 interface RealTimeNetworkPanelProps {
   downloadSpeed: number;
   uploadSpeed: number;
@@ -13,57 +50,30 @@ interface RealTimeNetworkPanelProps {
 
 export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
   React.memo(function RealTimeNetworkPanel({ downloadSpeed, uploadSpeed }) {
-    // 缓存格式化结果
     const formattedDownload = React.useMemo(
-      () => formatSpeed(downloadSpeed, 1),
-      [downloadSpeed]
+      () => formatSpeed(downloadSpeed, 1), [downloadSpeed]
     );
     const formattedUpload = React.useMemo(
-      () => formatSpeed(uploadSpeed, 1),
-      [uploadSpeed]
+      () => formatSpeed(uploadSpeed, 1), [uploadSpeed]
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-colors duration-200 hover:bg-secondary/80">
-        <div className="flex items-center space-x-1.5 mb-1.5">
-          <Wifi className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium">实时网络</span>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center min-h-[18px] text-xs">
-            <TrafficArrow
-              direction="down"
-              className="text-sm flex-shrink-0 text-muted-foreground"
-            />
-            <span className="font-medium ml-1 w-6 flex-shrink-0">下载</span>
-            <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
-              suppressHydrationWarning
-            >
-              {formattedDownload}
-            </span>
-          </div>
-
-          <div className="flex items-center min-h-[18px] text-xs">
-            <TrafficArrow
-              direction="up"
-              className="text-sm flex-shrink-0 text-muted-foreground"
-            />
-            <span className="font-medium ml-1 w-6 flex-shrink-0">上传</span>
-            <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
-              suppressHydrationWarning
-            >
-              {formattedUpload}
-            </span>
-          </div>
+      <div className="p-2.5 rounded-xl bg-secondary flex flex-col h-full">
+        <PanelHeader icon={<Wifi className="h-3.5 w-3.5" />} label="实时网络" />
+        <div className="flex-1 flex flex-col justify-center space-y-1">
+          <PanelRow
+            arrow={<TrafficArrow direction="down" className="text-sm" />}
+            label="下载" value={formattedDownload}
+          />
+          <PanelRow
+            arrow={<TrafficArrow direction="up" className="text-sm" />}
+            label="上传" value={formattedUpload}
+          />
         </div>
       </div>
     );
   });
 
-// 总流量面板
 interface TotalTrafficPanelProps {
   totalDownload: number;
   totalUpload: number;
@@ -71,51 +81,25 @@ interface TotalTrafficPanelProps {
 
 export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
   function TotalTrafficPanel({ totalDownload, totalUpload }) {
-    // 缓存格式化结果
     const formattedDownload = React.useMemo(
-      () => formatBytes(totalDownload, 1),
-      [totalDownload]
+      () => formatBytes(totalDownload, 1), [totalDownload]
     );
     const formattedUpload = React.useMemo(
-      () => formatBytes(totalUpload, 1),
-      [totalUpload]
+      () => formatBytes(totalUpload, 1), [totalUpload]
     );
 
     return (
-      <div className="p-2.5 rounded-xl bg-secondary h-full transition-colors duration-200 hover:bg-secondary/80">
-        <div className="flex items-center space-x-1.5 mb-1.5">
-          <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium">总流量</span>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center min-h-[18px] text-xs">
-            <TrafficArrow
-              direction="down"
-              className="text-sm flex-shrink-0 text-muted-foreground"
-            />
-            <span className="font-medium ml-1 w-6 flex-shrink-0">接收</span>
-            <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
-              suppressHydrationWarning
-            >
-              {formattedDownload}
-            </span>
-          </div>
-
-          <div className="flex items-center min-h-[18px] text-xs">
-            <TrafficArrow
-              direction="up"
-              className="text-sm flex-shrink-0 text-muted-foreground"
-            />
-            <span className="font-medium ml-1 w-6 flex-shrink-0">发送</span>
-            <span
-              className="font-medium text-muted-foreground font-mono whitespace-nowrap ml-auto"
-              suppressHydrationWarning
-            >
-              {formattedUpload}
-            </span>
-          </div>
+      <div className="p-2.5 rounded-xl bg-secondary flex flex-col h-full">
+        <PanelHeader icon={<HardDrive className="h-3.5 w-3.5" />} label="总流量" />
+        <div className="flex-1 flex flex-col justify-center space-y-1">
+          <PanelRow
+            arrow={<TrafficArrow direction="down" className="text-sm" />}
+            label="接收" value={formattedDownload}
+          />
+          <PanelRow
+            arrow={<TrafficArrow direction="up" className="text-sm" />}
+            label="发送" value={formattedUpload}
+          />
         </div>
       </div>
     );

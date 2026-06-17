@@ -7,6 +7,8 @@ import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
 import { ViewToggle, type ViewMode } from "./view-toggle";
 import { ServerSearch } from "./server-search";
+import { ServerDetailProvider } from "@/contexts/server-detail-context";
+import { ServerDetailDrawer } from "./server-detail-drawer";
 
 const ServerList = lazy(() =>
   import("@/components/server-list").then((module) => ({
@@ -75,13 +77,17 @@ export const ClientServerSection: React.FC = () => {
 
   if (!mounted) {
     return (
-      <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
-        <ServerListSkeleton />
-      </div>
+      <ServerDetailProvider>
+        <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
+          <ServerListSkeleton />
+        </div>
+        <ServerDetailDrawer />
+      </ServerDetailProvider>
     );
   }
 
   return (
+    <ServerDetailProvider>
       <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
         <div className="flex items-center gap-4 min-h-[40px]">
           <h2
@@ -141,5 +147,7 @@ export const ClientServerSection: React.FC = () => {
 
         {isLoading && <ServerListSkeleton />}
       </div>
+      <ServerDetailDrawer />
+    </ServerDetailProvider>
   );
 };
