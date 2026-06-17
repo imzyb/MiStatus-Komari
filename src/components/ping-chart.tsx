@@ -10,7 +10,7 @@ interface PingChartProps {
 }
 
 const CHART_W = 600;
-const CHART_H = 160;
+const CHART_H = 180;
 
 const TIME_RANGES = [
   { hours: 1, label: "1H" },
@@ -19,16 +19,10 @@ const TIME_RANGES = [
   { hours: 24, label: "24H" },
 ] as const;
 
-const TASK_LABELS: Record<number, string> = {
-  1: "联通",
-  2: "电信",
-  3: "移动",
-};
-
-const TASK_COLORS: Record<number, string> = {
-  1: "#00b578",
-  2: "#ff6a00",
-  3: "#ff3b30",
+const TASK_CONFIG: Record<number, { label: string; color: string }> = {
+  1: { label: "联通", color: "#00b578" },
+  2: { label: "电信", color: "#ff6a00" },
+  3: { label: "移动", color: "#ff3b30" },
 };
 
 const MAX_PING_DISPLAY = 500;
@@ -48,9 +42,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       setLoading(false);
     }, [serverId]);
 
-    useEffect(() => {
-      fetch(hours);
-    }, [fetch, hours]);
+    useEffect(() => { fetch(hours); }, [fetch, hours]);
 
     const grouped = useMemo(() => {
       if (!result?.records) return {};
@@ -65,16 +57,31 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const basicInfoMap = useMemo(() => {
       if (!result?.basic_info) return {};
       const map: Record<number, BasicInfo> = {};
-      for (const b of result.basic_info) {
-        map[b.client as unknown as number] = b;
-      }
+      for (const b of result.basic_info) map[b.client as unknown as number] = b;
       return map;
     }, [result]);
 
     const taskIds = Object.keys(grouped).map(Number).sort();
+    const hasData = !loading && result && taskIds.length > 0;
+
+    const allClamped = useMemo(() => {
+      const m: Record<number, { v: number }[]> = {};
+      for (const id of taskIds) {
+        m[id] = grouped[id].map((p) => ({ v: Math.min(p.value, MAX_PING_DISPLAY) }));
+      }
+      return m;
+    }, [taskIds, grouped]);
+
+    const globalMax = useMemo(() => {
+      let mx = 10;
+      for (const pts of Object.values(allClamped)) {
+        for (const p of pts) mx = Math.max(mx, p.v);
+      }
+      return mx;
+    }, [allClamped]);
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-center gap-1">
           {TIME_RANGES.map((r) => (
             <button
@@ -97,78 +104,81 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
-        ) : !result || taskIds.length === 0 ? (
+        ) : !hasData ? (
           <div className="flex flex-col items-center justify-center h-40 space-y-3 text-muted-foreground/50">
             <Activity className="h-8 w-8" />
             <span className="text-xs">暂无延迟数据</span>
           </div>
         ) : (
-          taskIds.map((taskId) => {
-            const points = grouped[taskId];
-            const info = basicInfoMap[taskId];
-            const label = TASK_LABELS[taskId] || `任务 ${taskId}`;
-            const color = TASK_COLORS[taskId] || "#888";
-            const clamped = points.map((p) => ({ ...p, v: Math.min(p.value, MAX_PING_DISPLAY) }));
-            const maxV = Math.max(...clamped.map((p) => p.v), 10);
-
-            return (
-              <div key={taskId}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-                    <span className="text-sm font-medium">{label}</span>
+          <>
+            {/* 图例 */}
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {taskIds.map((id) => {
+                const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
+                const info = basicInfoMap[id];
+                return (
+                  <div key={id} className="flex items-center gap-1.5 text-[11px]">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cfg.color }} />
+                    <span className="font-medium text-foreground/80">{cfg.label}</span>
+                    {info && (
+                      <span className="text-muted-foreground font-mono">
+                        {info.min.toFixed(0)}/{info.max.toFixed(0)}ms
+                        {info.loss > 0 && <span className="text-trading-down ml-0.5">丢{info.loss.toFixed(1)}%</span>}
+                      </span>
+                    )}
                   </div>
-                  {info && (
-                    <div className="text-xs text-muted-foreground font-mono flex gap-3">
-                      {info.min !== undefined && <span>最小: {info.min.toFixed(0)}ms</span>}
-                      {info.max !== undefined && <span>最大: {info.max.toFixed(0)}ms</span>}
-                      {info.loss !== undefined && <span className={info.loss > 0 ? "text-trading-down" : ""}>丢包: {info.loss.toFixed(1)}%</span>}
-                    </div>
-                  )}
-                </div>
-                <svg
-                  viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-                  width="100%"
-                  height="100%"
-                  preserveAspectRatio="none"
-                  className="w-full h-24"
-                  role="img"
-                  aria-label={`${label}延迟折线图`}
-                >
-                  <defs>
-                    <linearGradient id={`pgrad-${taskId}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={color} stopOpacity="0.15" />
-                      <stop offset="100%" stopColor={color} stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  {clamped.length > 1 && (
-                    <>
-                      <polyline
-                        fill={`url(#pgrad-${taskId})`}
-                        points={clamped.map((p, i) => {
-                          const x = (i / (clamped.length - 1)) * CHART_W;
-                          const y = ((maxV - p.v) / maxV) * CHART_H;
-                          return `${x},${y}`;
-                        }).join(" ")}
-                      />
-                      <polyline
-                        fill="none"
-                        stroke={color}
-                        strokeWidth="1.5"
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        points={clamped.map((p, i) => {
-                          const x = (i / (clamped.length - 1)) * CHART_W;
-                          const y = ((maxV - p.v) / maxV) * CHART_H;
-                          return `${x},${y}`;
-                        }).join(" ")}
-                      />
-                    </>
-                  )}
-                </svg>
-              </div>
-            );
-          })
+                );
+              })}
+            </div>
+
+            {/* 合并曲线图 */}
+            <svg
+              viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+              width="100%"
+              height="100%"
+              preserveAspectRatio="none"
+              className="w-full h-28"
+              role="img"
+              aria-label="延迟监测合并曲线图"
+            >
+              {taskIds.map((id) => {
+                const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+                const pts = allClamped[id];
+                if (!pts || pts.length < 2) return null;
+                const polyline = pts
+                  .map((p, i) => {
+                    const x = (i / Math.max(pts.length - 1, 1)) * CHART_W;
+                    const y = ((globalMax - p.v) / globalMax) * CHART_H;
+                    return `${x},${y}`;
+                  })
+                  .join(" ");
+                return (
+                  <polyline
+                    key={id}
+                    fill="none"
+                    stroke={cfg.color}
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    points={polyline}
+                    opacity="0.85"
+                  />
+                );
+              })}
+              {/* Grid lines */}
+              {[0, 25, 50, 75, 100].map((pct) => (
+                <line
+                  key={pct}
+                  x1="0" x2={CHART_W}
+                  y1={(pct / 100) * CHART_H}
+                  y2={(pct / 100) * CHART_H}
+                  stroke="currentColor"
+                  strokeOpacity="0.06"
+                  strokeWidth="1"
+                />
+              ))}
+            </svg>
+          </>
         )}
       </div>
     );

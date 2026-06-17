@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface ServerSearchProps {
   value: string;
@@ -32,11 +32,22 @@ export const ServerSearch: React.FC<ServerSearchProps> = React.memo(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="搜索服务器..."
-          className="h-9 w-40 sm:w-56 rounded-full bg-muted/60 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white dark:focus:bg-[#2c2c2c] transition-colors"
+          className="h-9 w-40 sm:w-56 rounded-full bg-muted/60 pl-8 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white dark:focus:bg-[#2c2c2c] transition-colors"
         />
-        <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center justify-center h-4 px-1 rounded border border-border text-[10px] text-muted-foreground font-mono pointer-events-none">
-          /
-        </kbd>
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="清除搜索"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        ) : (
+          <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center justify-center h-4 px-1 rounded border border-border text-[10px] text-muted-foreground font-mono pointer-events-none">
+            /
+          </kbd>
+        )}
       </div>
     );
   }

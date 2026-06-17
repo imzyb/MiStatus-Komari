@@ -90,7 +90,7 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
               : `${formattedValue}${unit} / ${formattedTotal}${unit}`}
           </span>
         </div>
-        <div className="relative h-1 w-full overflow-hidden rounded-full bg-secondary">
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
           <div
             className={`absolute left-0 top-0 h-full ${colorTheme.bar} rounded-full transition-[width] duration-200 ease-out`}
             style={progressStyle}

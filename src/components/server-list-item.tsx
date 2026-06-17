@@ -20,7 +20,7 @@ interface ServerListItemProps {
 
 function ProgressBar({ percent }: { percent: number }) {
   return (
-    <div className="w-10 sm:w-12 h-1 rounded-full bg-muted overflow-hidden flex-shrink-0">
+    <div className="w-10 sm:w-12 h-1.5 rounded-full bg-muted overflow-hidden flex-shrink-0">
       <div
         className={`h-full rounded-full transition-[width] duration-300 ${
           percent >= 90 ? "bg-trading-down" : percent >= 70 ? "bg-accent" : "bg-trading-up"

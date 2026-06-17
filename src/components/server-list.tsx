@@ -4,7 +4,6 @@ import React, { lazy, Suspense, useMemo } from "react";
 import { useServers } from "@/contexts/servers-context";
 import { ServerCard } from "./server-card";
 import { ServerListView } from "./server-list-view";
-import { LazyRender } from "./lazy-render";
 import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
 import type { ViewMode } from "./view-toggle";
@@ -86,11 +85,9 @@ ServerList.displayName = "ServerList";
 const ServerCardItem: React.FC<{ server: Server }> = React.memo(
   function ServerCardItem({ server }) {
     return (
-      <LazyRender rootMargin="800px 0px" unmountOnExit={false}>
-        <div className="h-full animate-fade-in">
-          <ServerCard server={server} />
-        </div>
-      </LazyRender>
+      <div className="h-full">
+        <ServerCard server={server} />
+      </div>
     );
   }
 );
