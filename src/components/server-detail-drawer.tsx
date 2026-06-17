@@ -32,7 +32,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
     const diskP = formatPercent(s.hdd_used, s.hdd_total);
 
     return (
-      <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={closeDetail} />
         <div className="relative w-full max-w-2xl sm:max-w-lg md:max-w-2xl bg-white dark:bg-[#2c2c2c] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[90vh] sm:max-h-[85vh] overflow-y-auto mx-0 sm:mx-0">
           <div className="sticky top-0 bg-white/90 dark:bg-[#2c2c2c]/90 backdrop-blur-xl border-b border-hairline/50 px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between z-10 rounded-t-3xl">

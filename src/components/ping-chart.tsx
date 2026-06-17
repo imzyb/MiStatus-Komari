@@ -11,6 +11,12 @@ interface PingChartProps {
 
 const CHART_W = 600;
 const CHART_H = 160;
+const PAD_L = 35;
+const PAD_R = 10;
+const PAD_T = 18;
+const PAD_B = 22;
+const PLOT_W = CHART_W - PAD_L - PAD_R;
+const PLOT_H = CHART_H - PAD_T - PAD_B;
 const BAR_GAP = 2;
 
 const TIME_RANGES = [
@@ -27,6 +33,17 @@ const TASK_CONFIG: Record<number, { label: string; color: string }> = {
 };
 
 const MAX_PING_DISPLAY = 500;
+
+function formatTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const h = d.getHours().toString().padStart(2, "0");
+    const m = d.getMinutes().toString().padStart(2, "0");
+    return `${h}:${m}`;
+  } catch {
+    return "";
+  }
+}
 
 export const PingChart: React.FC<PingChartProps> = React.memo(
   function PingChart({ serverId }) {
@@ -79,11 +96,35 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     const barW = useMemo(() => {
       if (maxPoints <= 0 || taskIds.length <= 0) return 4;
-      const totalW = CHART_W;
-      const groupW = totalW / Math.max(maxPoints, 1);
-      const barW = Math.max((groupW - BAR_GAP * (taskIds.length - 1)) / taskIds.length, 2);
-      return Math.min(barW, 12);
+      const groupW = PLOT_W / Math.max(maxPoints, 1);
+      const w = Math.max((groupW - BAR_GAP * (taskIds.length - 1)) / taskIds.length, 2);
+      return Math.min(w, 12);
     }, [maxPoints, taskIds]);
+
+    const yTicks = useMemo(() => {
+      const step = globalMax <= 50 ? 10 : globalMax <= 200 ? 50 : 100;
+      const ticks: number[] = [];
+      for (let v = 0; v <= globalMax; v += step) ticks.push(v);
+      return ticks;
+    }, [globalMax]);
+
+    const timeLabels = useMemo(() => {
+      if (taskIds.length === 0 || maxPoints === 0) return [];
+      const firstId = taskIds[0];
+      const pts = grouped[firstId];
+      if (!pts) return [];
+      const labels: { x: number; label: string }[] = [];
+      const groupW = PLOT_W / Math.max(maxPoints, 1);
+      const maxLabels = Math.min(pts.length, 8);
+      const step = Math.max(Math.floor(pts.length / maxLabels), 1);
+      for (let i = 0; i < pts.length; i += step) {
+        labels.push({ x: PAD_L + i * groupW + groupW / 2, label: formatTime(pts[i].time) });
+      }
+      if (pts.length > 1 && (pts.length - 1) % step !== 0) {
+        labels.push({ x: PAD_L + (pts.length - 1) * groupW + groupW / 2, label: formatTime(pts[pts.length - 1].time) });
+      }
+      return labels;
+    }, [taskIds, grouped, maxPoints]);
 
     return (
       <div className="space-y-3">
@@ -116,7 +157,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           </div>
         ) : (
           <>
-            {/* 图例 */}
             <div className="flex flex-wrap items-center justify-center gap-4">
               {taskIds.map((id) => {
                 const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
@@ -136,53 +176,91 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               })}
             </div>
 
-            {/* 直方图 */}
             <svg
               viewBox={`0 0 ${CHART_W} ${CHART_H}`}
               width="100%"
-              height="100%"
-              preserveAspectRatio="none"
-              className="w-full h-32"
+              className="w-full h-40"
               role="img"
               aria-label="延迟监测直方图"
             >
-              {/* 网格线 */}
-              {[0, 25, 50, 75, 100].map((pct) => (
-                <line
-                  key={pct}
-                  x1="0" x2={CHART_W}
-                  y1={(pct / 100) * CHART_H}
-                  y2={(pct / 100) * CHART_H}
-                  stroke="currentColor"
-                  strokeOpacity="0.05"
-                  strokeWidth="1"
-                />
-              ))}
-              {/* 柱状图 */}
+              {yTicks.map((v) => {
+                const y = PAD_T + PLOT_H - (v / globalMax) * PLOT_H;
+                return (
+                  <g key={v}>
+                    <line
+                      x1={PAD_L} x2={CHART_W - PAD_R}
+                      y1={y} y2={y}
+                      stroke="currentColor"
+                      strokeOpacity="0.06"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={PAD_L - 4}
+                      y={y + 3}
+                      textAnchor="end"
+                      fill="currentColor"
+                      opacity="0.35"
+                      fontSize="9"
+                      fontFamily="monospace"
+                    >
+                      {v}
+                    </text>
+                  </g>
+                );
+              })}
+
               {taskIds.map((id, tIdx) => {
                 const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
                 const pts = grouped[id];
                 if (!pts || pts.length === 0) return null;
-                const groupW = CHART_W / Math.max(maxPoints, 1);
+                const groupW = PLOT_W / Math.max(maxPoints, 1);
                 return pts.map((p, i) => {
                   const v = Math.min(p.value, MAX_PING_DISPLAY);
-                  const barH = Math.max((v / globalMax) * CHART_H, 1);
-                  const x = i * groupW + tIdx * (barW + BAR_GAP);
-                  const y = CHART_H - barH;
+                  const barH = Math.max((v / globalMax) * PLOT_H, 1);
+                  const x = PAD_L + i * groupW + tIdx * (barW + BAR_GAP);
+                  const y = PAD_T + PLOT_H - barH;
+                  const showVal = barW >= 5 && (i % Math.max(Math.floor(pts.length / 6), 1) === 0);
                   return (
-                    <rect
-                      key={`${id}-${i}`}
-                      x={x}
-                      y={y}
-                      width={barW}
-                      height={barH}
-                      fill={cfg.color}
-                      opacity="0.75"
-                      rx="1"
-                    />
+                    <g key={`${id}-${i}`}>
+                      <rect
+                        x={x} y={y}
+                        width={barW} height={barH}
+                        fill={cfg.color}
+                        opacity="0.8"
+                        rx="1"
+                      />
+                      {showVal && (
+                        <text
+                          x={x + barW / 2}
+                          y={y - 3}
+                          textAnchor="middle"
+                          fill={cfg.color}
+                          fontSize="8"
+                          fontFamily="monospace"
+                          opacity="0.8"
+                        >
+                          {p.value.toFixed(0)}
+                        </text>
+                      )}
+                    </g>
                   );
                 });
               })}
+
+              {timeLabels.map((t, i) => (
+                <text
+                  key={i}
+                  x={t.x}
+                  y={CHART_H - 4}
+                  textAnchor="middle"
+                  fill="currentColor"
+                  opacity="0.35"
+                  fontSize="8"
+                  fontFamily="monospace"
+                >
+                  {t.label}
+                </text>
+              ))}
             </svg>
           </>
         )}
