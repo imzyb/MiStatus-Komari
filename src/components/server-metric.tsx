@@ -68,7 +68,7 @@ export const ServerMetric: React.FC<ServerMetricProps> = React.memo(
     );
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium">{label}</span>

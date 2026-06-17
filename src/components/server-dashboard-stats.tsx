@@ -99,9 +99,9 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
           <div className="h-5 w-24 skeleton rounded-sm" />
         </div>
         <div className="stats-grid">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {Array(4).fill(null).map((_, i) => (
-              <div key={i} className="rounded-2xl bg-card shadow-sm p-5">
+              <div key={i} className="rounded-2xl bg-card shadow-sm p-4">
                 <div className="flex items-center">
                   <div className="mr-3 h-10 w-10 rounded-2xl skeleton" />
                   <div className="space-y-1.5 flex-1">

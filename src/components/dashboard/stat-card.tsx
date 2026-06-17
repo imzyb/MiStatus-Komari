@@ -20,7 +20,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <Card className={cn("relative overflow-hidden shadow-sm", className)}>
       <div className="relative z-10">
-        <CardContent className="flex items-center p-5">
+        <CardContent className="flex items-center p-4">
           <div className="mr-3 flex items-center justify-center h-10 w-10 rounded-2xl bg-primary/10 text-primary">
             {icon}
           </div>

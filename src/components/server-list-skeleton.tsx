@@ -54,7 +54,7 @@ export const ServerListSkeleton: React.FC<ServerListSkeletonProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 server-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 server-grid">
       {Array(8)
         .fill(null)
         .map((_, index) => (

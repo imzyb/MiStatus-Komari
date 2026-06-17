@@ -18,11 +18,11 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
   viewMode = "card",
 }) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {regionGroups.map(({ region, servers }, groupIndex) => (
         <div
           key={region}
-          className="space-y-4 animate-slide-up"
+          className="space-y-3 animate-slide-up"
           style={{ animationDelay: `${groupIndex * 100}ms` }}
         >
           {showRegionHeaders && (
@@ -36,7 +36,7 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
           )}
 
           {viewMode === "card" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 server-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 server-grid">
               {servers.map((server, serverIndex) => (
                 <div
                   key={server.gid}

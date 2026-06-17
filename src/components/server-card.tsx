@@ -55,7 +55,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 
-        <div className="p-4 pt-0 space-y-3 flex-grow flex flex-col">
+        <div className="p-3.5 pt-0 space-y-2.5 flex-grow flex flex-col">
           <ServerMetric
             label="CPU"
             value={server.cpu}
@@ -86,7 +86,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           />
 
           {/* 网络面板 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 mt-auto">
+          <div className="grid grid-cols-2 gap-2 pt-1 mt-auto">
             <RealTimeNetworkPanel
               downloadSpeed={server.network_rx}
               uploadSpeed={server.network_tx}
@@ -144,7 +144,7 @@ interface ServerCardHeaderProps {
 const ServerCardHeader: React.FC<ServerCardHeaderProps> = React.memo(
   function ServerCardHeader({ server, isOnline }) {
     return (
-      <div className="p-4 pb-2 space-y-2">
+      <div className="p-3.5 pb-1.5 space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0 max-w-[80%]">
             <StatusIndicator isOnline={isOnline} />

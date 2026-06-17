@@ -103,8 +103,8 @@ export const ClientServerSection: React.FC = () => {
 
   return (
     <ServerDetailProvider>
-      <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
-        <div className="flex items-center gap-4 min-h-[40px]">
+      <div className="space-y-4 min-h-[300px] md:min-h-[600px]">
+        <div className="flex items-center gap-3 min-h-[36px]">
           <h2
             className="text-xl font-bold tracking-tight"
             suppressHydrationWarning
