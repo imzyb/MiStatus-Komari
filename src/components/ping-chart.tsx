@@ -9,12 +9,12 @@ interface PingChartProps {
   serverId: string;
 }
 
-const CHART_W = 560;
-const CHART_H = 240;
+const CHART_W = 600;
+const CHART_H = 280;
 const PAD_L = 28;
 const PAD_R = 8;
-const PAD_T = 16;
-const PAD_B = 20;
+const PAD_T = 14;
+const PAD_B = 18;
 const PLOT_W = CHART_W - PAD_L - PAD_R;
 const PLOT_H = CHART_H - PAD_T - PAD_B;
 
@@ -193,12 +193,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-60 space-y-3">
+          <div className="flex flex-col items-center justify-center h-72 space-y-3">
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
           </div>
         ) : !hasData ? (
-          <div className="flex flex-col items-center justify-center h-60 space-y-3 text-muted-foreground/50">
+          <div className="flex flex-col items-center justify-center h-72 space-y-3 text-muted-foreground/50">
             <Activity className="h-8 w-8" />
             <span className="text-xs">暂无延迟数据</span>
           </div>
@@ -207,7 +207,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             ref={svgRef}
             viewBox={`0 0 ${CHART_W} ${CHART_H}`}
             width="100%"
-            className="w-full h-60"
+            className="w-full h-72"
             role="img"
             aria-label="延迟监测曲线图"
             onMouseMove={handleMouseMove}

@@ -59,7 +59,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
             </button>
           </div>
 
-          <div className="p-6 sm:p-8 space-y-6">
+          <div className="p-5 sm:p-6 space-y-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-2xl bg-card border border-hairline/70 p-2.5 sm:p-3 space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -107,8 +107,10 @@ export const ServerDetailDrawer: React.FC = React.memo(
               </div>
             </div>
 
-            <div className="border-t border-hairline/50 pt-3 sm:pt-4">
-              <h3 className="text-xs font-semibold mb-3 text-foreground/80">延迟监测</h3>
+            <div className="pt-3 sm:pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold text-foreground/80">延迟监测</h3>
+              </div>
               <PingChart serverId={s.gid} />
             </div>
 
