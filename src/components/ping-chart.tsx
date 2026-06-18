@@ -300,10 +300,15 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             width="100%"
             className="w-full h-72"
             role="img"
-            aria-label="延迟监测阶梯图"
+            aria-label="延迟监测曲线图"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
+            <defs>
+              <clipPath id="chartArea">
+                <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} />
+              </clipPath>
+            </defs>
             {Y_TICKS.map((v) => {
               const y = toY(v);
               return (
@@ -320,6 +325,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               <text key={i} x={toX(t.i, sampledLen)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
+            <g clipPath="url(#chartArea)">
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
               const pathD = buildSmoothPath(id);
@@ -342,6 +348,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 </g>
               );
             })}
+            </g>
 
             {hoverIdx !== null && hoverItems && (
               <>
