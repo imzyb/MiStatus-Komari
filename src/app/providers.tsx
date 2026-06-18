@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { SiteInfoProvider, type SiteInfo } from "@/contexts/site-info-context";
 import { RpcConfigProvider } from "@/contexts/rpc-config-context";
 import { ServersProvider } from "@/contexts/servers-context";
+import { ThemeSettingsProvider } from "@/contexts/theme-settings-context";
 
 export function Providers({
   children,
@@ -30,7 +31,9 @@ export function Providers({
     >
       <RpcConfigProvider>
         <SiteInfoProvider initialData={initialSiteInfo}>
-          <ServersProvider>{children}</ServersProvider>
+          <ServersProvider>
+            <ThemeSettingsProvider>{children}</ThemeSettingsProvider>
+          </ServersProvider>
         </SiteInfoProvider>
       </RpcConfigProvider>
     </ThemeProvider>
