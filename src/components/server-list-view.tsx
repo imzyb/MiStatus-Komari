@@ -33,7 +33,7 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(
           <span className="hidden lg:block w-[15%]">硬盘</span>
           <span className="hidden xl:block w-[15%]">流量</span>
           <span className="flex items-center gap-2 flex-shrink-0 ml-auto">
-            <span className="hidden sm:inline w-[56px] text-right">运行</span>
+            <span className="hidden sm:inline-block w-[56px] text-right">运行</span>
             <span className="w-[40px]" />
           </span>
         </div>

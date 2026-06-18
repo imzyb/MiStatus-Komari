@@ -6,6 +6,7 @@ import { getKomariPublicInfo } from '@/lib/api';
 export interface SiteInfo {
   sitename?: string;
   description?: string;
+  show_dashboard?: boolean;
 }
 
 export interface SiteInfoContextValue {

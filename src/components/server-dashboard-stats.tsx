@@ -92,7 +92,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
 
   if (isLoading) {
     return (
-      <div className="stats-container">
+<div className="stats-container space-y-4">
         <div className="flex justify-between items-center dashboard-title">
           <h1 className="text-xl font-bold tracking-tight" suppressHydrationWarning>
             监控概览
