@@ -178,13 +178,24 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return PAD_T;
     };
 
-    const buildStepPath = (id: number): string => {
+    const buildSmoothPath = (id: number): string => {
       const pts = sampled[id];
       if (!pts || pts.length < 2) return "";
       const n = pts.length;
       const coords = pts.map((p, i) => ({ x: toX(i, n), y: toY(p.value) }));
       let d = `M ${coords[0].x},${coords[0].y}`;
-      for (let i = 1; i < coords.length; i++) d += ` H ${coords[i].x} V ${coords[i].y}`;
+      for (let i = 1; i < coords.length; i++) {
+        const p0 = coords[Math.max(i - 2, 0)];
+        const p1 = coords[i - 1];
+        const p2 = coords[i];
+        const p3 = coords[Math.min(i + 1, coords.length - 1)];
+        const t = 0.25;
+        const cp1x = p1.x + (p2.x - p0.x) * t;
+        const cp1y = p1.y + (p2.y - p0.y) * t;
+        const cp2x = p2.x - (p3.x - p1.x) * t;
+        const cp2y = p2.y - (p3.y - p1.y) * t;
+        d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+      }
       return d;
     };
 
@@ -194,10 +205,10 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       const n = pts.length;
       const coords = pts.map((p, i) => ({ x: toX(i, n), y: toY(p.value) }));
       const bottom = PAD_T + INNER_H;
-      let d = `M ${coords[0].x},${bottom} V ${coords[0].y}`;
-      for (let i = 1; i < coords.length; i++) d += ` H ${coords[i].x} V ${coords[i].y}`;
-      d += ` V ${bottom} Z`;
-      return d;
+      const smoothD = buildSmoothPath(id);
+      const last = coords[coords.length - 1];
+      const first = coords[0];
+      return `${smoothD} L ${last.x},${bottom} L ${first.x},${bottom} Z`;
     };
 
     const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
@@ -329,7 +340,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const pathD = buildStepPath(id);
+              const pathD = buildSmoothPath(id);
               if (!pathD) return null;
               const pts = sampled[id];
               if (!pts) return null;
@@ -341,7 +352,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
               return (
                 <g key={id}>
-                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="butt" />
+                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
                   <circle cx={lastX} cy={lastY} r="2.5" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
                   <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
                     {formatValue(lastVal)}
