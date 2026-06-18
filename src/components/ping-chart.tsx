@@ -14,10 +14,10 @@ interface PingChartProps {
 
 const PAD_L = 32;
 const PAD_R = 8;
-const PAD_T = 8;
+const PAD_T = 24;
 const PAD_B = 20;
 const INNER_W = 560;
-const INNER_H = 240;
+const INNER_H = 224;
 const CHART_W = PAD_L + INNER_W + PAD_R;
 const CHART_H = PAD_T + INNER_H + PAD_B;
 
@@ -77,7 +77,20 @@ function formatTime(iso: string, showDate: boolean = false): string {
 
 function formatValue(v: number): string {
   if (isTimeout(v)) return "超时";
-  return `${v.toFixed(0)}ms`;
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}s`;
+  return `${Math.round(v)}ms`;
+}
+
+function latencyQuality(ms: number): "good" | "ok" | "bad" {
+  if (ms < 50) return "good";
+  if (ms < 200) return "ok";
+  return "bad";
+}
+
+function qualityColor(q: "good" | "ok" | "bad"): string {
+  if (q === "good") return "text-trading-up";
+  if (q === "ok") return "text-accent";
+  return "text-trading-down";
 }
 
 function PingDot({ color, value }: { color: string; value: number | undefined }) {
@@ -211,7 +224,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         const p1 = coords[i - 1];
         const p2 = coords[i];
         const p3 = coords[Math.min(i + 1, coords.length - 1)];
-        const t = 0.25;
+        const t = 0.18;
         const cp1x = p1.x + (p2.x - p0.x) * t;
         const cp1y = p1.y + (p2.y - p0.y) * t;
         const cp2x = p2.x - (p3.x - p1.x) * t;
@@ -285,12 +298,17 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const histLastVal = pts && pts.length > 0 ? pts[pts.length - 1].value : null;
               const displayVal = liveVal !== undefined ? liveVal : (histLastVal ?? undefined);
               return (
-                <div key={id} className="flex items-center gap-1 text-[11px]">
+                <div key={id} className="flex items-center gap-1.5 text-[11px]">
                   <PingDot color={cfg.color} value={displayVal} />
                   <span className="font-medium text-foreground/70">{cfg.label}</span>
                   {displayVal !== undefined && (
-                    <span className={`font-mono ${isTimeout(displayVal) ? "text-trading-down" : ""}`} style={isTimeout(displayVal) ? undefined : { color: cfg.color }}>
+                    <span className={`font-mono font-medium ${isTimeout(displayVal) ? "text-trading-down" : qualityColor(latencyQuality(displayVal))}`}>
                       {formatValue(displayVal)}
+                    </span>
+                  )}
+                  {info && (
+                    <span className="text-muted-foreground font-mono text-[10px]">
+                      {info.min.toFixed(0)}~{info.max.toFixed(0)}ms
                     </span>
                   )}
                   {liveVal !== undefined && (
@@ -331,11 +349,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} />
               </clipPath>
             </defs>
+
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.02" rx="2" />
+
             {yTicks.ticks.map((v) => {
               const y = toY(v);
               return (
                 <g key={v}>
-                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="3 3" />
+                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 3" />
                   <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">
                     {formatTickValue(v)}
                   </text>
@@ -360,11 +381,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const lastVal = pts[n - 1].value;
               const labelX = lastX + 5 > PAD_L + INNER_W - 30 ? lastX - 5 : lastX + 5;
               const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
+              const endColor = isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color;
               return (
                 <g key={id}>
-                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-                  <circle cx={lastX} cy={lastY} r="2.5" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
-                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
+                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  <circle cx={lastX} cy={lastY} r="3" fill={endColor} />
+                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={endColor} fontSize="9" fontFamily="monospace" fontWeight="600">
                     {formatValue(lastVal)}
                   </text>
                 </g>
@@ -397,7 +419,10 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                     <g key={i}>
                       <circle cx={bx + 10} cy={by + 18 + i * 15} r="3" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} />
                       <text x={bx + 18} y={by + 21 + i * 15} fontSize="9" fill="var(--foreground)" fontFamily="monospace">
-                        {item.label} {formatValue(item.value)}
+                        {item.label}{" "}
+                      </text>
+                      <text x={bx + 40} y={by + 21 + i * 15} fontSize="9" fontWeight="600" fontFamily="monospace" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color}>
+                        {formatValue(item.value)}
                       </text>
                     </g>
                   ))}
