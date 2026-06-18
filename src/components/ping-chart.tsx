@@ -28,10 +28,10 @@ const TIME_RANGES = [
   { hours: 48, label: "48H" },
 ] as const;
 
-const TASK_CONFIG: Record<number, { label: string; color: string }> = {
-  1: { label: "联通", color: "#00b578" },
-  2: { label: "电信", color: "#ff6a00" },
-  3: { label: "移动", color: "#ff3b30" },
+const TASK_CONFIG: Record<number, { label: string; color: string; opacity: number }> = {
+  1: { label: "联通", color: "#00b578", opacity: 1 },
+  2: { label: "电信", color: "#ff6a00", opacity: 0.85 },
+  3: { label: "移动", color: "#ff3b30", opacity: 0.7 },
 };
 
 const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
@@ -72,6 +72,32 @@ function PingDot({ color, value }: { color: string; value: number | undefined })
       style={isTimeout(value) ? undefined : { backgroundColor: color }}
     />
   );
+}
+
+function buildSmoothPath(points: { x: number; y: number }[]): string {
+  if (points.length < 2) return "";
+  let d = `M ${points[0].x},${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const p0 = points[Math.max(i - 2, 0)];
+    const p1 = points[i - 1];
+    const p2 = points[i];
+    const p3 = points[Math.min(i + 1, points.length - 1)];
+    const tension = 0.3;
+    const cp1x = p1.x + (p2.x - p0.x) * tension;
+    const cp1y = p1.y + (p2.y - p0.y) * tension;
+    const cp2x = p2.x - (p3.x - p1.x) * tension;
+    const cp2y = p2.y - (p3.y - p1.y) * tension;
+    d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+  return d;
+}
+
+function buildAreaPath(points: { x: number; y: number }[], bottomY: number): string {
+  if (points.length < 2) return "";
+  const linePath = buildSmoothPath(points);
+  const last = points[points.length - 1];
+  const first = points[0];
+  return `${linePath} L ${last.x},${bottomY} L ${first.x},${bottomY} Z`;
 }
 
 export const PingChart: React.FC<PingChartProps> = React.memo(
@@ -157,18 +183,18 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         const hi = Y_TICKS[i + 1];
         if (resolved <= hi || i === Y_TICKS.length - 2) {
           const ratio = (resolved - lo) / (hi - lo);
-          const segmentStart = (i / (Y_TICKS.length - 1)) * INNER_H;
-          const segmentEnd = ((i + 1) / (Y_TICKS.length - 1)) * INNER_H;
-          return PAD_T + INNER_H - (segmentStart + ratio * (segmentEnd - segmentStart));
+          const segStart = (i / (Y_TICKS.length - 1)) * INNER_H;
+          const segEnd = ((i + 1) / (Y_TICKS.length - 1)) * INNER_H;
+          return PAD_T + INNER_H - (segStart + ratio * (segEnd - segStart));
         }
       }
       return PAD_T;
     };
 
-    const toPolyline = (id: number) => {
+    const getPoints = (id: number): { x: number; y: number }[] => {
       const pts = grouped[id];
-      if (!pts || pts.length < 2) return "";
-      return pts.map((p, i) => `${toX(i, pts.length)},${toY(p.value)}`).join(" ");
+      if (!pts || pts.length < 2) return [];
+      return pts.map((p, i) => ({ x: toX(i, pts.length), y: toY(p.value) }));
     };
 
     const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
@@ -189,7 +215,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       for (const id of taskIds) {
         const pts = grouped[id];
         if (!pts || hoverIdx >= pts.length) continue;
-        const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
+        const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888", opacity: 1 };
         results.push({ label: cfg.label, color: cfg.color, value: pts[hoverIdx].value, time: pts[hoverIdx].time });
       }
       return results.length > 0 ? results : null;
@@ -227,7 +253,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {taskIds.map((id) => {
-              const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
+              const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888", opacity: 1 };
               const info = basicInfoMap[id];
               const pts = grouped[id];
               const liveVal = livePingMap[id];
@@ -275,11 +301,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
+            {/* Y 轴网格线 + 标签 */}
             {Y_TICKS.map((v) => {
               const y = toY(v);
               return (
                 <g key={v}>
-                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" />
+                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity={v === MAX_Y ? 0.15 : 0.08} strokeWidth="1" />
                   <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.5" fontSize="9" fontFamily="monospace">
                     {v === MAX_Y ? "超时" : v}
                   </text>
@@ -287,30 +314,65 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               );
             })}
 
-            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H * 0.08} fill="var(--trading-down, #ff3b30)" opacity="0.04" />
+            {/* 超时区域标记 */}
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H * 0.1} fill="var(--trading-down, #ff3b30)" opacity="0.05" rx="2" />
 
+            {/* X 轴时间标签 */}
             {timeLabels.map((t, i) => (
               <text key={i} x={toX(t.i, maxPoints)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.5" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
+            {/* 面积填充（底层） */}
             {taskIds.map((id) => {
-              const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+              const cfg = TASK_CONFIG[id] || { label: "", color: "#888", opacity: 1 };
+              const points = getPoints(id);
+              if (points.length < 2) return null;
+              const areaD = buildAreaPath(points, PAD_T + INNER_H);
+              return (
+                <path
+                  key={`area-${id}`}
+                  d={areaD}
+                  fill={cfg.color}
+                  opacity={0.06}
+                />
+              );
+            })}
+
+            {/* 曲线（顶层） */}
+            {taskIds.map((id) => {
+              const cfg = TASK_CONFIG[id] || { label: "", color: "#888", opacity: 1 };
+              const points = getPoints(id);
+              if (points.length < 2) return null;
+              const pathD = buildSmoothPath(points);
+              const last = points[points.length - 1];
               const pts = grouped[id];
-              if (!pts || pts.length < 2) return null;
-              const lastX = toX(pts.length - 1, pts.length);
-              const lastY = toY(pts[pts.length - 1].value);
-              const lastVal = pts[pts.length - 1].value;
+              const lastVal = pts ? pts[pts.length - 1].value : 0;
               return (
                 <g key={id}>
-                  <polyline fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={toPolyline(id)} />
-                  <circle cx={lastX} cy={lastY} r="3" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
-                  <text x={lastX + 6} y={lastY + 3} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="9" fontFamily="monospace" fontWeight="500">
-                    {formatValue(lastVal)}
-                  </text>
+                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity={cfg.opacity} />
+                  <circle cx={last.x} cy={last.y} r="3" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
                 </g>
               );
             })}
 
+            {/* 末端值标签（单独渲染避免重叠） */}
+            {taskIds.map((id) => {
+              const cfg = TASK_CONFIG[id] || { label: "", color: "#888", opacity: 1 };
+              const points = getPoints(id);
+              if (points.length < 2) return null;
+              const last = points[points.length - 1];
+              const pts = grouped[id];
+              const lastVal = pts ? pts[pts.length - 1].value : 0;
+              const labelX = last.x + 6;
+              const labelY = last.y + 3;
+              return (
+                <text key={`val-${id}`} x={labelX} y={labelY} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="9" fontFamily="monospace" fontWeight="500" opacity={cfg.opacity}>
+                  {formatValue(lastVal)}
+                </text>
+              );
+            })}
+
+            {/* 悬停指示线 + 圆点 */}
             {hoverIdx !== null && hoverItems && (
               <>
                 <line x1={toX(hoverIdx, maxPoints)} x2={toX(hoverIdx, maxPoints)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
@@ -320,6 +382,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               </>
             )}
 
+            {/* 悬停 tooltip */}
             {hoverIdx !== null && hoverItems && (() => {
               const cx = toX(hoverIdx, maxPoints);
               const timeStr = hoverItems[0]?.time ? formatTime(hoverItems[0].time, hours >= 24) : "";
