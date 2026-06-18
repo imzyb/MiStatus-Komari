@@ -35,10 +35,14 @@ const MAX_PING_DISPLAY = 1600;
 
 const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 
-function formatTime(iso: string): string {
+function formatTime(iso: string, showDate: boolean = false): string {
   try {
     const d = new Date(iso);
-    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+    const hm = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+    if (showDate) {
+      return `${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${hm}`;
+    }
+    return hm;
   } catch { return ""; }
 }
 
@@ -93,16 +97,17 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       if (!pts) return [];
       const labels: { i: number; label: string }[] = [];
       const n = pts.length;
-      const maxLabels = Math.min(n, 8);
+      const showDate = hours >= 24;
+      const maxLabels = hours >= 48 ? 6 : hours >= 24 ? 7 : 8;
       const step = Math.max(Math.floor(n / maxLabels), 1);
       for (let idx = 0; idx < n; idx += step) {
-        labels.push({ i: idx, label: formatTime(pts[idx].time) });
+        labels.push({ i: idx, label: formatTime(pts[idx].time, showDate) });
       }
       if (n > 1 && (n - 1) % step !== 0) {
-        labels.push({ i: n - 1, label: formatTime(pts[n - 1].time) });
+        labels.push({ i: n - 1, label: formatTime(pts[n - 1].time, showDate) });
       }
       return labels;
-    }, [taskIds, grouped, maxPoints]);
+    }, [taskIds, grouped, maxPoints, hours]);
 
     const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
 
@@ -175,15 +180,17 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
               const info = basicInfoMap[id];
+              const pts = grouped[id];
+              const lastVal = pts && pts.length > 0 ? pts[pts.length - 1].value : null;
               return (
-                <div key={id} className="flex items-center gap-1.5 text-[11px]">
-                  <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: cfg.color }} />
-                  <span className="font-medium text-foreground/80">{cfg.label}</span>
-                  {info && (
-                    <span className="text-muted-foreground font-mono">
-                      {info.min.toFixed(0)}/{info.max.toFixed(0)}ms
-                      {info.loss > 0 && <span className="text-trading-down ml-0.5">丢{info.loss.toFixed(1)}%</span>}
-                    </span>
+                <div key={id} className="flex items-center gap-1 text-[11px]">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
+                  <span className="font-medium text-foreground/70">{cfg.label}</span>
+                  {lastVal !== null && (
+                    <span className="font-mono" style={{ color: cfg.color }}>{lastVal.toFixed(0)}ms</span>
+                  )}
+                  {info && info.loss > 0 && (
+                    <span className="text-trading-down font-mono ml-0.5">丢{info.loss.toFixed(1)}%</span>
                   )}
                 </div>
               );
@@ -233,8 +240,16 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
               const pts = grouped[id];
               if (!pts || pts.length < 2) return null;
+              const lastX = toX(pts.length - 1, pts.length);
+              const lastY = toY(pts[pts.length - 1].value);
               return (
-                <polyline key={id} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={toPolyline(id)} />
+                <g key={id}>
+                  <polyline fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={toPolyline(id)} />
+                  <circle cx={lastX} cy={lastY} r="3" fill={cfg.color} />
+                  <text x={lastX + 6} y={lastY + 3} fill={cfg.color} fontSize="9" fontFamily="monospace" fontWeight="500">
+                    {pts[pts.length - 1].value.toFixed(0)}
+                  </text>
+                </g>
               );
             })}
 
@@ -251,7 +266,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             {/* 悬停 tooltip */}
             {hoverIdx !== null && hoverItems && (() => {
               const cx = toX(hoverIdx, maxPoints);
-              const timeStr = hoverItems[0]?.time ? formatTime(hoverItems[0].time) : "";
+              const timeStr = hoverItems[0]?.time ? formatTime(hoverItems[0].time, hours >= 24) : "";
               const boxW = 90;
               const boxH = 18 + hoverItems.length * 16;
               let bx = cx + 12;
