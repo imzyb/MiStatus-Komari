@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { Activity } from "lucide-react";
+import { Activity, RefreshCw } from "lucide-react";
 import { rpcAdapter } from "@/lib/rpc-adapter";
 import type { PingRecordsResult, BasicInfo } from "@/lib/rpc-types";
 
 interface PingChartProps {
   serverId: string;
+  livePing10010?: number;
+  livePing189?: number;
+  livePing10086?: number;
 }
 
 const PAD_L = 32;
@@ -34,6 +37,7 @@ const TASK_CONFIG: Record<number, { label: string; color: string }> = {
 const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 const TIMEOUT_VALUE = -1;
 const MAX_Y = 1600;
+const AUTO_REFRESH_MS = 30_000;
 
 function isTimeout(v: number): boolean {
   return v === TIMEOUT_VALUE || v < 0;
@@ -60,8 +64,18 @@ function formatValue(v: number): string {
   return `${v.toFixed(0)}ms`;
 }
 
+function PingDot({ color, value }: { color: string; value: number | undefined }) {
+  if (value === undefined) return <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />;
+  return (
+    <span
+      className={`h-1.5 w-1.5 rounded-full ${isTimeout(value) ? "bg-trading-down" : ""}`}
+      style={isTimeout(value) ? undefined : { backgroundColor: color }}
+    />
+  );
+}
+
 export const PingChart: React.FC<PingChartProps> = React.memo(
-  function PingChart({ serverId }) {
+  function PingChart({ serverId, livePing10010, livePing189, livePing10086 }) {
     const [result, setResult] = useState<PingRecordsResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [hours, setHours] = useState(12);
@@ -78,6 +92,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     }, [serverId]);
 
     useEffect(() => { fetch(hours); }, [fetch, hours]);
+
+    useEffect(() => {
+      const timer = setInterval(() => { fetch(hours); }, AUTO_REFRESH_MS);
+      return () => clearInterval(timer);
+    }, [fetch, hours]);
+
+    const handleRefresh = useCallback(() => { fetch(hours); }, [fetch, hours]);
 
     const grouped = useMemo(() => {
       if (!result?.records) return {};
@@ -102,6 +123,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const maxPoints = useMemo(() => {
       return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
+
+    const livePingMap: Record<number, number | undefined> = {
+      1: livePing10010,
+      2: livePing189,
+      3: livePing10086,
+    };
 
     const timeLabels = useMemo(() => {
       if (taskIds.length === 0 || maxPoints === 0) return [];
@@ -186,6 +213,16 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 {r.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
+              aria-label="刷新延迟数据"
+              title="刷新延迟数据"
+            >
+              <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+            </button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -193,15 +230,20 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
               const info = basicInfoMap[id];
               const pts = grouped[id];
-              const lastVal = pts && pts.length > 0 ? pts[pts.length - 1].value : null;
+              const liveVal = livePingMap[id];
+              const histLastVal = pts && pts.length > 0 ? pts[pts.length - 1].value : null;
+              const displayVal = liveVal !== undefined ? liveVal : (histLastVal ?? undefined);
               return (
                 <div key={id} className="flex items-center gap-1 text-[11px]">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
+                  <PingDot color={cfg.color} value={displayVal} />
                   <span className="font-medium text-foreground/70">{cfg.label}</span>
-                  {lastVal !== null && (
-                    <span className={`font-mono ${isTimeout(lastVal) ? "text-trading-down" : ""}`} style={isTimeout(lastVal) ? undefined : { color: cfg.color }}>
-                      {formatValue(lastVal)}
+                  {displayVal !== undefined && (
+                    <span className={`font-mono ${isTimeout(displayVal) ? "text-trading-down" : ""}`} style={isTimeout(displayVal) ? undefined : { color: cfg.color }}>
+                      {formatValue(displayVal)}
                     </span>
+                  )}
+                  {liveVal !== undefined && (
+                    <span className="h-1 w-1 rounded-full bg-trading-up animate-pulse ml-0.5" title="实时数据" />
                   )}
                   {info && info.loss > 0 && (
                     <span className="text-trading-down font-mono ml-0.5">丢{info.loss.toFixed(1)}%</span>
@@ -212,7 +254,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           </div>
         </div>
 
-        {loading ? (
+        {loading && !result ? (
           <div className="flex flex-col items-center justify-center h-72 space-y-3">
             <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-xs text-muted-foreground">加载延迟数据...</span>
@@ -233,7 +275,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
-            {/* Y 轴网格线 + 标签 */}
             {Y_TICKS.map((v) => {
               const y = toY(v);
               return (
@@ -246,15 +287,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               );
             })}
 
-            {/* 超时区域背景 */}
             <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H * 0.08} fill="var(--trading-down, #ff3b30)" opacity="0.04" />
 
-            {/* X 轴时间标签 */}
             {timeLabels.map((t, i) => (
               <text key={i} x={toX(t.i, maxPoints)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.5" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
-            {/* 曲线 */}
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
               const pts = grouped[id];
@@ -273,7 +311,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               );
             })}
 
-            {/* 悬停指示线 + 圆点 */}
             {hoverIdx !== null && hoverItems && (
               <>
                 <line x1={toX(hoverIdx, maxPoints)} x2={toX(hoverIdx, maxPoints)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
@@ -283,7 +320,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               </>
             )}
 
-            {/* 悬停 tooltip */}
             {hoverIdx !== null && hoverItems && (() => {
               const cx = toX(hoverIdx, maxPoints);
               const timeStr = hoverItems[0]?.time ? formatTime(hoverItems[0].time, hours >= 24) : "";

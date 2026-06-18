@@ -98,7 +98,12 @@ export const ServerDetailDrawer: React.FC = React.memo(
           </div>
 
           <div className="p-4 sm:p-5">
-            <PingChart serverId={s.gid} />
+            <PingChart
+                serverId={s.gid}
+                livePing10010={s.ping_10010}
+                livePing189={s.ping_189}
+                livePing10086={s.ping_10086}
+              />
 
             {!s.online && (
               <div className="flex items-center justify-center gap-2 mt-4 px-4 py-2 rounded-xl bg-muted/40">
