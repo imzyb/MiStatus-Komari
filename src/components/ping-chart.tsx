@@ -199,18 +199,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return d;
     };
 
-    const buildAreaPath = (id: number): string => {
-      const pts = sampled[id];
-      if (!pts || pts.length < 2) return "";
-      const n = pts.length;
-      const coords = pts.map((p, i) => ({ x: toX(i, n), y: toY(p.value) }));
-      const bottom = PAD_T + INNER_H;
-      const smoothD = buildSmoothPath(id);
-      const last = coords[coords.length - 1];
-      const first = coords[0];
-      return `${smoothD} L ${last.x},${bottom} L ${first.x},${bottom} Z`;
-    };
-
     const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
       const svg = svgRef.current;
       if (!svg || sampledLen === 0) return;
@@ -331,12 +319,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             {timeLabels.map((t, i) => (
               <text key={i} x={toX(t.i, sampledLen)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
-
-            {taskIds.map((id) => {
-              const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const areaD = buildAreaPath(id);
-              return areaD ? <path key={`area-${id}`} d={areaD} fill={cfg.color} fillOpacity="0.08" /> : null;
-            })}
 
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
