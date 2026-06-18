@@ -63,7 +63,7 @@ function computeNiceTicks(dataMax: number): number[] {
 
 function formatTickValue(v: number): string {
   if (v >= 1000) return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}s`;
-  return `${v}`;
+  return `${v}ms`;
 }
 
 function formatTime(iso: string, showDate: boolean = false): string {
@@ -95,12 +95,8 @@ function qualityColor(q: "good" | "ok" | "bad"): string {
 
 function PingDot({ color, value }: { color: string; value: number | undefined }) {
   if (value === undefined) return <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />;
-  return (
-    <span
-      className={`h-1.5 w-1.5 rounded-full ${isTimeout(value) ? "bg-trading-down" : ""}`}
-      style={isTimeout(value) ? undefined : { backgroundColor: color }}
-    />
-  );
+  if (isTimeout(value)) return <span className="h-1.5 w-1.5 rounded-full bg-trading-down" />;
+  return <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />;
 }
 
 function samplePoints<T>(arr: T[]): T[] {
@@ -120,6 +116,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const [hours, setHours] = useState(12);
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
+    const clipId = React.useId();
 
     const fetch = useCallback(async (h: number, isRefresh = false) => {
       if (isRefresh) setRefreshing(true); else setLoading(true);
@@ -234,15 +231,26 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return d;
     };
 
-    const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    const handlePointerMove = useCallback((clientX: number) => {
       const svg = svgRef.current;
       if (!svg || sampledLen === 0) return;
       const rect = svg.getBoundingClientRect();
-      const xInPlot = ((e.clientX - rect.left) / rect.width) * CHART_W - PAD_L;
+      const xInPlot = ((clientX - rect.left) / rect.width) * CHART_W - PAD_L;
       if (xInPlot < 0 || xInPlot > INNER_W) { setHoverIdx(null); return; }
       const idx = Math.round((xInPlot / INNER_W) * (sampledLen - 1));
       setHoverIdx(Math.max(0, Math.min(idx, sampledLen - 1)));
     }, [sampledLen]);
+
+    const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+      handlePointerMove(e.clientX);
+    }, [handlePointerMove]);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+      if (e.touches.length > 0) {
+        e.preventDefault();
+        handlePointerMove(e.touches[0].clientX);
+      }
+    }, [handlePointerMove]);
 
     const handleMouseLeave = useCallback(() => setHoverIdx(null), []);
 
@@ -338,19 +346,22 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             ref={svgRef}
             viewBox={`0 0 ${CHART_W} ${CHART_H}`}
             width="100%"
-            className="w-full h-72"
+            className="w-full h-72 touch-none"
             role="img"
             aria-label="延迟监测曲线图"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseLeave}
           >
             <defs>
-              <clipPath id="chartArea">
+              <clipPath id={clipId}>
                 <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} />
               </clipPath>
             </defs>
 
-            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.02" rx="2" />
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.015" rx="2" />
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" rx="2" />
 
             {yTicks.ticks.map((v) => {
               const y = toY(v);
@@ -368,7 +379,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               <text key={i} x={toX(t.i, sampledLen)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
-            <g clipPath="url(#chartArea)">
+            <g clipPath={`url(#${clipId})`}>
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
               const pathD = buildSmoothPath(id);
