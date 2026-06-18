@@ -86,7 +86,7 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           />
 
           {/* 网络面板 */}
-          <div className="grid grid-cols-2 gap-2 pt-1 mt-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 mt-auto">
             <RealTimeNetworkPanel
               downloadSpeed={server.network_rx}
               uploadSpeed={server.network_tx}

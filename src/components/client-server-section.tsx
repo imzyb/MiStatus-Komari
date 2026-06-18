@@ -112,8 +112,8 @@ export const ClientServerSection: React.FC = () => {
             服务器列表
           </h2>
 
-          <div className="flex items-center gap-2 flex-wrap sm:ml-auto">
-            <div className="min-w-0 flex-1 sm:flex-none sm:min-w-[120px]">
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <div className="flex-1 sm:flex-none sm:min-w-[120px]">
               {!isLoading && regions.length > 0 && (
                 <Suspense
                   fallback={
@@ -136,7 +136,10 @@ export const ClientServerSection: React.FC = () => {
               )}
             </div>
 
-            <ServerSearch value={searchQuery} onChange={setSearchQuery} />
+            <div className="flex-1 sm:flex-none">
+              <ServerSearch value={searchQuery} onChange={setSearchQuery} />
+            </div>
+
             <ViewToggle value={viewMode} onChange={handleViewModeChange} />
           </div>
         </div>
