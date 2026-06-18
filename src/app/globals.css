@@ -23,66 +23,57 @@
   --color-trading-up: var(--trading-up);
   --color-trading-down: var(--trading-down);
   --color-accent: var(--accent);
-  --color-surface-elevated: var(--surface-elevated);
   --color-hairline: var(--hairline);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
 }
 
 :root {
-  --radius: 12px;
-  --background: #f8f9fa;
-  --foreground: #1a1a1a;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
   --card: #ffffff;
-  --card-foreground: #1a1a1a;
+  --card-foreground: #1d1d1f;
   --primary: #ff6a00;
   --primary-foreground: #ffffff;
-  --secondary: #f0f1f3;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f0f1f3;
-  --muted-foreground: #8e959e;
-  --border: #e4e7ea;
-  --input: #f0f1f3;
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1d1d1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+  --border: #d2d2d7;
+  --input: #f5f5f7;
   --ring: #ff6a00;
-  --trading-up: #00b578;
+  --trading-up: #34c759;
   --trading-down: #ff3b30;
   --accent: #ff6a00;
-  --surface-elevated: #ffffff;
-  --hairline: #eef0f2;
+  --hairline: #e8e8ed;
 }
 
 .dark {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
-  --card: #2c2c2c;
-  --card-foreground: #ffffff;
+  --background: #1d1d1f;
+  --foreground: #f5f5f7;
+  --card: #2c2c2e;
+  --card-foreground: #f5f5f7;
   --primary: #ff6a00;
   --primary-foreground: #ffffff;
-  --secondary: #3a3a3a;
-  --secondary-foreground: #ffffff;
-  --muted: #3a3a3a;
-  --muted-foreground: #888888;
-  --border: #3a3a3a;
-  --input: #3a3a3a;
+  --secondary: #3a3a3c;
+  --secondary-foreground: #f5f5f7;
+  --muted: #3a3a3c;
+  --muted-foreground: #98989d;
+  --border: #48484a;
+  --input: #3a3a3c;
   --ring: #ff6a00;
-  --trading-up: #00b578;
-  --trading-down: #ff3b30;
+  --trading-up: #30d158;
+  --trading-down: #ff453a;
   --accent: #ff6a00;
-  --surface-elevated: #333333;
-  --hairline: #333333;
+  --hairline: #38383a;
 }
 
 @layer base {
   html {
-    font-family: "MiSans", "MiSans Pro", system-ui, -apple-system, sans-serif;
+    font-family: "MiSans", "Inter", system-ui, -apple-system, sans-serif;
     scroll-behavior: smooth;
     background-color: var(--background);
   }
 
   * {
-    @apply border-hairline;
     box-sizing: border-box;
   }
 
@@ -97,40 +88,30 @@
 
   .animate-fade-in { animation: fadeIn 0.25s ease-out; }
   .animate-slide-up { animation: slideUp 0.25s ease-out; }
-  .animate-scale-in { animation: scaleIn 0.2s ease-out; }
+  .animate-scale-in { animation: scaleIn 0.15s ease-out; }
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
-  * { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.1) transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 2px; }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
 
   .stats-container { contain: layout style; }
-  .stats-grid { min-height: 100px; }
   .server-card { min-height: 280px; contain: layout style; }
-  .server-grid-container { min-height: 200px; contain: layout; }
+  .server-grid-container { min-height: 200px; }
   @media (min-width: 768px) { .server-grid-container { min-height: 300px; } }
 
-  .dashboard-title {
-    min-height: 40px;
-    line-height: 1.2;
-    contain: layout;
-  }
-
   .skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, #e8e8ed 25%, #dcdce0 50%, #e8e8ed 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite ease-in-out;
     border-radius: inherit;
   }
-
   .dark .skeleton {
-    background: linear-gradient(90deg, #3a3a3a 25%, #444444 50%, #3a3a3a 75%);
-    background-size: 200% 100%;
+    background: linear-gradient(90deg, #3a3a3c 25%, #444446 50%, #3a3a3c 75%);
   }
 
   @keyframes shimmer {

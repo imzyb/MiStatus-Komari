@@ -108,9 +108,8 @@ export default async function RootLayout({
             __html: `
             /* 基础重置 - 防止FOUC */
             *{box-sizing:border-box}
-            body{margin:0;background:#ffffff;color:#1a1a1a;font-family:'MiSans','MiSans Pro',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
-            html.dark body{background:#1a1a1a;color:#ffffff}
-            .dashboard-title{min-height:40px;line-height:1.2;contain:layout}
+            body{margin:0;background:#f5f5f7;color:#1d1d1f;font-family:'MiSans','Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
+            html.dark body{background:#1d1d1f;color:#f5f5f7}
             .dashboard-title h1{font-size:1.25rem;font-weight:600;letter-spacing:-0.01em;margin:0}
           `,
           }}
