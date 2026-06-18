@@ -39,6 +39,7 @@ const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 const TIMEOUT_VALUE = -1;
 const MAX_Y = 1600;
 const AUTO_REFRESH_MS = 30_000;
+const MAX_POINTS = 200;
 
 function isTimeout(v: number): boolean {
   return v === TIMEOUT_VALUE || v < 0;
@@ -161,7 +162,33 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const toPolyline = (id: number) => {
       const pts = grouped[id];
       if (!pts) return "";
-      return pts.map((p, i) => `${toX(i, pts.length)},${toY(p.value)}`).join(" ");
+      const n = pts.length;
+      if (n < 2) return "";
+      const step = Math.max(1, Math.floor(n / MAX_POINTS));
+      const sampled = pts.filter((_, i) => i % step === 0 || i === n - 1);
+      const coords = sampled.map((p, i) => ({ x: toX(i, sampled.length), y: toY(p.value) }));
+      let d = `M ${coords[0].x},${coords[0].y}`;
+      for (let i = 1; i < coords.length; i++) {
+        d += ` H ${coords[i].x} V ${coords[i].y}`;
+      }
+      return d;
+    };
+
+    const toAreaPath = (id: number) => {
+      const pts = grouped[id];
+      if (!pts) return "";
+      const n = pts.length;
+      if (n < 2) return "";
+      const step = Math.max(1, Math.floor(n / MAX_POINTS));
+      const sampled = pts.filter((_, i) => i % step === 0 || i === n - 1);
+      const coords = sampled.map((p, i) => ({ x: toX(i, sampled.length), y: toY(p.value) }));
+      const bottom = PAD_T + INNER_H;
+      let d = `M ${coords[0].x},${bottom} V ${coords[0].y}`;
+      for (let i = 1; i < coords.length; i++) {
+        d += ` H ${coords[i].x} V ${coords[i].y}`;
+      }
+      d += ` V ${bottom} Z`;
+      return d;
     };
 
     const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
@@ -273,7 +300,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const y = toY(v);
               return (
                 <g key={v}>
-                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
+                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="3 3" />
                   <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">
                     {v === MAX_Y ? "超时" : v}
                   </text>
@@ -287,14 +314,27 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+              const areaD = toAreaPath(id);
+              return areaD ? (
+                <path key={`area-${id}`} d={areaD} fill={cfg.color} fillOpacity="0.08" />
+              ) : null;
+            })}
+
+            {taskIds.map((id) => {
+              const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
+              const pathD = toPolyline(id);
+              if (!pathD) return null;
               const pts = grouped[id];
               if (!pts) return null;
-              const lastX = toX(pts.length - 1, pts.length);
-              const lastY = toY(pts[pts.length - 1].value);
-              const lastVal = pts[pts.length - 1].value;
+              const n = pts.length;
+              const step = Math.max(1, Math.floor(n / MAX_POINTS));
+              const sampledCount = pts.filter((_, i) => i % step === 0 || i === n - 1).length;
+              const lastX = toX(sampledCount - 1, sampledCount);
+              const lastY = toY(pts[n - 1].value);
+              const lastVal = pts[n - 1].value;
               return (
                 <g key={id}>
-                  <polyline fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={toPolyline(id)} />
+                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="butt" />
                   <circle cx={lastX} cy={lastY} r="2.5" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
                 </g>
               );
