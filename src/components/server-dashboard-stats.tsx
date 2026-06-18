@@ -174,20 +174,20 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
           <StatCard
             title="实时网络速率"
             value={
-              <div className="flex items-baseline space-x-2 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-baseline sm:space-x-2 min-w-0 gap-0.5 sm:gap-0">
                 {stats.totalServers > 0 ? (
                   <>
                     <div className="flex items-baseline whitespace-nowrap">
-                      <span className="text-sm font-medium opacity-70 flex-shrink-0">↓</span>
-                      <span className="text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkRx, 1)}</span>
+                      <span className="text-xs sm:text-sm font-medium opacity-70 flex-shrink-0">↓</span>
+                      <span className="text-xs sm:text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkRx, 1)}</span>
                     </div>
                     <div className="flex items-baseline whitespace-nowrap">
-                      <span className="text-sm font-medium opacity-70 flex-shrink-0">↑</span>
-                      <span className="text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkTx, 1)}</span>
+                      <span className="text-xs sm:text-sm font-medium opacity-70 flex-shrink-0">↑</span>
+                      <span className="text-xs sm:text-sm font-bold ml-1 font-mono leading-tight transition-all duration-300">{formatSpeed(stats.totalNetworkTx, 1)}</span>
                     </div>
                   </>
                 ) : (
-                  <span className="text-sm font-bold text-muted-foreground">—</span>
+                  <span className="text-xs sm:text-sm font-bold text-muted-foreground">—</span>
                 )}
               </div>
             }
