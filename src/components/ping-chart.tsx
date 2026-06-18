@@ -35,19 +35,35 @@ const TASK_CONFIG: Record<number, { label: string; color: string }> = {
 };
 
 const ISP_ORDER = [1, 2, 3];
-const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 const TIMEOUT_VALUE = -1;
-const MAX_Y = 1600;
 const AUTO_REFRESH_MS = 30_000;
 const MAX_POINTS = 200;
+const TICK_COUNT = 5;
 
 function isTimeout(v: number): boolean {
   return v === TIMEOUT_VALUE || v < 0;
 }
 
-function resolveY(v: number): number {
-  if (isTimeout(v)) return MAX_Y;
-  return Math.min(Math.max(v, 0), MAX_Y);
+function computeNiceTicks(dataMax: number): number[] {
+  const rawMax = Math.max(dataMax, 10);
+  const rough = rawMax / TICK_COUNT;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const residual = rough / mag;
+  let nice: number;
+  if (residual <= 1.5) nice = 1;
+  else if (residual <= 3.5) nice = 2;
+  else if (residual <= 7.5) nice = 5;
+  else nice = 10;
+  const step = nice * mag;
+  const ticks: number[] = [];
+  for (let v = 0; v <= rawMax + step * 0.01; v += step) ticks.push(Math.round(v));
+  if (ticks[ticks.length - 1] < rawMax) ticks.push(Math.round(rawMax));
+  return ticks;
+}
+
+function formatTickValue(v: number): string {
+  if (v >= 1000) return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}s`;
+  return `${v}`;
 }
 
 function formatTime(iso: string, showDate: boolean = false): string {
@@ -162,20 +178,26 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return labels;
     }, [taskIds, sampled, sampledLen, hours]);
 
-    const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
-    const toY = (v: number): number => {
-      const resolved = resolveY(v);
-      for (let i = 0; i < Y_TICKS.length - 1; i++) {
-        const lo = Y_TICKS[i];
-        const hi = Y_TICKS[i + 1];
-        if (resolved <= hi || i === Y_TICKS.length - 2) {
-          const ratio = (resolved - lo) / (hi - lo);
-          const segStart = (i / (Y_TICKS.length - 1)) * INNER_H;
-          const segEnd = ((i + 1) / (Y_TICKS.length - 1)) * INNER_H;
-          return PAD_T + INNER_H - (segStart + ratio * (segEnd - segStart));
+    const yTicks = useMemo(() => {
+      if (taskIds.length === 0) return { ticks: [0, 100], max: 100 };
+      let dataMax = 0;
+      for (const id of taskIds) {
+        for (const p of grouped[id]) {
+          if (!isTimeout(p.value)) dataMax = Math.max(dataMax, p.value);
         }
       }
-      return PAD_T;
+      const hasTimeout = taskIds.some((id) => grouped[id].some((p) => isTimeout(p.value)));
+      const ticks = computeNiceTicks(dataMax);
+      const max = ticks[ticks.length - 1];
+      if (hasTimeout) ticks.push(max + Math.max(Math.round(max * 0.2), 50));
+      return { ticks, max: ticks[ticks.length - 1] };
+    }, [taskIds, grouped]);
+
+    const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
+    const toY = (v: number): number => {
+      if (isTimeout(v)) return PAD_T;
+      const clamped = Math.min(Math.max(v, 0), yTicks.max);
+      return PAD_T + INNER_H - (clamped / yTicks.max) * INNER_H;
     };
 
     const buildSmoothPath = (id: number): string => {
@@ -309,13 +331,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} />
               </clipPath>
             </defs>
-            {Y_TICKS.map((v) => {
+            {yTicks.ticks.map((v) => {
               const y = toY(v);
               return (
                 <g key={v}>
                   <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="3 3" />
                   <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">
-                    {v === MAX_Y ? "超时" : v}
+                    {formatTickValue(v)}
                   </text>
                 </g>
               );
