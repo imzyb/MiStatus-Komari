@@ -87,26 +87,27 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
   function PingChart({ serverId, livePing10010, livePing189, livePing10086 }) {
     const [result, setResult] = useState<PingRecordsResult | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [hours, setHours] = useState(12);
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
-    const fetch = useCallback(async (h: number) => {
-      setLoading(true);
+    const fetch = useCallback(async (h: number, isRefresh = false) => {
+      if (isRefresh) setRefreshing(true); else setLoading(true);
       try {
         const res = await rpcAdapter.getRecords({ type: "ping", uuid: serverId, hours: h });
         setResult(res as PingRecordsResult);
       } catch { /* ignore */ }
-      setLoading(false);
+      if (isRefresh) setRefreshing(false); else setLoading(false);
     }, [serverId]);
 
     useEffect(() => { fetch(hours); }, [fetch, hours]);
     useEffect(() => {
-      const timer = setInterval(() => fetch(hours), AUTO_REFRESH_MS);
+      const timer = setInterval(() => fetch(hours, true), AUTO_REFRESH_MS);
       return () => clearInterval(timer);
     }, [fetch, hours]);
 
-    const handleRefresh = useCallback(() => fetch(hours), [fetch, hours]);
+    const handleRefresh = useCallback(() => fetch(hours, true), [fetch, hours]);
 
     const grouped = useMemo(() => {
       if (!result?.records) return {};
@@ -128,7 +129,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return map;
     }, [result]);
 
-    const taskIds = ISP_ORDER.filter((id) => grouped[id]?.length > 1);
+    const taskIds = useMemo(() => ISP_ORDER.filter((id) => grouped[id]?.length > 0), [grouped]);
     const hasData = !loading && result && taskIds.length > 0;
 
     const sampled = useMemo(() => {
@@ -141,11 +142,11 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return taskIds.reduce((m, id) => Math.max(m, sampled[id].length), 0);
     }, [taskIds, sampled]);
 
-    const livePingMap: Record<number, number | undefined> = {
+    const livePingMap = useMemo<Record<number, number | undefined>>(() => ({
       1: livePing10010,
       2: livePing189,
       3: livePing10086,
-    };
+    }), [livePing10010, livePing189, livePing10086]);
 
     const timeLabels = useMemo(() => {
       if (taskIds.length === 0 || sampledLen === 0) return [];
@@ -223,7 +224,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return results.length > 0 ? results : null;
     }, [hoverIdx, taskIds, sampled]);
 
-    const allTaskIds = Object.keys(grouped).map(Number).sort();
+    const allTaskIds = useMemo(() => Object.keys(grouped).map(Number).sort(), [grouped]);
 
     return (
       <div className="space-y-3">
@@ -250,7 +251,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
               aria-label="刷新"
             >
-              <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3 w-3 ${loading || refreshing ? "animate-spin" : ""}`} />
             </button>
           </div>
 
@@ -336,11 +337,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const lastX = toX(n - 1, n);
               const lastY = toY(pts[n - 1].value);
               const lastVal = pts[n - 1].value;
+              const labelX = lastX + 5 > PAD_L + INNER_W - 30 ? lastX - 5 : lastX + 5;
+              const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
               return (
                 <g key={id}>
                   <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="butt" />
                   <circle cx={lastX} cy={lastY} r="2.5" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
-                  <text x={lastX + 5} y={lastY + 3} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
+                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
                     {formatValue(lastVal)}
                   </text>
                 </g>
