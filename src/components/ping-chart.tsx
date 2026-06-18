@@ -31,7 +31,9 @@ const TASK_CONFIG: Record<number, { label: string; color: string }> = {
   3: { label: "移动", color: "#ff3b30" },
 };
 
-const MAX_PING_DISPLAY = 500;
+const MAX_PING_DISPLAY = 1600;
+
+const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 
 function formatTime(iso: string): string {
   try {
@@ -83,19 +85,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
 
-    const globalMax = useMemo(() => {
-      let mx = 10;
-      for (const id of taskIds)
-        for (const p of grouped[id]) mx = Math.max(mx, Math.min(p.value, MAX_PING_DISPLAY));
-      return mx;
-    }, [taskIds, grouped]);
-
-    const yTicks = useMemo(() => {
-      const step = globalMax <= 50 ? 10 : globalMax <= 200 ? 50 : 100;
-      const ticks: number[] = [];
-      for (let v = 0; v <= globalMax; v += step) ticks.push(v);
-      return ticks;
-    }, [globalMax]);
+    const yTicks = Y_TICKS;
 
     const timeLabels = useMemo(() => {
       if (taskIds.length === 0 || maxPoints === 0) return [];
@@ -115,7 +105,21 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     }, [taskIds, grouped, maxPoints]);
 
     const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
-    const toY = (v: number) => PAD_T + INNER_H - (Math.min(v, MAX_PING_DISPLAY) / globalMax) * INNER_H;
+
+    const toY = (v: number): number => {
+      const clamped = Math.min(Math.max(v, 0), MAX_PING_DISPLAY);
+      for (let i = 0; i < Y_TICKS.length - 1; i++) {
+        const lo = Y_TICKS[i];
+        const hi = Y_TICKS[i + 1];
+        if (clamped <= hi || i === Y_TICKS.length - 2) {
+          const ratio = (clamped - lo) / (hi - lo);
+          const segmentStart = (i / (Y_TICKS.length - 1)) * INNER_H;
+          const segmentEnd = ((i + 1) / (Y_TICKS.length - 1)) * INNER_H;
+          return PAD_T + INNER_H - (segmentStart + ratio * (segmentEnd - segmentStart));
+        }
+      }
+      return PAD_T;
+    };
 
     const toPolyline = (id: number) => {
       const pts = grouped[id];
