@@ -31,9 +31,18 @@ const TASK_CONFIG: Record<number, { label: string; color: string }> = {
   3: { label: "移动", color: "#ff3b30" },
 };
 
-const MAX_PING_DISPLAY = 1600;
-
 const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
+const TIMEOUT_VALUE = -1;
+const MAX_Y = 1600;
+
+function isTimeout(v: number): boolean {
+  return v === TIMEOUT_VALUE || v < 0;
+}
+
+function resolveY(v: number): number {
+  if (isTimeout(v)) return MAX_Y;
+  return Math.min(Math.max(v, 0), MAX_Y);
+}
 
 function formatTime(iso: string, showDate: boolean = false): string {
   try {
@@ -44,6 +53,11 @@ function formatTime(iso: string, showDate: boolean = false): string {
     }
     return hm;
   } catch { return ""; }
+}
+
+function formatValue(v: number): string {
+  if (isTimeout(v)) return "超时";
+  return `${v.toFixed(0)}ms`;
 }
 
 export const PingChart: React.FC<PingChartProps> = React.memo(
@@ -89,8 +103,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
     }, [taskIds, grouped]);
 
-    const yTicks = Y_TICKS;
-
     const timeLabels = useMemo(() => {
       if (taskIds.length === 0 || maxPoints === 0) return [];
       const pts = grouped[taskIds[0]];
@@ -112,12 +124,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
 
     const toY = (v: number): number => {
-      const clamped = Math.min(Math.max(v, 0), MAX_PING_DISPLAY);
+      const resolved = resolveY(v);
       for (let i = 0; i < Y_TICKS.length - 1; i++) {
         const lo = Y_TICKS[i];
         const hi = Y_TICKS[i + 1];
-        if (clamped <= hi || i === Y_TICKS.length - 2) {
-          const ratio = (clamped - lo) / (hi - lo);
+        if (resolved <= hi || i === Y_TICKS.length - 2) {
+          const ratio = (resolved - lo) / (hi - lo);
           const segmentStart = (i / (Y_TICKS.length - 1)) * INNER_H;
           const segmentEnd = ((i + 1) / (Y_TICKS.length - 1)) * INNER_H;
           return PAD_T + INNER_H - (segmentStart + ratio * (segmentEnd - segmentStart));
@@ -187,7 +199,9 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
                   <span className="font-medium text-foreground/70">{cfg.label}</span>
                   {lastVal !== null && (
-                    <span className="font-mono" style={{ color: cfg.color }}>{lastVal.toFixed(0)}ms</span>
+                    <span className={`font-mono ${isTimeout(lastVal) ? "text-trading-down" : ""}`} style={isTimeout(lastVal) ? undefined : { color: cfg.color }}>
+                      {formatValue(lastVal)}
+                    </span>
                   )}
                   {info && info.loss > 0 && (
                     <span className="text-trading-down font-mono ml-0.5">丢{info.loss.toFixed(1)}%</span>
@@ -220,15 +234,20 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             onMouseLeave={handleMouseLeave}
           >
             {/* Y 轴网格线 + 标签 */}
-            {yTicks.map((v) => {
+            {Y_TICKS.map((v) => {
               const y = toY(v);
               return (
                 <g key={v}>
                   <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" />
-                  <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.5" fontSize="9" fontFamily="monospace">{v}</text>
+                  <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.5" fontSize="9" fontFamily="monospace">
+                    {v === MAX_Y ? "超时" : v}
+                  </text>
                 </g>
               );
             })}
+
+            {/* 超时区域背景 */}
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H * 0.08} fill="var(--trading-down, #ff3b30)" opacity="0.04" />
 
             {/* X 轴时间标签 */}
             {timeLabels.map((t, i) => (
@@ -242,12 +261,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               if (!pts || pts.length < 2) return null;
               const lastX = toX(pts.length - 1, pts.length);
               const lastY = toY(pts[pts.length - 1].value);
+              const lastVal = pts[pts.length - 1].value;
               return (
                 <g key={id}>
                   <polyline fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={toPolyline(id)} />
-                  <circle cx={lastX} cy={lastY} r="3" fill={cfg.color} />
-                  <text x={lastX + 6} y={lastY + 3} fill={cfg.color} fontSize="9" fontFamily="monospace" fontWeight="500">
-                    {pts[pts.length - 1].value.toFixed(0)}
+                  <circle cx={lastX} cy={lastY} r="3" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
+                  <text x={lastX + 6} y={lastY + 3} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="9" fontFamily="monospace" fontWeight="500">
+                    {formatValue(lastVal)}
                   </text>
                 </g>
               );
@@ -258,7 +278,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               <>
                 <line x1={toX(hoverIdx, maxPoints)} x2={toX(hoverIdx, maxPoints)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="4 3" />
                 {hoverItems.map((item, idx) => (
-                  <circle key={idx} cx={toX(hoverIdx, maxPoints)} cy={toY(item.value)} r="4" fill={item.color} stroke="white" strokeWidth="1.5" />
+                  <circle key={idx} cx={toX(hoverIdx, maxPoints)} cy={toY(item.value)} r="4" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} stroke="white" strokeWidth="1.5" />
                 ))}
               </>
             )}
@@ -278,9 +298,9 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                   <text x={bx + 8} y={by + 13} fontSize="9" fill="var(--muted-foreground)" fontFamily="monospace">{timeStr}</text>
                   {hoverItems.map((item, i) => (
                     <g key={i}>
-                      <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={item.color} />
+                      <rect x={bx + 8} y={by + 20 + i * 16 - 4} width="8" height="8" rx="2" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} />
                       <text x={bx + 20} y={by + 20 + i * 16 + 3} fontSize="10" fill="var(--foreground)" fontFamily="monospace">
-                        {item.label} {item.value.toFixed(0)}ms
+                        {item.label} {formatValue(item.value)}
                       </text>
                     </g>
                   ))}
