@@ -56,7 +56,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
 
           <div className="flex items-center gap-1.5">
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-muted/50 transition-colors"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-full bg-muted/50 transition-colors"
               title={isConnected ? "已连接" : `未连接${reconnectCount > 0 ? ` (已重连 ${reconnectCount} 次)` : ""}`}
             >
               <div className={`h-1.5 w-1.5 rounded-full transition-colors ${isConnected ? "bg-trading-up shadow-[0_0_4px_rgba(0,181,120,0.4)]" : "bg-trading-down"}`} />

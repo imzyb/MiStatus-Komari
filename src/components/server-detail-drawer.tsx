@@ -72,7 +72,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
             </div>
 
             {s.online && (
-              <div className="flex items-center gap-4 mt-2 pt-2 border-t border-hairline/50">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 pt-2 border-t border-hairline/50">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground w-7">CPU</span>
                   <MiniBar percent={cpuP} color={cpuColor} />
@@ -88,7 +88,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
                   <MiniBar percent={diskP} color={diskColor} />
                   <span className="text-[10px] font-mono text-foreground/70 w-8 text-right">{diskP}%</span>
                 </div>
-                <div className="flex items-center gap-1.5 ml-auto">
+                <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground">流量</span>
                   <span className="text-[10px] font-mono text-foreground/70">↓{formatBytes(s.network_in)}</span>
                   <span className="text-[10px] font-mono text-foreground/70">↑{formatBytes(s.network_out)}</span>

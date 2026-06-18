@@ -158,14 +158,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-3">
           <div className="flex items-center gap-1">
             {TIME_RANGES.map((r) => (
               <button
                 key={r.hours}
                 type="button"
                 onClick={() => setHours(r.hours)}
-                className={`px-2.5 py-1 text-xs rounded-full transition-all duration-200 ${
+                className={`px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs rounded-full transition-all duration-200 ${
                   hours === r.hours
                     ? "bg-primary text-primary-foreground font-medium shadow-sm"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -176,7 +176,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             ))}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
               const info = basicInfoMap[id];

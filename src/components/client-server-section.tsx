@@ -104,40 +104,39 @@ export const ClientServerSection: React.FC = () => {
   return (
     <ServerDetailProvider>
       <div className="space-y-4 min-h-[300px] md:min-h-[600px]">
-        <div className="flex items-center gap-3 min-h-[36px]">
+        <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:min-h-[36px]">
           <h2
-            className="text-xl font-bold tracking-tight"
+            className="text-xl font-bold tracking-tight flex-shrink-0"
             suppressHydrationWarning
           >
             服务器列表
           </h2>
 
-          <div className="min-w-[140px]">
-            {!isLoading && regions.length > 0 && (
-              <Suspense
-                fallback={
-                  <div className="h-9 w-[140px] bg-muted rounded-md animate-pulse"></div>
-                }
-              >
-                <RegionSelect
-                  regions={regions}
-                  selectedRegion={selectedRegion}
-                  onRegionChange={setSelectedRegion}
-                  regionCounts={regionCounts}
-                />
-              </Suspense>
-            )}
-            {!isLoading && regions.length === 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md min-w-[140px] justify-between text-sm text-muted-foreground opacity-50">
-                <MapPin className="h-4 w-4" />
-                <span>无地区</span>
-              </div>
-            )}
-          </div>
+          <div className="flex items-center gap-2 flex-wrap sm:ml-auto">
+            <div className="min-w-0 flex-1 sm:flex-none sm:min-w-[120px]">
+              {!isLoading && regions.length > 0 && (
+                <Suspense
+                  fallback={
+                    <div className="h-9 w-full bg-muted rounded-full animate-pulse"></div>
+                  }
+                >
+                  <RegionSelect
+                    regions={regions}
+                    selectedRegion={selectedRegion}
+                    onRegionChange={setSelectedRegion}
+                    regionCounts={regionCounts}
+                  />
+                </Suspense>
+              )}
+              {!isLoading && regions.length === 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60 text-xs text-muted-foreground opacity-50">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>无地区</span>
+                </div>
+              )}
+            </div>
 
-          <ServerSearch value={searchQuery} onChange={setSearchQuery} />
-
-          <div className="ml-auto">
+            <ServerSearch value={searchQuery} onChange={setSearchQuery} />
             <ViewToggle value={viewMode} onChange={handleViewModeChange} />
           </div>
         </div>
