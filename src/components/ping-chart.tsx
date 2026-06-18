@@ -74,6 +74,15 @@ function PingDot({ color, value }: { color: string; value: number | undefined })
   );
 }
 
+function samplePoints<T>(arr: T[]): T[] {
+  if (arr.length <= MAX_POINTS) return arr;
+  const step = Math.max(1, Math.floor(arr.length / MAX_POINTS));
+  const result: T[] = [];
+  for (let i = 0; i < arr.length; i += step) result.push(arr[i]);
+  if (result[result.length - 1] !== arr[arr.length - 1]) result.push(arr[arr.length - 1]);
+  return result;
+}
+
 export const PingChart: React.FC<PingChartProps> = React.memo(
   function PingChart({ serverId, livePing10010, livePing189, livePing10086 }) {
     const [result, setResult] = useState<PingRecordsResult | null>(null);
@@ -112,16 +121,25 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const basicInfoMap = useMemo(() => {
       if (!result?.basic_info) return {};
       const map: Record<number, BasicInfo> = {};
-      for (const b of result.basic_info) map[b.client as unknown as number] = b;
+      for (const b of result.basic_info) {
+        const id = Number(b.client);
+        if (Number.isFinite(id)) map[id] = b;
+      }
       return map;
     }, [result]);
 
     const taskIds = ISP_ORDER.filter((id) => grouped[id]?.length > 1);
     const hasData = !loading && result && taskIds.length > 0;
 
-    const maxPoints = useMemo(() => {
-      return taskIds.reduce((m, id) => Math.max(m, grouped[id].length), 0);
+    const sampled = useMemo(() => {
+      const m: Record<number, { time: string; value: number }[]> = {};
+      for (const id of taskIds) m[id] = samplePoints(grouped[id]);
+      return m;
     }, [taskIds, grouped]);
+
+    const sampledLen = useMemo(() => {
+      return taskIds.reduce((m, id) => Math.max(m, sampled[id].length), 0);
+    }, [taskIds, sampled]);
 
     const livePingMap: Record<number, number | undefined> = {
       1: livePing10010,
@@ -130,8 +148,8 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     };
 
     const timeLabels = useMemo(() => {
-      if (taskIds.length === 0 || maxPoints === 0) return [];
-      const pts = grouped[taskIds[0]];
+      if (taskIds.length === 0 || sampledLen === 0) return [];
+      const pts = sampled[taskIds[0]];
       if (!pts) return [];
       const labels: { i: number; label: string }[] = [];
       const n = pts.length;
@@ -141,7 +159,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       for (let idx = 0; idx < n; idx += step) labels.push({ i: idx, label: formatTime(pts[idx].time, showDate) });
       if (n > 1 && (n - 1) % step !== 0) labels.push({ i: n - 1, label: formatTime(pts[n - 1].time, showDate) });
       return labels;
-    }, [taskIds, grouped, maxPoints, hours]);
+    }, [taskIds, sampled, sampledLen, hours]);
 
     const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
     const toY = (v: number): number => {
@@ -159,47 +177,37 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return PAD_T;
     };
 
-    const toPolyline = (id: number) => {
-      const pts = grouped[id];
-      if (!pts) return "";
+    const buildStepPath = (id: number): string => {
+      const pts = sampled[id];
+      if (!pts || pts.length < 2) return "";
       const n = pts.length;
-      if (n < 2) return "";
-      const step = Math.max(1, Math.floor(n / MAX_POINTS));
-      const sampled = pts.filter((_, i) => i % step === 0 || i === n - 1);
-      const coords = sampled.map((p, i) => ({ x: toX(i, sampled.length), y: toY(p.value) }));
+      const coords = pts.map((p, i) => ({ x: toX(i, n), y: toY(p.value) }));
       let d = `M ${coords[0].x},${coords[0].y}`;
-      for (let i = 1; i < coords.length; i++) {
-        d += ` H ${coords[i].x} V ${coords[i].y}`;
-      }
+      for (let i = 1; i < coords.length; i++) d += ` H ${coords[i].x} V ${coords[i].y}`;
       return d;
     };
 
-    const toAreaPath = (id: number) => {
-      const pts = grouped[id];
-      if (!pts) return "";
+    const buildAreaPath = (id: number): string => {
+      const pts = sampled[id];
+      if (!pts || pts.length < 2) return "";
       const n = pts.length;
-      if (n < 2) return "";
-      const step = Math.max(1, Math.floor(n / MAX_POINTS));
-      const sampled = pts.filter((_, i) => i % step === 0 || i === n - 1);
-      const coords = sampled.map((p, i) => ({ x: toX(i, sampled.length), y: toY(p.value) }));
+      const coords = pts.map((p, i) => ({ x: toX(i, n), y: toY(p.value) }));
       const bottom = PAD_T + INNER_H;
       let d = `M ${coords[0].x},${bottom} V ${coords[0].y}`;
-      for (let i = 1; i < coords.length; i++) {
-        d += ` H ${coords[i].x} V ${coords[i].y}`;
-      }
+      for (let i = 1; i < coords.length; i++) d += ` H ${coords[i].x} V ${coords[i].y}`;
       d += ` V ${bottom} Z`;
       return d;
     };
 
     const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
       const svg = svgRef.current;
-      if (!svg || maxPoints === 0) return;
+      if (!svg || sampledLen === 0) return;
       const rect = svg.getBoundingClientRect();
       const xInPlot = ((e.clientX - rect.left) / rect.width) * CHART_W - PAD_L;
       if (xInPlot < 0 || xInPlot > INNER_W) { setHoverIdx(null); return; }
-      const idx = Math.round((xInPlot / INNER_W) * (maxPoints - 1));
-      setHoverIdx(Math.max(0, Math.min(idx, maxPoints - 1)));
-    }, [maxPoints]);
+      const idx = Math.round((xInPlot / INNER_W) * (sampledLen - 1));
+      setHoverIdx(Math.max(0, Math.min(idx, sampledLen - 1)));
+    }, [sampledLen]);
 
     const handleMouseLeave = useCallback(() => setHoverIdx(null), []);
 
@@ -207,13 +215,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       if (hoverIdx === null) return null;
       const results: { label: string; color: string; value: number; time: string }[] = [];
       for (const id of taskIds) {
-        const pts = grouped[id];
+        const pts = sampled[id];
         if (!pts || hoverIdx >= pts.length) continue;
         const cfg = TASK_CONFIG[id] || { label: `任务${id}`, color: "#888" };
         results.push({ label: cfg.label, color: cfg.color, value: pts[hoverIdx].value, time: pts[hoverIdx].time });
       }
       return results.length > 0 ? results : null;
-    }, [hoverIdx, taskIds, grouped]);
+    }, [hoverIdx, taskIds, sampled]);
 
     const allTaskIds = Object.keys(grouped).map(Number).sort();
 
@@ -292,7 +300,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             width="100%"
             className="w-full h-72"
             role="img"
-            aria-label="延迟监测曲线图"
+            aria-label="延迟监测阶梯图"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
@@ -309,62 +317,47 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             })}
 
             {timeLabels.map((t, i) => (
-              <text key={i} x={toX(t.i, maxPoints)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
+              <text key={i} x={toX(t.i, sampledLen)} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
             ))}
 
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const areaD = toAreaPath(id);
-              return areaD ? (
-                <path key={`area-${id}`} d={areaD} fill={cfg.color} fillOpacity="0.08" />
-              ) : null;
+              const areaD = buildAreaPath(id);
+              return areaD ? <path key={`area-${id}`} d={areaD} fill={cfg.color} fillOpacity="0.08" /> : null;
             })}
 
             {taskIds.map((id) => {
               const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const pathD = toPolyline(id);
+              const pathD = buildStepPath(id);
               if (!pathD) return null;
-              const pts = grouped[id];
+              const pts = sampled[id];
               if (!pts) return null;
               const n = pts.length;
-              const step = Math.max(1, Math.floor(n / MAX_POINTS));
-              const sampledCount = pts.filter((_, i) => i % step === 0 || i === n - 1).length;
-              const lastX = toX(sampledCount - 1, sampledCount);
+              const lastX = toX(n - 1, n);
               const lastY = toY(pts[n - 1].value);
               const lastVal = pts[n - 1].value;
               return (
                 <g key={id}>
                   <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="butt" />
                   <circle cx={lastX} cy={lastY} r="2.5" fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} />
+                  <text x={lastX + 5} y={lastY + 3} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
+                    {formatValue(lastVal)}
+                  </text>
                 </g>
-              );
-            })}
-
-            {taskIds.map((id) => {
-              const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-              const pts = grouped[id];
-              if (!pts) return null;
-              const lastX = toX(pts.length - 1, pts.length);
-              const lastY = toY(pts[pts.length - 1].value);
-              const lastVal = pts[pts.length - 1].value;
-              return (
-                <text key={`v-${id}`} x={lastX + 5} y={lastY + 3} fill={isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color} fontSize="8" fontFamily="monospace" fontWeight="500">
-                  {formatValue(lastVal)}
-                </text>
               );
             })}
 
             {hoverIdx !== null && hoverItems && (
               <>
-                <line x1={toX(hoverIdx, maxPoints)} x2={toX(hoverIdx, maxPoints)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 3" />
+                <line x1={toX(hoverIdx, sampledLen)} x2={toX(hoverIdx, sampledLen)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 3" />
                 {hoverItems.map((item, idx) => (
-                  <circle key={idx} cx={toX(hoverIdx, maxPoints)} cy={toY(item.value)} r="3.5" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} stroke="var(--background)" strokeWidth="2" />
+                  <circle key={idx} cx={toX(hoverIdx, sampledLen)} cy={toY(item.value)} r="3.5" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} stroke="var(--background)" strokeWidth="2" />
                 ))}
               </>
             )}
 
             {hoverIdx !== null && hoverItems && (() => {
-              const cx = toX(hoverIdx, maxPoints);
+              const cx = toX(hoverIdx, sampledLen);
               const timeStr = hoverItems[0]?.time ? formatTime(hoverItems[0].time, hours >= 24) : "";
               const boxW = 85;
               const boxH = 16 + hoverItems.length * 15;
