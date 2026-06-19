@@ -27,7 +27,7 @@ interface ServerCardProps {
 export const ServerCard: React.FC<ServerCardProps> = React.memo(
     function ServerCard({ server }) {
     const isOnline = server.online;
-    const { openDetail } = useServerDetail();
+    const { openDetail, showDetails } = useServerDetail();
 
     const cpuFormatter = React.useMemo(
       () => createCpuFormatter("zh-CN", 1),
@@ -50,8 +50,15 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
 
     return (
       <div
-        className="relative h-full server-card rounded-2xl bg-card border border-hairline/80 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
-        onClick={() => openDetail(server)}
+        className={
+          "relative h-full server-card rounded-2xl bg-card border border-hairline/80 shadow-sm overflow-hidden" +
+          (showDetails
+            ? " hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            : " transition-all duration-300")
+        }
+        onClick={showDetails ? () => openDetail(server) : undefined}
+        role={showDetails ? "button" : undefined}
+        tabIndex={showDetails ? 0 : undefined}
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 

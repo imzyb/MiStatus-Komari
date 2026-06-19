@@ -48,6 +48,6 @@ export interface AnimatedNumberProps {
 }
 
 export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, suffix, className }) => {
-  const animated = useAnimatedNumber(value);
+  const animated = useAnimatedNumber(value, 400, 1);
   return <span className={className}>{animated}{suffix}</span>;
 };

@@ -139,23 +139,27 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return labels;
     }, [taskIds, sampled, sampledLen, hours]);
 
+    const paths = useMemo(() => {
+      const result: Record<number, string> = {};
+      for (const id of taskIds) {
+        const pts = sampled[id];
+        if (!pts || pts.length < 2) continue;
+        const coords = pts.map((p, i) => ({ x: toX(i, pts.length), y: toY(p.value) }));
+        let d = `M ${coords[0].x},${coords[0].y}`;
+        for (let i = 1; i < coords.length; i++) {
+          const p0 = coords[Math.max(i - 2, 0)], p1 = coords[i - 1], p2 = coords[i], p3 = coords[Math.min(i + 1, coords.length - 1)];
+          const t = 0.18;
+          d += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
+        }
+        result[id] = d;
+      }
+      return result;
+    }, [taskIds, sampled]);
+
     const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
     const toY = (v: number): number => {
       if (isTimeout(v)) return PAD_T;
       return PAD_T + INNER_H - (Math.min(Math.max(v, 0), Y_TICKS[Y_TICKS.length - 1]) / Y_TICKS[Y_TICKS.length - 1]) * INNER_H;
-    };
-
-    const buildSmoothPath = (id: number): string => {
-      const pts = sampled[id];
-      if (!pts || pts.length < 2) return "";
-      const coords = pts.map((p, i) => ({ x: toX(i, pts.length), y: toY(p.value) }));
-      let d = `M ${coords[0].x},${coords[0].y}`;
-      for (let i = 1; i < coords.length; i++) {
-        const p0 = coords[Math.max(i - 2, 0)], p1 = coords[i - 1], p2 = coords[i], p3 = coords[Math.min(i + 1, coords.length - 1)];
-        const t = 0.18;
-        d += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
-      }
-      return d;
     };
 
     const hoverAt = useCallback((clientX: number) => {
@@ -258,7 +262,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             <g clipPath={`url(#${clipId})`}>
               {taskIds.map((id) => {
                 const cfg = TASK_CONFIG[id] || { label: "", color: "#888" };
-                const pathD = buildSmoothPath(id);
+                const pathD = paths[id];
                 if (!pathD) return null;
                 const pts = sampled[id];
                 if (!pts) return null;

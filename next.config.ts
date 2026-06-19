@@ -76,13 +76,6 @@ const nextConfig: NextConfig = {
               chunks: 'all',
               enforce: true,
             },
-            ui: {
-              name: 'ui',
-              test: /[\\/]node_modules[\\/](lucide-react)[\\/]/,
-              priority: 25,
-              chunks: 'all',
-              enforce: true,
-            },
           },
         },
       };

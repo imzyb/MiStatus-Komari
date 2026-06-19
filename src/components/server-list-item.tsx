@@ -33,7 +33,7 @@ function ProgressBar({ percent }: { percent: number }) {
 
 const ServerListItem: React.FC<ServerListItemProps> = React.memo(
   function ServerListItem({ server }) {
-    const { openDetail } = useServerDetail();
+    const { openDetail, showDetails } = useServerDetail();
     const isOnline = server.online;
     const cpuPercent = formatPercent(server.cpu, 100);
     const memPercent = formatPercent(server.memory_used, server.memory_total);
@@ -48,8 +48,13 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
 
     return (
       <div
-        className="flex items-center gap-2 px-4 py-3 rounded-xl bg-card shadow-sm hover:shadow-md active:scale-[0.99] transition-all duration-200 cursor-pointer text-xs"
-        onClick={() => openDetail(server)}
+        className={
+          "flex items-center gap-2 px-4 py-3 rounded-xl bg-card shadow-sm transition-all duration-200 text-xs" +
+          (showDetails ? " hover:shadow-md active:scale-[0.99] cursor-pointer" : "")
+        }
+        onClick={showDetails ? () => openDetail(server) : undefined}
+        role={showDetails ? "button" : undefined}
+        tabIndex={showDetails ? 0 : undefined}
       >
         <div className="flex items-center gap-2 min-w-0 w-[35%] sm:w-[25%]">
           <StatusIndicator isOnline={isOnline} />

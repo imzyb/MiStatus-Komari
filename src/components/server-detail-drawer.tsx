@@ -1,10 +1,22 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { X, MapPin, Clock } from "lucide-react";
 import { useServerDetail } from "@/contexts/server-detail-context";
-import { PingChart } from "./ping-chart";
 import { formatDurationEnShort, formatPercent, formatBytes } from "@/lib/utils";
+
+const PingChart = lazy(() =>
+  import("./ping-chart").then((module) => ({ default: module.PingChart }))
+);
+
+function PingChartSkeleton() {
+  return (
+    <div className="flex flex-col items-center justify-center h-72 space-y-3">
+      <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <span className="text-xs text-muted-foreground">加载中...</span>
+    </div>
+  );
+}
 
 function MiniBar({ percent, color }: { percent: number; color: string }) {
   return (
@@ -98,12 +110,14 @@ export const ServerDetailDrawer: React.FC = React.memo(
           </div>
 
           <div className="p-3 sm:p-5">
-            <PingChart
-                serverId={s.gid}
-                livePing10010={s.ping_10010}
-                livePing189={s.ping_189}
-                livePing10086={s.ping_10086}
-              />
+            <Suspense fallback={<PingChartSkeleton />}>
+              <PingChart
+                  serverId={s.gid}
+                  livePing10010={s.ping_10010}
+                  livePing189={s.ping_189}
+                  livePing10086={s.ping_10086}
+                />
+            </Suspense>
 
             {!s.online && (
               <div className="flex items-center justify-center gap-2 mt-4 px-4 py-2 rounded-xl bg-muted/40">

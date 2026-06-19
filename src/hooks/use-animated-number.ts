@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useAnimatedNumber(target: number, duration = 400): number {
+export function useAnimatedNumber(target: number, duration = 400, minDelta = 1): number {
   const [current, setCurrent] = useState(target);
   const prevRef = useRef(target);
   const frameRef = useRef<number | null>(null);
@@ -11,6 +11,11 @@ export function useAnimatedNumber(target: number, duration = 400): number {
     const from = prevRef.current;
     const to = target;
     if (from === to) return;
+    if (Math.abs(to - from) < minDelta) {
+      prevRef.current = to;
+      setCurrent(to);
+      return;
+    }
 
     const start = performance.now();
     const step = (now: number) => {
@@ -29,7 +34,7 @@ export function useAnimatedNumber(target: number, duration = 400): number {
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-  }, [target, duration]);
+  }, [target, duration, minDelta]);
 
   return current;
 }

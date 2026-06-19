@@ -7,6 +7,7 @@ interface ServerDetailContextValue {
   selectedServer: Server | null;
   openDetail: (server: Server) => void;
   closeDetail: () => void;
+  showDetails: boolean;
 }
 
 const ServerDetailContext = createContext<ServerDetailContextValue | null>(null);
@@ -24,7 +25,7 @@ export function ServerDetailProvider({ children, showDetails = true }: { childre
   }, []);
 
   return (
-    <ServerDetailContext.Provider value={{ selectedServer, openDetail, closeDetail }}>
+    <ServerDetailContext.Provider value={{ selectedServer, openDetail, closeDetail, showDetails }}>
       {children}
     </ServerDetailContext.Provider>
   );
