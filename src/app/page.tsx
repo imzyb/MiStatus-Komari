@@ -7,6 +7,7 @@ import { ClientNavbar } from "@/components/client-navbar";
 import { ServerFooter } from "@/components/server-footer";
 import { ClientServerSection } from "@/components/client-server-section";
 import { useThemeSettings } from "@/contexts/theme-settings-context";
+import { DashboardErrorBoundary } from "@/components/dashboard/error-boundary";
 
 export default function Home() {
   const { data } = useServers();
@@ -17,7 +18,9 @@ export default function Home() {
       <ClientNavbar />
       <main className="flex-1 flex flex-col items-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-5 space-y-6 content-container animate-fade-in">
-          {settings.showDashboard && <ServerDashboardStats data={data} />}
+          <DashboardErrorBoundary>
+            {settings.showDashboard && <ServerDashboardStats data={data} />}
+          </DashboardErrorBoundary>
           <ClientServerSection />
         </div>
       </main>
