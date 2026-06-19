@@ -3,10 +3,10 @@
 import { MapPin } from 'lucide-react';
 import { useState, Suspense, lazy, useEffect, useMemo, useRef } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
-import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
 import { ViewToggle, type ViewMode } from "./view-toggle";
 import { ServerSearch } from "./server-search";
+import { filterServers } from "@/lib/utils/filter";
 import { ServerDetailProvider } from "@/contexts/server-detail-context";
 import { ServerDetailDrawer } from "./server-detail-drawer";
 import { useThemeSettings } from "@/contexts/theme-settings-context";
@@ -33,17 +33,6 @@ function getStoredViewMode(): ViewMode {
   if (typeof window === "undefined") return "card";
   const stored = localStorage.getItem(STORAGE_KEY);
   return stored === "list" ? "list" : "card";
-}
-
-function filterServers(servers: Server[], query: string): Server[] {
-  if (!query.trim()) return servers;
-  const q = query.toLowerCase();
-  return servers.filter(
-    (s) =>
-      (s.alias || s.name).toLowerCase().includes(q) ||
-      s.name.toLowerCase().includes(q) ||
-      (s.location || "").toLowerCase().includes(q)
-  );
 }
 
 export const ClientServerSection: React.FC = () => {

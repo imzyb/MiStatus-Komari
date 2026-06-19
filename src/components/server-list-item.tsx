@@ -92,11 +92,11 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
-          <div className="hidden sm:flex items-center gap-0.5 text-muted-foreground text-[11px] w-[56px] justify-end">
-            <Clock className="h-3 w-3" />
-            <span suppressHydrationWarning>{uptime}</span>
+          <div className="flex items-center gap-0.5 text-muted-foreground text-[11px] w-[52px] sm:w-[56px] justify-end">
+            <Clock className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate" suppressHydrationWarning>{uptime}</span>
           </div>
-          <div className="w-[40px] flex justify-end">
+          <div className="w-[36px] sm:w-[40px] flex justify-end">
             <StatusBadge isOnline={isOnline} />
           </div>
         </div>

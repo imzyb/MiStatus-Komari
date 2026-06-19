@@ -109,7 +109,6 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
     );
   },
   (prevProps, nextProps) => {
-    // 仅比较会影响 UI 的字段，避免昂贵的 JSON.stringify
     const a = prevProps.server;
     const b = nextProps.server;
 

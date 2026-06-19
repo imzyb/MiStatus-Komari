@@ -44,32 +44,30 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
       };
     }
 
-    const onlineServers = data.servers.filter((server) => {
-      const ipOnline = Boolean(server.online4 || server.online6);
-      if (typeof server.online === 'boolean') return server.online || ipOnline;
-      return ipOnline || (server.uptime && server.uptime !== '');
-    }).length;
-    const totalServers = data.servers.length;
-
+    let onlineServers = 0;
     let totalCpu = 0;
     let totalNetworkRx = 0;
     let totalNetworkTx = 0;
     let totalDownload = 0;
     let totalUpload = 0;
 
-    data.servers.forEach((server) => {
-      const isOnline = (typeof server.online === 'boolean')
-        ? (server.online || Boolean(server.online4 || server.online6))
-        : (Boolean(server.online4 || server.online6) || (server.uptime && server.uptime !== ''));
+    for (const server of data.servers) {
+      const ipOnline = Boolean(server.online4 || server.online6);
+      const isOnline = typeof server.online === 'boolean'
+        ? (server.online || ipOnline)
+        : (ipOnline || (server.uptime && server.uptime !== ''));
+
       if (isOnline) {
+        onlineServers++;
         totalCpu += server.cpu || 0;
         totalNetworkRx += server.network_rx || 0;
         totalNetworkTx += server.network_tx || 0;
         totalDownload += server.network_in || 0;
         totalUpload += server.network_out || 0;
       }
-    });
+    }
 
+    const totalServers = data.servers.length;
     const avgCpuUsage = onlineServers ? Math.round(totalCpu / onlineServers) : 0;
 
     return {

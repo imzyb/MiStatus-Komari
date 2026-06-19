@@ -20,6 +20,8 @@ import type {
   GetRecordsParams
 } from './rpc-types';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 export interface NodesSnapshotResult {
   nodes: Client | Record<string, Client>;
   statuses: Record<string, NodeStatus>;
@@ -66,7 +68,7 @@ export class RpcAdapter {
       return await this.rpcClient.call<MeInfo>('common:getMe');
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getMe failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getMe failed, falling back to REST:', error);
         return this.fallbackToRest('/api/me');
       }
       throw error;
@@ -86,7 +88,7 @@ export class RpcAdapter {
       return await this.rpcClient.call<PublicInfo>('common:getPublicInfo');
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getPublicInfo failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getPublicInfo failed, falling back to REST:', error);
         return this.fallbackToRest('/api/public');
       }
       throw error;
@@ -106,7 +108,7 @@ export class RpcAdapter {
       return await this.rpcClient.call<VersionInfo>('common:getVersion');
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getVersion failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getVersion failed, falling back to REST:', error);
         return this.fallbackToRest('/api/version');
       }
       throw error;
@@ -128,7 +130,7 @@ export class RpcAdapter {
       return snapshot.nodes;
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getNodes failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getNodes failed, falling back to REST:', error);
         return this.fallbackToRest('/api/nodes');
       }
       throw error;
@@ -153,7 +155,7 @@ export class RpcAdapter {
       return snapshot.statuses;
     } catch (error) {
       if (this.config.fallback && params?.uuid) {
-        console.warn('RPC getNodesLatestStatus failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getNodesLatestStatus failed, falling back to REST:', error);
         return this.fallbackToRest(`/api/recent/${params.uuid}`);
       }
       throw error;
@@ -173,7 +175,7 @@ export class RpcAdapter {
       return await this.rpcClient.call<RecentStatusResp>('common:getNodeRecentStatus', params);
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getNodeRecentStatus failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getNodeRecentStatus failed, falling back to REST:', error);
         return this.fallbackToRest(`/api/recent/${params.uuid}`);
       }
       throw error;
@@ -213,7 +215,7 @@ export class RpcAdapter {
       return await this.rpcClient.call<LoadRecordsResult | LoadRecordsAllResult | PingRecordsResult>('common:getRecords', params);
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getRecords failed, falling back to REST:', error);
+        if (isDev) console.warn('RPC getRecords failed, falling back to REST:', error);
         const endpoint = params.type === 'ping' ? '/api/records/ping' : '/api/records/load';
         const queryParams = new URLSearchParams();
 
@@ -250,7 +252,7 @@ export class RpcAdapter {
 
       return data;
     } catch (error) {
-      console.error('REST API fallback failed:', error);
+      if (isDev) console.error('REST API fallback failed:', error);
       throw error;
     }
   }
@@ -263,7 +265,7 @@ export class RpcAdapter {
       return await this.rpcClient.ping();
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC ping failed, falling back to REST health check');
+        if (isDev) console.warn('RPC ping failed, falling back to REST health check');
         try {
           const response = await fetch('/api/version');
           if (response.ok) {
@@ -372,7 +374,7 @@ export class RpcAdapter {
       };
     } catch (error) {
       if (this.config.fallback) {
-        console.warn('RPC getNodesSnapshot failed, falling back to sequential RPC calls:', error);
+        if (isDev) console.warn('RPC getNodesSnapshot failed, falling back to sequential RPC calls:', error);
         const nodesPromise = nodesParams
           ? this.rpcClient.call<Client | Record<string, Client>>('common:getNodes', nodesParams)
           : this.rpcClient.call<Client | Record<string, Client>>('common:getNodes');

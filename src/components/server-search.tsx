@@ -32,6 +32,7 @@ export const ServerSearch: React.FC<ServerSearchProps> = React.memo(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="搜索服务器..."
+          aria-label="搜索服务器"
           className="h-9 w-full sm:w-56 rounded-full bg-muted/60 pl-8 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white dark:focus:bg-[#2c2c2c] transition-colors"
         />
         {value ? (

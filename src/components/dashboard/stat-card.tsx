@@ -15,9 +15,20 @@ export interface StatCardProps {
 export const StatCard: React.FC<StatCardProps> = ({
   title, value, icon, className, onClick,
 }) => {
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    if (!onClick) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  }, [onClick]);
+
   return (
     <div
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card border border-hairline/80 shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200",
         onClick && "cursor-pointer",

@@ -80,11 +80,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       setLoading(false);
     }, [serverId]);
 
+    const hoursRef = React.useRef(hours);
+    hoursRef.current = hours;
+
     useEffect(() => { fetch(hours); }, [fetch, hours]);
     useEffect(() => {
-      const timer = setInterval(() => fetch(hours), AUTO_REFRESH_MS);
+      const timer = setInterval(() => fetch(hoursRef.current), AUTO_REFRESH_MS);
       return () => clearInterval(timer);
-    }, [fetch, hours]);
+    }, [fetch]);
 
     const grouped = useMemo(() => {
       if (!result?.records) return {};

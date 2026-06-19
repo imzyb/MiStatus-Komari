@@ -4,9 +4,10 @@ import React, { lazy, Suspense, useMemo } from "react";
 import { useServers } from "@/contexts/servers-context";
 import { ServerCard } from "./server-card";
 import { ServerListView } from "./server-list-view";
-import type { Server } from "@/lib/api";
 import { ServerListSkeleton } from "./server-list-skeleton";
+import type { Server } from "@/lib/api";
 import type { ViewMode } from "./view-toggle";
+import { filterServers } from "@/lib/utils/filter";
 
 const VirtualizedServerList = lazy(() =>
   import("./virtualized-server-list").then((module) => ({
@@ -19,17 +20,6 @@ const VIRTUALIZATION_THRESHOLD = 50;
 interface ServerListProps {
   viewMode?: ViewMode;
   searchQuery?: string;
-}
-
-function filterServers(servers: Server[], query: string): Server[] {
-  if (!query.trim()) return servers;
-  const q = query.toLowerCase();
-  return servers.filter(
-    (s) =>
-      (s.alias || s.name).toLowerCase().includes(q) ||
-      s.name.toLowerCase().includes(q) ||
-      (s.location || "").toLowerCase().includes(q)
-  );
 }
 
 export const ServerList: React.FC<ServerListProps> = React.memo(function ServerList({ viewMode = "card", searchQuery = "" }) {
