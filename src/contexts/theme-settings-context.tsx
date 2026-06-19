@@ -42,18 +42,25 @@ const API_KEY_MAP: Record<keyof ThemeSettings, string> = {
   showAdminLink: 'show_admin_link',
 };
 
+function castBoolean(v: unknown): boolean {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") return v.toLowerCase() !== "false" && v !== "0";
+  if (typeof v === "number") return v !== 0;
+  return false;
+}
+
 function mergeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {
   const apiPart: Partial<ThemeSettings> = {};
   if (apiRecord) {
     for (const [key, apiKey] of Object.entries(API_KEY_MAP)) {
       const val = apiRecord[apiKey];
       if (val !== undefined && val !== null) {
-        (apiPart as Record<string, unknown>)[key] = val;
+        apiPart[key as keyof ThemeSettings] = castBoolean(val);
       }
     }
   }
   const localPart = loadLocalOverrides();
-  return { ...DEFAULT_SETTINGS, ...apiPart, ...localPart };
+  return { ...DEFAULT_SETTINGS, ...apiPart, ...localPart } as ThemeSettings;
 }
 
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {

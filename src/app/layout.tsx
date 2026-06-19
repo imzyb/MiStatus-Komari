@@ -31,7 +31,7 @@ const runtimeBaseUrl = resolveEnvBaseUrl();
 
 const getPublicInfoCached = cache(
   async (): Promise<
-    KomariResponse<{ sitename?: string; description?: string }>
+    KomariResponse<{ sitename?: string; description?: string; theme_settings?: Record<string, unknown> }>
   > => {
     // 静态导出阶段可能无法访问后端，直接返回失败让调用方走兜底配置
     if (
@@ -74,7 +74,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let initialSiteInfo: { sitename?: string; description?: string } | null =
+  let initialSiteInfo: { sitename?: string; description?: string; theme_settings?: Record<string, unknown> } | null =
     null;
 
   try {
