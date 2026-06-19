@@ -6,7 +6,6 @@ import { ServerDashboardStats } from "@/components/server-dashboard-stats";
 import { ClientNavbar } from "@/components/client-navbar";
 import { ServerFooter } from "@/components/server-footer";
 import { ClientServerSection } from "@/components/client-server-section";
-import { ThemeSettingsDrawer } from "@/components/theme-settings-drawer";
 import { useThemeSettings } from "@/contexts/theme-settings-context";
 
 export default function Home() {
@@ -23,7 +22,6 @@ export default function Home() {
         </div>
       </main>
       <ServerFooter />
-      <ThemeSettingsDrawer />
     </div>
   );
 }

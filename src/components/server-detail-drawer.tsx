@@ -8,7 +8,7 @@ import { formatDurationEnShort, formatPercent, formatBytes } from "@/lib/utils";
 
 function MiniBar({ percent, color }: { percent: number; color: string }) {
   return (
-    <div className="h-1 w-14 rounded-full bg-muted overflow-hidden flex-shrink-0">
+    <div className="h-1 w-10 sm:w-14 rounded-full bg-muted overflow-hidden flex-shrink-0">
       <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(percent, 100)}%` }} />
     </div>
   );
@@ -97,7 +97,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
             )}
           </div>
 
-          <div className="p-4 sm:p-5">
+          <div className="p-3 sm:p-5">
             <PingChart
                 serverId={s.gid}
                 livePing10010={s.ping_10010}

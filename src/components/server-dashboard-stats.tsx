@@ -124,7 +124,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
 
   return (
     <div className="stats-container">
-      <div className="flex justify-between items-center dashboard-title">
+      <div className="flex justify-between items-center dashboard-title mb-5">
         <h1
           className="text-xl font-bold tracking-tight"
           suppressHydrationWarning
