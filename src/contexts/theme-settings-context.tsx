@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { useSiteInfo } from '@/contexts/site-info-context';
 import { config } from '@/lib/config';
 
 export interface ThemeSettings {
@@ -22,36 +23,51 @@ interface ThemeSettingsContextValue {
 
 const ThemeSettingsContext = createContext<ThemeSettingsContextValue | null>(null);
 
-function loadSettings(): ThemeSettings {
-  if (typeof window === 'undefined') return DEFAULT_SETTINGS;
+function loadLocalOverrides(): Partial<ThemeSettings> {
+  if (typeof window === 'undefined') return {};
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+    if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  return DEFAULT_SETTINGS;
+  return {};
 }
 
-function saveSettings(s: ThemeSettings) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore */ }
+const API_KEY_MAP: Record<keyof ThemeSettings, string> = {
+  showDashboard: 'show_dashboard',
+};
+
+function mergeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {
+  const apiPart: Partial<ThemeSettings> = {};
+  if (apiRecord) {
+    for (const [key, apiKey] of Object.entries(API_KEY_MAP)) {
+      const val = apiRecord[apiKey];
+      if (val !== undefined && val !== null) {
+        (apiPart as Record<string, unknown>)[key] = val;
+      }
+    }
+  }
+  const localPart = loadLocalOverrides();
+  return { ...DEFAULT_SETTINGS, ...apiPart, ...localPart };
 }
 
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<ThemeSettings>(DEFAULT_SETTINGS);
+  const { siteInfo } = useSiteInfo();
+  const [merged, setMerged] = useState<ThemeSettings>(() => mergeSettings(null));
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setSettings(loadSettings());
-  }, []);
+    setMerged(mergeSettings(siteInfo?.theme_settings));
+  }, [siteInfo?.theme_settings]);
 
   const updateSetting = useCallback(<K extends keyof ThemeSettings>(key: K, value: ThemeSettings[K]) => {
-    setSettings((prev) => {
+    setMerged((prev) => {
       const next = { ...prev, [key]: value };
-      saveSettings(next);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
       return next;
     });
   }, []);
 
-  const ctx = useMemo(() => ({ settings, updateSetting, open, setOpen }), [settings, updateSetting, open]);
+  const ctx = useMemo(() => ({ settings: merged, updateSetting, open, setOpen }), [merged, updateSetting, open]);
 
   return (
     <ThemeSettingsContext.Provider value={ctx}>
