@@ -1,22 +1,10 @@
 "use client";
 
-import React, { useEffect, Suspense, lazy } from "react";
+import React, { useEffect } from "react";
 import { X, MapPin, Clock } from "lucide-react";
 import { useServerDetail } from "@/contexts/server-detail-context";
+import { PingChart } from "./ping-chart";
 import { formatDurationEnShort, formatPercent, formatBytes } from "@/lib/utils";
-
-const PingChart = lazy(() =>
-  import("./ping-chart").then((module) => ({ default: module.PingChart }))
-);
-
-function PingChartSkeleton() {
-  return (
-    <div className="flex flex-col items-center justify-center h-72 space-y-3">
-      <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      <span className="text-xs text-muted-foreground">加载中...</span>
-    </div>
-  );
-}
 
 function MiniBar({ percent, color }: { percent: number; color: string }) {
   return (
@@ -57,7 +45,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
     return (
       <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={closeDetail} />
-        <div className="relative w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[95vh] sm:max-h-[92vh] overflow-y-auto mx-0 sm:mx-0">
+        <div className="relative w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[92vh] sm:max-h-[92vh] overflow-y-auto mx-0 sm:mx-0 overscroll-contain pb-[env(safe-area-inset-bottom)]">
           <div className="sticky top-0 bg-card/90 backdrop-blur-xl border-b border-hairline/50 px-4 sm:px-5 py-2.5 z-10 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -76,10 +64,10 @@ export const ServerDetailDrawer: React.FC = React.memo(
               <button
                 type="button"
                 onClick={closeDetail}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 -mr-1 -mt-1"
                 aria-label="关闭"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -109,15 +97,13 @@ export const ServerDetailDrawer: React.FC = React.memo(
             )}
           </div>
 
-          <div className="p-3 sm:p-5">
-            <Suspense fallback={<PingChartSkeleton />}>
-              <PingChart
-                  serverId={s.gid}
-                  livePing10010={s.ping_10010}
-                  livePing189={s.ping_189}
-                  livePing10086={s.ping_10086}
-                />
-            </Suspense>
+          <div className="p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
+            <PingChart
+                serverId={s.gid}
+                livePing10010={s.ping_10010}
+                livePing189={s.ping_189}
+                livePing10086={s.ping_10086}
+              />
 
             {!s.online && (
               <div className="flex items-center justify-center gap-2 mt-4 px-4 py-2 rounded-xl bg-muted/40">

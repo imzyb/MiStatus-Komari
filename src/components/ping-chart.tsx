@@ -139,6 +139,12 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return labels;
     }, [taskIds, sampled, sampledLen, hours]);
 
+    const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
+    const toY = (v: number): number => {
+      if (isTimeout(v)) return PAD_T;
+      return PAD_T + INNER_H - (Math.min(Math.max(v, 0), Y_TICKS[Y_TICKS.length - 1]) / Y_TICKS[Y_TICKS.length - 1]) * INNER_H;
+    };
+
     const paths = useMemo(() => {
       const result: Record<number, string> = {};
       for (const id of taskIds) {
@@ -155,12 +161,6 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       }
       return result;
     }, [taskIds, sampled]);
-
-    const toX = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
-    const toY = (v: number): number => {
-      if (isTimeout(v)) return PAD_T;
-      return PAD_T + INNER_H - (Math.min(Math.max(v, 0), Y_TICKS[Y_TICKS.length - 1]) / Y_TICKS[Y_TICKS.length - 1]) * INNER_H;
-    };
 
     const hoverAt = useCallback((clientX: number) => {
       const svg = svgRef.current;

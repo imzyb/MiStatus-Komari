@@ -71,11 +71,12 @@ export function ThemeSettingsProvider({ children }: { children: React.ReactNode 
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const effectiveSettings = ready
-    ? settings
-    : ({ ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings);
-
-  const ctx = useMemo(() => ({ settings: effectiveSettings, updateSetting, open, setOpen, ready }), [effectiveSettings, updateSetting, open, ready]);
+  const ctx = useMemo(() => {
+    const resolved = ready
+      ? settings
+      : ({ ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings);
+    return { settings: resolved, updateSetting, open, setOpen, ready };
+  }, [settings, ready, updateSetting, open, setOpen]);
 
   return (
     <ThemeSettingsContext.Provider value={ctx}>
