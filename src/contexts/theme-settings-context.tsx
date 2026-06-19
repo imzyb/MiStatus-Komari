@@ -6,10 +6,14 @@ import { config } from '@/lib/config';
 
 export interface ThemeSettings {
   showDashboard: boolean;
+  showDetails: boolean;
+  showAdminLink: boolean;
 }
 
 const DEFAULT_SETTINGS: ThemeSettings = {
   showDashboard: config.showDashboard,
+  showDetails: config.showDetails,
+  showAdminLink: config.showAdminLink,
 };
 
 const STORAGE_KEY = 'mistatus_settings';
@@ -34,6 +38,8 @@ function loadLocalOverrides(): Partial<ThemeSettings> {
 
 const API_KEY_MAP: Record<keyof ThemeSettings, string> = {
   showDashboard: 'show_dashboard',
+  showDetails: 'show_details',
+  showAdminLink: 'show_admin_link',
 };
 
 function mergeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {

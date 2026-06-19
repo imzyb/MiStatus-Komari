@@ -2,7 +2,7 @@
   "name": "MiStatus Komari",
   "short": "MiStatus",
   "description": "基于 Next.js 的现代化服务器监控主题",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "author": "imzyb",
   "url": "https://github.com/imzyb/MiStatus-Komari",
   "preview": "preview.png",
@@ -21,6 +21,20 @@
         "type": "switch",
         "default": true,
         "help": { "zh-CN": "显示/隐藏首页顶部的监控统计卡片", "en": "Show/hide the dashboard stats on the homepage" }
+      },
+      {
+        "key": "show_details",
+        "name": { "zh-CN": "详情页功能", "en": "Details Page" },
+        "type": "switch",
+        "default": true,
+        "help": { "zh-CN": "开启/关闭首页服务器点击后的详情页功能", "en": "Enable/disable the server details page on the homepage" }
+      },
+      {
+        "key": "show_admin_link",
+        "name": { "zh-CN": "登录按钮", "en": "Login Button" },
+        "type": "switch",
+        "default": true,
+        "help": { "zh-CN": "显示/隐藏导航栏的管理后台入口按钮", "en": "Show/hide the admin login button in the navigation bar" }
       }
     ]
   }

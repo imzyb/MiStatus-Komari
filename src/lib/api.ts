@@ -134,9 +134,8 @@ export interface KomariResponse<T = unknown> {
  */
 export const getKomariPublicInfo = async (
   baseUrl?: string
-): Promise<KomariResponse<{ sitename?: string; description?: string }>> => {
+): Promise<KomariResponse<{ sitename?: string; description?: string; theme_settings?: Record<string, unknown> }>> => {
   try {
-    // 优先使用 RPC 接口
     const publicInfo = await rpcAdapter.getPublicInfo();
 
     return {
@@ -144,6 +143,7 @@ export const getKomariPublicInfo = async (
       data: {
         sitename: publicInfo.sitename,
         description: publicInfo.description,
+        theme_settings: publicInfo.theme_settings,
       },
     };
   } catch (error) {

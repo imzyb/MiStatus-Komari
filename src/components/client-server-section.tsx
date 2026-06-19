@@ -9,6 +9,7 @@ import { ViewToggle, type ViewMode } from "./view-toggle";
 import { ServerSearch } from "./server-search";
 import { ServerDetailProvider } from "@/contexts/server-detail-context";
 import { ServerDetailDrawer } from "./server-detail-drawer";
+import { useThemeSettings } from "@/contexts/theme-settings-context";
 
 const ServerList = lazy(() =>
   import("@/components/server-list").then((module) => ({
@@ -51,6 +52,7 @@ export const ClientServerSection: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
+  const { settings } = useThemeSettings();
 
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
 
@@ -92,7 +94,7 @@ export const ClientServerSection: React.FC = () => {
 
   if (!mounted) {
     return (
-      <ServerDetailProvider>
+      <ServerDetailProvider showDetails={settings.showDetails}>
         <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
           <ServerListSkeleton />
         </div>
@@ -102,7 +104,7 @@ export const ClientServerSection: React.FC = () => {
   }
 
   return (
-    <ServerDetailProvider>
+    <ServerDetailProvider showDetails={settings.showDetails}>
       <div className="space-y-4 min-h-[300px] md:min-h-[600px]">
         <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:min-h-[36px]">
           <h2

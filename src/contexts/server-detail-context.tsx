@@ -11,12 +11,13 @@ interface ServerDetailContextValue {
 
 const ServerDetailContext = createContext<ServerDetailContextValue | null>(null);
 
-export function ServerDetailProvider({ children }: { children: React.ReactNode }) {
+export function ServerDetailProvider({ children, showDetails = true }: { children: React.ReactNode; showDetails?: boolean }) {
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
 
   const openDetail = useCallback((server: Server) => {
+    if (!showDetails) return;
     setSelectedServer(server);
-  }, []);
+  }, [showDetails]);
 
   const closeDetail = useCallback(() => {
     setSelectedServer(null);

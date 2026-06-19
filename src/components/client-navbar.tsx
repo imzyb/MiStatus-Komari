@@ -6,6 +6,7 @@ import { config } from "@/lib/config";
 import { useSiteInfo } from "@/contexts/site-info-context";
 import { useServers } from "@/contexts/servers-context";
 import { ClientThemeToggle } from "@/components/client-theme-toggle";
+import { useThemeSettings } from "@/contexts/theme-settings-context";
 
 const AdminLink = () => (
   <a
@@ -30,6 +31,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
 }) => {
   const { siteInfo } = useSiteInfo();
   const { isConnected, reconnectCount } = useServers();
+  const { settings } = useThemeSettings();
   const siteTitle = siteInfo?.sitename?.trim() || fallbackTitle;
   const [scrolled, setScrolled] = useState(false);
 
@@ -63,7 +65,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
               <span className="text-[11px] text-muted-foreground hidden sm:inline font-medium">{isConnected ? "实时" : "离线"}</span>
             </div>
             <ClientThemeToggle />
-            <div className="max-sm:hidden"><AdminLink /></div>
+            {settings.showAdminLink && <div className="max-sm:hidden"><AdminLink /></div>}
           </div>
         </div>
       </div>
