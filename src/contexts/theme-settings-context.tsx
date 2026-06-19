@@ -21,6 +21,8 @@ interface ThemeSettingsContextValue {
   updateSetting: <K extends keyof ThemeSettings>(key: K, value: ThemeSettings[K]) => void;
   open: boolean;
   setOpen: (v: boolean) => void;
+  /** 是否已从服务端加载完成 */
+  ready: boolean;
 }
 
 const ThemeSettingsContext = createContext<ThemeSettingsContextValue | null>(null);
@@ -57,17 +59,23 @@ export function ThemeSettingsProvider({ children }: { children: React.ReactNode 
   const [settings, setSettings] = useState<ThemeSettings>(() =>
     normalizeSettings(siteInfo?.theme_settings ?? null)
   );
+  const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setSettings(normalizeSettings(siteInfo?.theme_settings));
+    setReady(true);
   }, [siteInfo?.theme_settings]);
 
   const updateSetting = useCallback(<K extends keyof ThemeSettings>(key: K, value: ThemeSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const ctx = useMemo(() => ({ settings, updateSetting, open, setOpen }), [settings, updateSetting, open]);
+  const effectiveSettings = ready
+    ? settings
+    : ({ ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings);
+
+  const ctx = useMemo(() => ({ settings: effectiveSettings, updateSetting, open, setOpen, ready }), [effectiveSettings, updateSetting, open, ready]);
 
   return (
     <ThemeSettingsContext.Provider value={ctx}>
