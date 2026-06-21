@@ -49,10 +49,10 @@ export const ClientServerSection: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && gridRef.current) {
+    if (selectedRegion && gridRef.current) {
       gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [selectedRegion, isLoading]);
+  }, [selectedRegion]);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);

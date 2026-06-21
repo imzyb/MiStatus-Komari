@@ -73,8 +73,12 @@ const CACHE_KEY = "mistatus_theme_settings_cache";
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {
   const { siteInfo } = useSiteInfo();
 
-  const [settings, setSettings] = useState<ThemeSettings>(DEFAULT_SETTINGS);
-  const [ready, setReady] = useState(false);
+  const [settings, setSettings] = useState<ThemeSettings>(() => {
+    return siteInfo?.theme_settings
+      ? normalizeSettings(siteInfo.theme_settings)
+      : DEFAULT_SETTINGS;
+  });
+  const [ready, setReady] = useState(() => !!siteInfo?.theme_settings);
   const [open, setOpen] = useState(false);
 
   // 1. 客户端挂载后，立刻尝试从本地存储中同步恢复上一次缓存的设置（消除接口慢加载闪烁）
@@ -119,7 +123,7 @@ export function ThemeSettingsProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const ctx = useMemo(() => {
-    return { settings: ready ? settings : DEFAULT_SETTINGS, updateSetting, open, setOpen, ready };
+    return { settings, updateSetting, open, setOpen, ready };
   }, [settings, ready, updateSetting, open, setOpen]);
 
   return (
