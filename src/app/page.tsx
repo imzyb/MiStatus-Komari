@@ -24,10 +24,10 @@ function LoadingPlaceholder() {
 }
 
 export default function Home() {
-  const { data } = useServers();
+  const { data, isLoading } = useServers();
   const { settings, ready } = useThemeSettings();
 
-  if (!ready) {
+  if (!ready || (!data && isLoading)) {
     return (
       <div className="flex flex-col min-h-screen">
         <ClientNavbar />
