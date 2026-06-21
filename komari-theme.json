@@ -2,7 +2,7 @@
   "name": "MiStatus Komari",
   "short": "MiStatus",
   "description": "基于 Next.js 的现代化服务器监控主题",
-  "version": "2.4.7",
+  "version": "2.4.9",
   "author": "imzyb",
   "url": "https://github.com/imzyb/MiStatus-Komari",
   "preview": "preview.png",
@@ -35,6 +35,15 @@
         "type": "switch",
         "default": true,
         "help": { "zh-CN": "显示/隐藏导航栏的管理后台入口按钮", "en": "Show/hide the admin login button in the navigation bar" }
+      },
+      {
+        "key": "card_columns",
+        "name": { "zh-CN": "每行卡片数", "en": "Cards Per Row" },
+        "type": "number",
+        "default": 4,
+        "min": 1,
+        "max": 8,
+        "help": { "zh-CN": "设置首页卡片视图每行显示的服务器数量（1-8）", "en": "Number of server cards per row on the homepage (1-8)" }
       }
     ]
   }
