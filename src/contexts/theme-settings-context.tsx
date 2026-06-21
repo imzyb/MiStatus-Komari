@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { useSiteInfo } from '@/contexts/site-info-context';
+import { useSiteInfo, type SiteInfo } from '@/contexts/site-info-context';
 import { config } from '@/lib/config';
 
 export interface ThemeSettings {
@@ -70,31 +70,31 @@ function normalizeSettings(apiRecord: Record<string, unknown> | undefined | null
 
 const CACHE_KEY = "mistatus_theme_settings_cache";
 
+function loadCachedSettings(): ThemeSettings | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getInitialSettings(siteInfo: SiteInfo | null): ThemeSettings {
+  if (siteInfo?.theme_settings) return normalizeSettings(siteInfo.theme_settings);
+  const cached = loadCachedSettings();
+  if (cached) return cached;
+  return DEFAULT_SETTINGS;
+}
+
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {
   const { siteInfo } = useSiteInfo();
 
-  const [settings, setSettings] = useState<ThemeSettings>(() => {
-    return siteInfo?.theme_settings
-      ? normalizeSettings(siteInfo.theme_settings)
-      : DEFAULT_SETTINGS;
-  });
-  const [ready, setReady] = useState(() => !!siteInfo?.theme_settings);
+  const [settings, setSettings] = useState<ThemeSettings>(() => getInitialSettings(siteInfo));
+  const [ready, setReady] = useState(() => !!(siteInfo?.theme_settings || loadCachedSettings()));
   const [open, setOpen] = useState(false);
 
-  // 1. 客户端挂载后，立刻尝试从本地存储中同步恢复上一次缓存的设置（消除接口慢加载闪烁）
-  useEffect(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        setSettings(JSON.parse(cached));
-        setReady(true);
-      }
-    } catch {
-      // 忽略缓存读取错误
-    }
-  }, []);
-
-  // 2. 当网络 API 站点配置返回后，静默同步并更新缓存
+  // 当网络 API 站点配置返回后，静默同步并更新缓存
   useEffect(() => {
     if (siteInfo?.theme_settings) {
       const latest = normalizeSettings(siteInfo.theme_settings);

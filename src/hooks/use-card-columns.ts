@@ -6,10 +6,8 @@ const MIN_COLS = 1;
 const MAX_COLS = 8;
 
 export function useCardColumns(): number {
-  const { settings, ready } = useThemeSettings();
-  return ready
-    ? Math.max(MIN_COLS, Math.min(settings.cardColumns, MAX_COLS))
-    : 4;
+  const { settings } = useThemeSettings();
+  return Math.max(MIN_COLS, Math.min(settings.cardColumns, MAX_COLS));
 }
 
 export function gridColumnStyle(cols: number): React.CSSProperties {
