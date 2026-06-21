@@ -50,6 +50,13 @@ function latencyQuality(ms: number): string {
   return "text-trading-down";
 }
 
+function latencyQualityColor(ms: number): string {
+  if (isTimeout(ms)) return "var(--trading-down, #ff3b30)";
+  if (ms < 50) return "var(--trading-up, #34c759)";
+  if (ms < 200) return "var(--accent, #ff6a00)";
+  return "var(--trading-down, #ff3b30)";
+}
+
 function PingDot({ color, value }: { color: string; value: number | undefined }) {
   if (value === undefined) return <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />;
   if (isTimeout(value)) return <span className="h-1.5 w-1.5 rounded-full bg-trading-down" />;
@@ -62,12 +69,29 @@ function samplePointsMax(points: { time: string; value: number }[]): { time: str
   const result: { time: string; value: number }[] = [];
   for (let i = 0; i < points.length; i += step) {
     const end = Math.min(i + step, points.length);
-    let maxV = -Infinity;
-    let maxIdx = i;
+    let selectedIdx = i;
+    let hasTimeout = false;
+    
+    // 优先保留可能存在的超时/丢包点，防止被正常网络延迟数据覆盖
     for (let j = i; j < end; j++) {
-      if (points[j].value > maxV) { maxV = points[j].value; maxIdx = j; }
+      if (isTimeout(points[j].value)) {
+        selectedIdx = j;
+        hasTimeout = true;
+        break;
+      }
     }
-    result.push(points[maxIdx]);
+    
+    if (!hasTimeout) {
+      let maxV = -Infinity;
+      for (let j = i; j < end; j++) {
+        if (points[j].value > maxV) {
+          maxV = points[j].value;
+          selectedIdx = j;
+        }
+      }
+    }
+    
+    result.push(points[selectedIdx]);
   }
   if (result[result.length - 1] !== points[points.length - 1]) {
     result.push(points[points.length - 1]);
@@ -209,6 +233,10 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     const paths = useMemo(() => {
       const pathResult: Record<number, string> = {};
+      const yMin = PAD_T;
+      const yMax = PAD_T + INNER_H;
+      const limitY = (y: number) => Math.min(yMax, Math.max(yMin, y));
+
       for (const id of taskIds) {
         const pts = sampled[id];
         if (!pts || pts.length < 2) continue;
@@ -217,7 +245,11 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         for (let i = 1; i < coords.length; i++) {
           const p0 = coords[Math.max(i - 2, 0)], p1 = coords[i - 1], p2 = coords[i], p3 = coords[Math.min(i + 1, coords.length - 1)];
           const t = 0.18;
-          d += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
+          const cp1x = p1.x + (p2.x - p0.x) * t;
+          const cp1y = limitY(p1.y + (p2.y - p0.y) * t);
+          const cp2x = p2.x - (p3.x - p1.x) * t;
+          const cp2y = limitY(p2.y - (p3.y - p1.y) * t);
+          d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
         }
         pathResult[id] = d;
       }
@@ -343,14 +375,14 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
               const lastX = toX(pts.length - 1, pts.length);
               const lastY = toY(pts[pts.length - 1].value);
               const lastVal = pts[pts.length - 1].value;
-              const endColor = isTimeout(lastVal) ? "var(--trading-down, #ff3b30)" : cfg.color;
+              const statusColor = latencyQualityColor(lastVal);
               const labelX = lastX + 5 > PAD_L + INNER_W - 30 ? lastX - 5 : lastX + 5;
               const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
               return (
                 <g key={id}>
                   <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-                  <circle cx={lastX} cy={lastY} r="3" fill={endColor} />
-                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={endColor} fontSize="9" fontFamily="monospace" fontWeight="600">
+                  <circle cx={lastX} cy={lastY} r="3.5" fill={statusColor} stroke="var(--background)" strokeWidth="1" />
+                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={statusColor} fontSize="9" fontFamily="monospace" fontWeight="600">
                     {formatValue(lastVal)}
                   </text>
                 </g>

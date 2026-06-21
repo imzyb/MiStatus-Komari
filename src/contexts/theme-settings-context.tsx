@@ -68,22 +68,54 @@ function normalizeSettings(apiRecord: Record<string, unknown> | undefined | null
   return result as ThemeSettings;
 }
 
+const CACHE_KEY = "mistatus_theme_settings_cache";
+
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {
   const { siteInfo } = useSiteInfo();
 
-  const [settings, setSettings] = useState<ThemeSettings>(() =>
-    normalizeSettings(siteInfo?.theme_settings ?? null)
-  );
+  const [settings, setSettings] = useState<ThemeSettings>(DEFAULT_SETTINGS);
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // 1. 客户端挂载后，立刻尝试从本地存储中同步恢复上一次缓存的设置（消除接口慢加载闪烁）
   useEffect(() => {
-    setSettings(normalizeSettings(siteInfo?.theme_settings));
-    setReady(true);
-  }, [siteInfo?.theme_settings]);
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        setSettings(JSON.parse(cached));
+        setReady(true);
+      }
+    } catch {
+      // 忽略缓存读取错误
+    }
+  }, []);
+
+  // 2. 当网络 API 站点配置返回后，静默同步并更新缓存
+  useEffect(() => {
+    if (siteInfo?.theme_settings) {
+      const latest = normalizeSettings(siteInfo.theme_settings);
+      setSettings(latest);
+      setReady(true);
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(latest));
+      } catch {
+        // 忽略缓存写入错误
+      }
+    } else if (siteInfo) {
+      setReady(true);
+    }
+  }, [siteInfo]);
 
   const updateSetting = useCallback(<K extends keyof ThemeSettings>(key: K, value: ThemeSettings[K]) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+    setSettings((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(next));
+      } catch {
+        // 忽略写入错误
+      }
+      return next;
+    });
   }, []);
 
   const ctx = useMemo(() => {

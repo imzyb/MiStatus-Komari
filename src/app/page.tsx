@@ -11,7 +11,7 @@ import { DashboardErrorBoundary } from "@/components/dashboard/error-boundary";
 
 export default function Home() {
   const { data } = useServers();
-  const { settings } = useThemeSettings();
+  const { settings, ready } = useThemeSettings();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -19,7 +19,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-5 space-y-6 content-container animate-fade-in">
           <DashboardErrorBoundary>
-            {settings.showDashboard && <ServerDashboardStats data={data} />}
+            {ready && settings.showDashboard && <ServerDashboardStats data={data} />}
           </DashboardErrorBoundary>
           <ClientServerSection />
         </div>
