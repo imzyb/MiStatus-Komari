@@ -87,10 +87,7 @@ export function ThemeSettingsProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const ctx = useMemo(() => {
-    const resolved = ready
-      ? settings
-      : { ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings;
-    return { settings: resolved, updateSetting, open, setOpen, ready };
+    return { settings: ready ? settings : DEFAULT_SETTINGS, updateSetting, open, setOpen, ready };
   }, [settings, ready, updateSetting, open, setOpen]);
 
   return (

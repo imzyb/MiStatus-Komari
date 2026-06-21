@@ -6,24 +6,16 @@ import { useRegionData } from "@/hooks/use-region-data";
 import { ServerListSkeleton } from "./server-list-skeleton";
 import { ViewToggle, type ViewMode } from "./view-toggle";
 import { ServerSearch } from "./server-search";
+import { ServerList } from "./server-list";
+import { RegionGroupView } from "./region-group-view";
 import { filterServers } from "@/lib/utils/filter";
 import { ServerDetailProvider } from "@/contexts/server-detail-context";
 import { ServerDetailDrawer } from "./server-detail-drawer";
 import { useThemeSettings } from "@/contexts/theme-settings-context";
 
-const ServerList = lazy(() =>
-  import("@/components/server-list").then((module) => ({
-    default: module.ServerList,
-  }))
-);
 const RegionSelect = lazy(() =>
   import("@/components/region-filter").then((module) => ({
     default: module.RegionSelect,
-  }))
-);
-const RegionGroupView = lazy(() =>
-  import("@/components/region-group-view").then((module) => ({
-    default: module.RegionGroupView,
   }))
 );
 
@@ -40,7 +32,6 @@ export const ClientServerSection: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
-  const [mounted, setMounted] = useState(false);
   const { settings } = useThemeSettings();
 
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
@@ -55,14 +46,13 @@ export const ClientServerSection: React.FC = () => {
 
   useEffect(() => {
     setViewMode(getStoredViewMode());
-    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (mounted && gridRef.current) {
+    if (!isLoading && gridRef.current) {
       gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [selectedRegion, mounted]);
+  }, [selectedRegion, isLoading]);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -81,20 +71,9 @@ export const ClientServerSection: React.FC = () => {
       .filter((g) => g.servers.length > 0);
   }, [regionGroups, searchQuery]);
 
-  if (!mounted) {
-    return (
-      <ServerDetailProvider showDetails={settings.showDetails}>
-        <div className="space-y-6 min-h-[300px] md:min-h-[600px]">
-          <ServerListSkeleton />
-        </div>
-        <ServerDetailDrawer />
-      </ServerDetailProvider>
-    );
-  }
-
   return (
     <ServerDetailProvider showDetails={settings.showDetails}>
-      <div className="space-y-4 min-h-[300px] md:min-h-[600px]">
+      <div className={`space-y-4 min-h-[300px] md:min-h-[600px] ${!isLoading ? 'animate-fade-in' : ''}`}>
         <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:min-h-[36px]">
           <h2
             className="text-xl font-bold tracking-tight flex-shrink-0"
@@ -135,26 +114,24 @@ export const ClientServerSection: React.FC = () => {
           </div>
         </div>
 
-        {!isLoading && (
-          <div ref={gridRef} className="animate-fade-in server-grid-container">
-            <Suspense fallback={<ServerListSkeleton viewMode={viewMode} />}>
-              {selectedRegion ? (
-                <RegionGroupView
-                  regionGroups={filteredRegionGroups}
-                  showRegionHeaders={false}
-                  viewMode={viewMode}
-                />
-              ) : (
-                <ServerList
-                  viewMode={viewMode}
-                  searchQuery={searchQuery}
-                />
-              )}
-            </Suspense>
+        {isLoading ? (
+          <ServerListSkeleton viewMode={viewMode} />
+        ) : (
+          <div ref={gridRef} className="server-grid-container">
+            {selectedRegion ? (
+              <RegionGroupView
+                regionGroups={filteredRegionGroups}
+                showRegionHeaders={false}
+                viewMode={viewMode}
+              />
+            ) : (
+              <ServerList
+                viewMode={viewMode}
+                searchQuery={searchQuery}
+              />
+            )}
           </div>
         )}
-
-        {isLoading && <ServerListSkeleton />}
       </div>
       <ServerDetailDrawer />
     </ServerDetailProvider>
