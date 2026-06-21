@@ -12,23 +12,11 @@ import { Activity } from "lucide-react";
 
 function LoadingPlaceholder() {
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center">
-              <Activity className="h-7 w-7 text-primary/40" />
-            </div>
-            <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary animate-pulse" />
-          </div>
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-foreground/80">正在载入</h2>
-            <div className="flex items-center justify-center gap-1 mt-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "300ms" }} />
-            </div>
-          </div>
+        <div className="rounded-2xl bg-card shadow-sm px-10 py-8 flex flex-col items-center gap-4">
+          <Activity className="h-8 w-8 text-muted-foreground/40" />
+          <span className="text-sm text-muted-foreground">正在载入...</span>
         </div>
       </div>
     </div>
