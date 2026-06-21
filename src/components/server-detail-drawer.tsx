@@ -100,9 +100,7 @@ export const ServerDetailDrawer: React.FC = React.memo(
           <div className="p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
             <PingChart
                 serverId={s.gid}
-                livePing10010={s.ping_10010}
-                livePing189={s.ping_189}
-                livePing10086={s.ping_10086}
+                livePingMap={{ 1: s.ping_10010, 2: s.ping_189, 3: s.ping_10086 }}
               />
 
             {!s.online && (

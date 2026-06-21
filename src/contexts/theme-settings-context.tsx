@@ -8,12 +8,14 @@ export interface ThemeSettings {
   showDashboard: boolean;
   showDetails: boolean;
   showAdminLink: boolean;
+  cardColumns: number;
 }
 
 const DEFAULT_SETTINGS: ThemeSettings = {
   showDashboard: config.showDashboard,
   showDetails: config.showDetails,
   showAdminLink: config.showAdminLink,
+  cardColumns: config.cardColumns,
 };
 
 interface ThemeSettingsContextValue {
@@ -27,23 +29,13 @@ interface ThemeSettingsContextValue {
 
 const ThemeSettingsContext = createContext<ThemeSettingsContextValue | null>(null);
 
-function normalizeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {
-  const result = { ...DEFAULT_SETTINGS };
-  if (apiRecord) {
-    for (const [key, apiKey] of Object.entries(API_KEY_MAP)) {
-      const val = apiRecord[apiKey];
-      if (val !== undefined && val !== null) {
-        (result as Record<string, unknown>)[key] = castBoolean(val);
-      }
-    }
-  }
-  return result as ThemeSettings;
-}
+type SettingType = 'boolean' | 'number';
 
-const API_KEY_MAP: Record<keyof ThemeSettings, string> = {
-  showDashboard: 'show_dashboard',
-  showDetails: 'show_details',
-  showAdminLink: 'show_admin_link',
+const SETTING_META: Record<keyof ThemeSettings, { apiKey: string; type: SettingType }> = {
+  showDashboard: { apiKey: 'show_dashboard', type: 'boolean' },
+  showDetails: { apiKey: 'show_details', type: 'boolean' },
+  showAdminLink: { apiKey: 'show_admin_link', type: 'boolean' },
+  cardColumns: { apiKey: 'card_columns', type: 'number' },
 };
 
 function castBoolean(v: unknown): boolean {
@@ -51,6 +43,29 @@ function castBoolean(v: unknown): boolean {
   if (typeof v === "string") return v.toLowerCase() !== "false" && v !== "0";
   if (typeof v === "number") return v !== 0;
   return false;
+}
+
+function castNumber(v: unknown): number {
+  if (typeof v === "number") return Math.max(1, Math.min(Math.round(v), 8));
+  if (typeof v === "string") {
+    const n = parseInt(v, 10);
+    return isNaN(n) ? DEFAULT_SETTINGS.cardColumns : Math.max(1, Math.min(n, 8));
+  }
+  return DEFAULT_SETTINGS.cardColumns;
+}
+
+function normalizeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {
+  const result = { ...DEFAULT_SETTINGS };
+  if (apiRecord) {
+    for (const [key, meta] of Object.entries(SETTING_META)) {
+      const val = apiRecord[meta.apiKey];
+      if (val !== undefined && val !== null) {
+        (result as Record<string, unknown>)[key] =
+          meta.type === 'number' ? castNumber(val) : castBoolean(val);
+      }
+    }
+  }
+  return result as ThemeSettings;
 }
 
 export function ThemeSettingsProvider({ children }: { children: React.ReactNode }) {
@@ -74,7 +89,7 @@ export function ThemeSettingsProvider({ children }: { children: React.ReactNode 
   const ctx = useMemo(() => {
     const resolved = ready
       ? settings
-      : ({ ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings);
+      : { ...DEFAULT_SETTINGS, showDashboard: false, showDetails: false, showAdminLink: false } as ThemeSettings;
     return { settings: resolved, updateSetting, open, setOpen, ready };
   }, [settings, ready, updateSetting, open, setOpen]);
 

@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { ViewMode } from "./view-toggle";
+import { gridColumnStyle } from "@/hooks/use-card-columns";
 
 interface ServerListSkeletonProps {
   viewMode?: ViewMode;
@@ -54,7 +55,7 @@ export const ServerListSkeleton: React.FC<ServerListSkeletonProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 server-grid">
+    <div className="grid gap-3 server-grid" style={gridColumnStyle(4)}>
       {Array(8)
         .fill(null)
         .map((_, index) => (

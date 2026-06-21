@@ -9,4 +9,6 @@ export const config = {
   showDetails: true,
   /** 是否显示登录/管理入口按钮 */
   showAdminLink: true,
+  /** 卡片视图每行显示数量 */
+  cardColumns: 4,
 };
