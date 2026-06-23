@@ -11,4 +11,8 @@ export const config = {
   showAdminLink: true,
   /** 卡片视图每行显示数量 */
   cardColumns: 4,
+  /** 是否显示页脚 */
+  showFooter: true,
+  /** 自定义页脚内容（为空时显示默认内容） */
+  footerContent: "",
 };

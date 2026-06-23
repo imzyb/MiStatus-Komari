@@ -9,6 +9,8 @@ export interface ThemeSettings {
   showDetails: boolean;
   showAdminLink: boolean;
   cardColumns: number;
+  showFooter: boolean;
+  footerContent: string;
 }
 
 const DEFAULT_SETTINGS: ThemeSettings = {
@@ -16,6 +18,8 @@ const DEFAULT_SETTINGS: ThemeSettings = {
   showDetails: config.showDetails,
   showAdminLink: config.showAdminLink,
   cardColumns: config.cardColumns,
+  showFooter: config.showFooter,
+  footerContent: config.footerContent,
 };
 
 interface ThemeSettingsContextValue {
@@ -29,13 +33,15 @@ interface ThemeSettingsContextValue {
 
 const ThemeSettingsContext = createContext<ThemeSettingsContextValue | null>(null);
 
-type SettingType = 'boolean' | 'number';
+type SettingType = 'boolean' | 'number' | 'string';
 
 const SETTING_META: Record<keyof ThemeSettings, { apiKey: string; type: SettingType }> = {
   showDashboard: { apiKey: 'show_dashboard', type: 'boolean' },
   showDetails: { apiKey: 'show_details', type: 'boolean' },
   showAdminLink: { apiKey: 'show_admin_link', type: 'boolean' },
   cardColumns: { apiKey: 'card_columns', type: 'number' },
+  showFooter: { apiKey: 'show_footer', type: 'boolean' },
+  footerContent: { apiKey: 'footer_content', type: 'string' },
 };
 
 function castBoolean(v: unknown): boolean {
@@ -54,14 +60,25 @@ function castNumber(v: unknown): number {
   return DEFAULT_SETTINGS.cardColumns;
 }
 
+function castString(v: unknown): string {
+  if (typeof v === "string") return v;
+  if (typeof v === "number") return String(v);
+  return "";
+}
+
 function normalizeSettings(apiRecord: Record<string, unknown> | undefined | null): ThemeSettings {
   const result = { ...DEFAULT_SETTINGS };
   if (apiRecord) {
     for (const [key, meta] of Object.entries(SETTING_META)) {
       const val = apiRecord[meta.apiKey];
       if (val !== undefined && val !== null) {
-        (result as Record<string, unknown>)[key] =
-          meta.type === 'number' ? castNumber(val) : castBoolean(val);
+        if (meta.type === 'number') {
+          (result as Record<string, unknown>)[key] = castNumber(val);
+        } else if (meta.type === 'string') {
+          (result as Record<string, unknown>)[key] = castString(val);
+        } else {
+          (result as Record<string, unknown>)[key] = castBoolean(val);
+        }
       }
     }
   }
