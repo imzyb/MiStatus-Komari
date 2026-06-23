@@ -98,11 +98,11 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
           <div className="h-5 w-24 skeleton rounded-sm" />
         </div>
         <div className="stats-grid">
-<div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {Array(4).fill(null).map((_, i) => (
-              <div key={i} className="rounded-2xl bg-card shadow-sm p-4">
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            {Array.from({length: 4}).map((_, i) => (
+              <div key={i} className="rounded-2xl bg-card shadow-sm p-3 sm:p-4">
                 <div className="flex items-center">
-                  <div className="mr-3 h-10 w-10 rounded-2xl skeleton" />
+                  <div className="mr-2.5 sm:mr-3 h-8 w-8 sm:h-10 sm:w-10 rounded-xl skeleton" />
                   <div className="space-y-1.5 flex-1">
                     <div className="h-3 w-14 skeleton rounded-full" />
                     <div className="h-5 w-20 skeleton rounded-full" />
@@ -122,9 +122,9 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
 
   return (
     <div className="stats-container">
-      <div className="flex justify-between items-center dashboard-title mb-5">
+      <div className="flex justify-between items-center dashboard-title mb-3 sm:mb-5">
         <h1
-          className="text-xl font-bold tracking-tight"
+          className="text-lg sm:text-xl font-bold tracking-tight"
           suppressHydrationWarning
         >
           监控概览
@@ -134,7 +134,7 @@ export const ServerDashboardStats: React.FC<ServerDashboardStatsProps> = ({ data
       </div>
 
       <div className="stats-grid">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           <StatCard
             title="服务器"
             onClick={scrollToServers}

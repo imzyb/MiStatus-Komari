@@ -4,14 +4,14 @@ import React, { useMemo } from "react";
 import { useServers } from "@/contexts/servers-context";
 import { ServerCard } from "./server-card";
 import { ServerListSkeleton } from "./server-list-skeleton";
-import { useCardColumns, gridColumnStyle } from "@/hooks/use-card-columns";
+import { useCardGridClassName } from "@/hooks/use-card-columns";
 
 const MAX_ANIMATION_DELAY_ITEMS = 20;
 const ANIMATION_DELAY_STEP_MS = 30;
 
 export const VirtualizedServerList: React.FC = React.memo(function VirtualizedServerList() {
   const { data } = useServers();
-  const cardCols = useCardColumns();
+  const gridClassName = useCardGridClassName();
 
   const sortedServers = useMemo(() => {
     if (!data?.servers) return [];
@@ -23,7 +23,7 @@ export const VirtualizedServerList: React.FC = React.memo(function VirtualizedSe
   }
 
   return (
-    <div className="grid gap-3 server-grid" style={gridColumnStyle(cardCols)}>
+    <div className={`grid gap-3 ${gridClassName}`}>
       {sortedServers.map((server, index) => (
         <div
           key={server.gid || server.name}

@@ -75,21 +75,21 @@ export const ClientServerSection: React.FC = () => {
 
   return (
     <ServerDetailProvider showDetails={settings.showDetails}>
-      <div className={`space-y-4 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] ${!isLoading ? 'animate-fade-in' : ''}`}>
-        <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:min-h-[36px]">
+      <div className={`space-y-3 sm:space-y-4 min-h-[300px] sm:min-h-[500px] md:min-h-[600px] ${!isLoading ? 'animate-fade-in' : ''}`}>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:min-h-[36px]">
           <h2
-            className="text-xl font-bold tracking-tight flex-shrink-0"
+            className="text-lg sm:text-xl font-bold tracking-tight flex-shrink-0"
             suppressHydrationWarning
           >
             服务器列表
           </h2>
 
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 sm:ml-auto">
             <div className="flex-1 sm:flex-none sm:min-w-[120px]">
               {!isLoading && regions.length > 0 && (
                 <Suspense
                   fallback={
-                    <div className="h-9 w-full bg-muted rounded-full animate-pulse"></div>
+                    <div className="h-8 sm:h-9 w-full bg-muted rounded-full animate-pulse"></div>
                   }
                 >
                   <RegionSelect
@@ -101,7 +101,7 @@ export const ClientServerSection: React.FC = () => {
                 </Suspense>
               )}
               {!isLoading && regions.length === 0 && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60 text-xs text-muted-foreground opacity-50">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-muted/60 text-xs text-muted-foreground opacity-50">
                   <MapPin className="h-3.5 w-3.5" />
                   <span>无地区</span>
                 </div>

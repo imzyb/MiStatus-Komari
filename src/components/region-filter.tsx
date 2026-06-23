@@ -138,13 +138,13 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        className="flex items-center gap-2 px-4 py-2 bg-muted/60 rounded-full hover:bg-muted transition-colors min-w-[140px] justify-between focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-muted/60 rounded-full hover:bg-muted transition-colors min-w-0 sm:min-w-[140px] justify-between focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">
+          <span className="text-xs sm:text-sm font-medium">
             {currentDisplay ? `${currentDisplay.flag} ${currentDisplay.name}` : currentSelection}
           </span>
           {selectedRegion && regionCounts?.[selectedRegion] !== undefined && (

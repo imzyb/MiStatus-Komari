@@ -8,7 +8,7 @@ import { ServerListSkeleton } from "./server-list-skeleton";
 import type { Server } from "@/lib/api";
 import type { ViewMode } from "./view-toggle";
 import { filterServers } from "@/lib/utils/filter";
-import { useCardColumns, gridColumnStyle } from "@/hooks/use-card-columns";
+import { useCardGridClassName } from "@/hooks/use-card-columns";
 
 const VirtualizedServerList = lazy(() =>
   import("./virtualized-server-list").then((module) => ({
@@ -25,7 +25,7 @@ interface ServerListProps {
 
 export const ServerList: React.FC<ServerListProps> = React.memo(function ServerList({ viewMode = "card", searchQuery = "" }) {
   const { data } = useServers();
-  const cardCols = useCardColumns();
+  const gridClassName = useCardGridClassName();
 
   const filteredServers = useMemo(() => {
     if (!data?.servers) return [];
@@ -62,7 +62,7 @@ export const ServerList: React.FC<ServerListProps> = React.memo(function ServerL
   }
 
   return (
-    <div className="grid gap-3 server-grid" style={gridColumnStyle(cardCols)}>
+    <div className={`grid gap-3 ${gridClassName}`}>
       {filteredServers.map((server) => (
         <ServerCardItem
           key={server.gid || server.name}

@@ -26,14 +26,14 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(
     return (
       <div className="space-y-2">
         {/* 表头 */}
-        <div className="flex items-center gap-2 px-4 py-1.5 text-[10px] font-medium text-muted-foreground/60 tracking-wider">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 text-[10px] font-medium text-muted-foreground/60 tracking-wider">
           <span className="w-[35%] sm:w-[25%]">服务器</span>
-          <span className="w-[20%] sm:w-[15%]">CPU</span>
+          <span className="w-[25%] sm:w-[15%]">CPU</span>
           <span className="hidden md:block w-[15%]">内存</span>
           <span className="hidden lg:block w-[15%]">硬盘</span>
           <span className="hidden xl:block w-[15%]">流量</span>
           <span className="flex items-center gap-2 flex-shrink-0 ml-auto">
-            <span className="hidden sm:inline-block w-[56px] text-right">运行</span>
+            <span className="hidden sm:flex items-center gap-1 text-[10px] whitespace-nowrap">运行</span>
             <span className="w-[40px]" />
           </span>
         </div>

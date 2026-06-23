@@ -22,7 +22,7 @@ interface ServerListItemProps {
 function ProgressBar({ percent }: { percent: number }) {
   const colors = getThresholdColor(percent);
   return (
-    <div className="w-10 sm:w-12 h-1.5 rounded-full bg-muted overflow-hidden flex-shrink-0">
+    <div className="w-12 sm:w-12 h-1.5 rounded-full bg-muted overflow-hidden flex-shrink-0">
       <div
         className={`h-full rounded-full transition-[width] duration-300 ${colors.bar}`}
         style={{ width: `${Math.min(percent, 100)}%` }}
@@ -51,7 +51,7 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
     return (
       <div
         className={
-          "flex items-center gap-2 px-4 py-3 rounded-2xl bg-card shadow-sm transition-all duration-200 text-xs" +
+          "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-card shadow-sm transition-all duration-200 text-xs" +
           (showDetails ? " hover:shadow-md active:scale-[0.99] cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none" : "")
         }
         onClick={showDetails ? () => openDetail(server) : undefined}
@@ -67,7 +67,7 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 min-w-0 w-[20%] sm:w-[15%]">
+        <div className="flex items-center gap-1.5 min-w-0 w-[25%] sm:w-[15%]">
           <ProgressBar percent={cpuPercent} />
           <span className="font-mono text-muted-foreground w-7 text-right flex-shrink-0 text-[11px] hidden sm:block">{cpuPercent}%</span>
         </div>
@@ -96,9 +96,9 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
-          <div className="flex items-center gap-0.5 text-muted-foreground text-[11px] w-[52px] sm:w-[56px] justify-end">
+          <div className="flex items-center gap-1 text-muted-foreground text-[11px] whitespace-nowrap">
             <Clock className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate" suppressHydrationWarning>{uptime}</span>
+            <span suppressHydrationWarning>{uptime}</span>
           </div>
           <div className="w-[36px] sm:w-[40px] flex justify-end">
             <StatusBadge isOnline={isOnline} />

@@ -35,14 +35,14 @@ export const StatCard: React.FC<StatCardProps> = ({
         className
       )}
     >
-      <div className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary/10 text-primary flex-shrink-0">
+      <div className="p-3 sm:p-4">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary/10 text-primary flex-shrink-0">
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-muted-foreground leading-tight">{title}</p>
-            <div className="text-lg font-bold text-foreground font-mono leading-tight mt-0.5">
+            <p className="text-[10px] sm:text-[11px] font-medium text-muted-foreground leading-tight">{title}</p>
+            <div className="text-base sm:text-lg font-bold text-foreground font-mono leading-tight mt-0.5">
               {value}
             </div>
           </div>

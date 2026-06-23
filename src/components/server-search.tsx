@@ -25,7 +25,7 @@ export const ServerSearch: React.FC<ServerSearchProps> = React.memo(
 
     return (
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        <Search className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
@@ -33,7 +33,7 @@ export const ServerSearch: React.FC<ServerSearchProps> = React.memo(
           onChange={(e) => onChange(e.target.value)}
           placeholder="搜索服务器..."
           aria-label="搜索服务器"
-          className="h-9 w-full sm:w-56 rounded-full bg-muted/60 pl-8 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-colors"
+          className="h-8 sm:h-9 w-full sm:w-56 rounded-full bg-muted/60 pl-7 sm:pl-8 pr-7 sm:pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-colors"
         />
         {value ? (
           <button

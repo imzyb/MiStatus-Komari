@@ -104,6 +104,18 @@
   .server-grid-container { min-height: 200px; }
   @media (min-width: 768px) { .server-grid-container { min-height: 300px; } }
 
+  /* 响应式网格列：移动端固定1列，sm以上使用后台设置值 */
+  .server-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  @media (min-width: 640px) {
+    .server-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .server-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .server-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .server-grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .server-grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .server-grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .server-grid-cols-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  }
+
   .skeleton {
     background: linear-gradient(90deg, #e8e8ed 25%, #dcdce0 50%, #e8e8ed 75%);
     background-size: 200% 100%;

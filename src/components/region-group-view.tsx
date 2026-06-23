@@ -5,7 +5,7 @@ import type { RegionGroup } from "@/lib/api";
 import { ServerCard } from "./server-card";
 import { ServerListView } from "./server-list-view";
 import type { ViewMode } from "./view-toggle";
-import { useCardColumns, gridColumnStyle } from "@/hooks/use-card-columns";
+import { useCardGridClassName } from "@/hooks/use-card-columns";
 
 interface RegionGroupViewProps {
   regionGroups: RegionGroup[];
@@ -18,7 +18,7 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
   showRegionHeaders = true,
   viewMode = "card",
 }) => {
-  const cardCols = useCardColumns();
+  const gridClassName = useCardGridClassName();
   return (
     <div className="space-y-6">
       {regionGroups.map(({ region, servers }, groupIndex) => (
@@ -38,7 +38,7 @@ export const RegionGroupView: React.FC<RegionGroupViewProps> = ({
           )}
 
           {viewMode === "card" ? (
-            <div className="grid gap-3 server-grid" style={gridColumnStyle(cardCols)}>
+            <div className={`grid gap-3 ${gridClassName}`}>
               {servers.map((server) => (
                 <div
                   key={server.gid}
