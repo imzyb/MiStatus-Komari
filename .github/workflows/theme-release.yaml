@@ -62,13 +62,13 @@ jobs:
           if [ "${{ github.event_name }}" == "push" ] && [ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]; then
             TAG_NAME="${{ github.ref_name }}"
             echo "version=${VERSION_DATE}" >> $GITHUB_OUTPUT
-            echo "zip_name=serversentry-theme-v${VERSION_DATE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+            echo "zip_name=mistatus-theme-v${VERSION_DATE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
           else
             # Manual dispatch
             RELEASE_TYPE="${{ inputs.release_type }}"
             TAG_NAME="manual-${RELEASE_TYPE}-${VERSION_DATE}"
             echo "version=${VERSION_DATE}-${RELEASE_TYPE}" >> $GITHUB_OUTPUT
-            echo "zip_name=serversentry-theme-v${VERSION_DATE}-${RELEASE_TYPE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+            echo "zip_name=mistatus-theme-v${VERSION_DATE}-${RELEASE_TYPE}-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
           fi
 
           echo "commit=${COMMIT_HASH}" >> $GITHUB_OUTPUT
@@ -94,12 +94,12 @@ jobs:
             echo "✅ komari-theme.json found"
           fi
 
-          if [ ! -f "komari-theme-server-sentry.zip" ]; then
-            echo "❌ komari-theme-server-sentry.zip not found"
+          if [ ! -f "komari-theme-mistatus.zip" ]; then
+            echo "❌ komari-theme-mistatus.zip not found"
             files_missing=true
           else
-            echo "✅ komari-theme-server-sentry.zip found"
-            ls -lh komari-theme-server-sentry.zip
+            echo "✅ komari-theme-mistatus.zip found"
+            ls -lh komari-theme-mistatus.zip
           fi
 
           if [ "$files_missing" = true ]; then
@@ -112,7 +112,7 @@ jobs:
           echo "=== Creating theme package ==="
 
           # Rename the existing zip file
-          cp komari-theme-server-sentry.zip "${{ steps.version.outputs.zip_name }}"
+          cp komari-theme-mistatus.zip "${{ steps.version.outputs.zip_name }}"
 
           echo "✅ Created package: ${{ steps.version.outputs.zip_name }}"
           ls -lh "${{ steps.version.outputs.zip_name }}"
@@ -216,7 +216,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: serversentry-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
+          name: mistatus-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
           path: artifact-upload/
           retention-days: 30
 

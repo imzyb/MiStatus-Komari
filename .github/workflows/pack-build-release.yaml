@@ -50,11 +50,11 @@ jobs:
           if [ "${{ github.event_name }}" == "release" ]; then
             RELEASE_TAG="${{ github.event.release.tag_name }}"
             echo "version=${RELEASE_TAG}" >> $GITHUB_OUTPUT
-            echo "zip_name=serversentry-theme-${RELEASE_TAG}.zip" >> $GITHUB_OUTPUT
+            echo "zip_name=mistatus-theme-${RELEASE_TAG}.zip" >> $GITHUB_OUTPUT
             echo "tag=${RELEASE_TAG}" >> $GITHUB_OUTPUT
           else
             echo "version=${VERSION_DATE}-pack" >> $GITHUB_OUTPUT
-            echo "zip_name=serversentry-theme-v${VERSION_DATE}-pack-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
+            echo "zip_name=mistatus-theme-v${VERSION_DATE}-pack-${COMMIT_HASH}.zip" >> $GITHUB_OUTPUT
             echo "tag=pack-${VERSION_DATE}-${COMMIT_HASH}" >> $GITHUB_OUTPUT
           fi
 
@@ -80,12 +80,12 @@ jobs:
             echo "✅ komari-theme.json found"
           fi
 
-          if [ ! -f "komari-theme-server-sentry.zip" ]; then
-            echo "❌ komari-theme-server-sentry.zip not found"
+          if [ ! -f "komari-theme-mistatus.zip" ]; then
+            echo "❌ komari-theme-mistatus.zip not found"
             files_missing=true
           else
-            echo "✅ komari-theme-server-sentry.zip found"
-            ls -lh komari-theme-server-sentry.zip
+            echo "✅ komari-theme-mistatus.zip found"
+            ls -lh komari-theme-mistatus.zip
           fi
 
           if [ "$files_missing" = true ]; then
@@ -98,13 +98,13 @@ jobs:
           echo "=== Creating theme package ==="
 
           # Verify the original zip file exists (already compressed by build script)
-          if [ ! -f "komari-theme-server-sentry.zip" ]; then
-            echo "::error::Original zip file not found: komari-theme-server-sentry.zip"
+          if [ ! -f "komari-theme-mistatus.zip" ]; then
+            echo "::error::Original zip file not found: komari-theme-mistatus.zip"
             exit 1
           fi
 
           # Simply rename the existing zip file (no additional compression needed)
-          mv komari-theme-server-sentry.zip "${{ steps.version.outputs.zip_name }}"
+          mv komari-theme-mistatus.zip "${{ steps.version.outputs.zip_name }}"
 
           # Verify the renamed file exists
           if [ ! -f "${{ steps.version.outputs.zip_name }}" ]; then
@@ -211,7 +211,7 @@ jobs:
       - name: Upload theme package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: serversentry-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
+          name: mistatus-theme-${{ steps.version.outputs.version }}-${{ steps.version.outputs.commit }}
           path: ${{ steps.version.outputs.zip_name }}
           retention-days: 30
 
