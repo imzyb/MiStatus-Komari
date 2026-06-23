@@ -30,7 +30,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-card border border-hairline/80 shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200",
+        "relative overflow-hidden rounded-2xl bg-card border border-hairline/80 shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none",
         onClick && "cursor-pointer",
         className
       )}

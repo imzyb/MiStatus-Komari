@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { X, MapPin, Clock } from "lucide-react";
 import { useServerDetail } from "@/contexts/server-detail-context";
 import { PingChart } from "./ping-chart";
-import { formatDurationEnShort, formatPercent, formatBytes } from "@/lib/utils";
+import { formatPercent, formatBytes, formatUptime, getThresholdColor } from "@/lib/utils";
 
 function MiniBar({ percent, color }: { percent: number; color: string }) {
   return (
@@ -28,25 +28,20 @@ export const ServerDetailDrawer: React.FC = React.memo(
     if (!selectedServer) return null;
 
     const s = selectedServer;
-    const uptime = (() => {
-      if (!s.uptime) return "—";
-      const m = s.uptime.match(/^(\d+)s$/);
-      if (!m) return s.uptime;
-      return formatDurationEnShort(parseInt(m[1], 10), 3);
-    })();
+    const uptime = formatUptime(s.uptime, 3);
 
     const cpuP = formatPercent(s.cpu, 100);
     const memP = formatPercent(s.memory_used, s.memory_total);
     const diskP = formatPercent(s.hdd_used, s.hdd_total);
-    const cpuColor = cpuP >= 90 ? "bg-trading-down" : cpuP >= 70 ? "bg-accent" : "bg-trading-up";
-    const memColor = memP >= 90 ? "bg-trading-down" : memP >= 70 ? "bg-accent" : "bg-trading-up";
-    const diskColor = diskP >= 90 ? "bg-trading-down" : diskP >= 70 ? "bg-accent" : "bg-trading-up";
+    const cpuColor = getThresholdColor(cpuP).bar;
+    const memColor = getThresholdColor(memP).bar;
+    const diskColor = getThresholdColor(diskP).bar;
 
     return (
       <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={closeDetail} />
-        <div className="relative w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[92vh] sm:max-h-[92vh] overflow-y-auto mx-0 sm:mx-0 overscroll-contain pb-[env(safe-area-inset-bottom)]">
-          <div className="sticky top-0 bg-card/90 backdrop-blur-xl border-b border-hairline/50 px-4 sm:px-5 py-2.5 z-10 rounded-t-3xl">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={closeDetail} />
+        <div className="relative w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[92vh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
+          <div className="sticky top-0 bg-card/90 backdrop-blur-xl border-b border-hairline/50 px-4 sm:px-6 py-2.5 z-10 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${

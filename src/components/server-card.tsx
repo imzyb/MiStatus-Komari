@@ -3,10 +3,10 @@
 import React from "react";
 import { Server } from "@/lib/api";
 import {
-  formatDurationEnShort,
   createCpuFormatter,
   createSwapFormatter,
   formatBytes,
+  formatUptime,
 } from "@/lib/utils";
 import { ServerMetric } from "./server-metric";
 import { Clock, MapPin, Server as ServerIcon } from "lucide-react";
@@ -48,17 +48,26 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
       []
     );
 
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+      if (showDetails && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        openDetail(server);
+      }
+    }, [showDetails, openDetail, server]);
+
     return (
       <div
         className={
           "relative h-full server-card rounded-2xl bg-card border border-hairline/80 shadow-sm overflow-hidden" +
           (showDetails
-            ? " hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            ? " hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none"
             : " transition-all duration-300")
         }
         onClick={showDetails ? () => openDetail(server) : undefined}
+        onKeyDown={handleKeyDown}
         role={showDetails ? "button" : undefined}
         tabIndex={showDetails ? 0 : undefined}
+        aria-label={showDetails ? `查看 ${server.alias || server.name} 详情` : undefined}
       >
         <ServerCardHeader server={server} isOnline={isOnline} />
 
@@ -180,14 +189,7 @@ interface UptimeDisplayProps {
 
 const UptimeDisplay: React.FC<UptimeDisplayProps> = React.memo(
   function UptimeDisplay({ uptime }) {
-    // uptime 传入为 "{seconds}s" 或空字符串
-    const human = React.useMemo(() => {
-      if (!uptime) return "";
-      const match = uptime.match(/^(\d+)s$/);
-      if (!match) return uptime;
-      const seconds = parseInt(match[1], 10);
-      return formatDurationEnShort(seconds, 3);
-    }, [uptime]);
+    const human = React.useMemo(() => formatUptime(uptime, 3), [uptime]);
     return (
       <span
         className="inline-flex items-center text-muted-foreground text-xs whitespace-nowrap"

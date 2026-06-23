@@ -42,7 +42,15 @@ export interface ServersContextValue {
   reconnectCount: number;
 }
 
+export interface ServersStatusValue {
+  /** 连接状态 */
+  isConnected: boolean;
+  /** 重连次数 */
+  reconnectCount: number;
+}
+
 const ServersContext = createContext<ServersContextValue | null>(null);
+const ServersStatusContext = createContext<ServersStatusValue | null>(null);
 
 export interface ServersProviderProps {
   children: React.ReactNode;
@@ -378,10 +386,17 @@ export function ServersProvider({
     ]
   );
 
+  const statusValue: ServersStatusValue = useMemo(
+    () => ({ isConnected, reconnectCount }),
+    [isConnected, reconnectCount]
+  );
+
   return (
-    <ServersContext.Provider value={contextValue}>
-      {children}
-    </ServersContext.Provider>
+    <ServersStatusContext.Provider value={statusValue}>
+      <ServersContext.Provider value={contextValue}>
+        {children}
+      </ServersContext.Provider>
+    </ServersStatusContext.Provider>
   );
 }
 
@@ -393,6 +408,19 @@ export function useServers(): ServersContextValue {
 
   if (!context) {
     throw new Error("useServers must be used within a ServersProvider");
+  }
+
+  return context;
+}
+
+/**
+ * 仅使用连接状态的 Hook（不会因数据更新而重渲染）
+ */
+export function useServersStatus(): ServersStatusValue {
+  const context = useContext(ServersStatusContext);
+
+  if (!context) {
+    throw new Error("useServersStatus must be used within a ServersProvider");
   }
 
   return context;

@@ -185,3 +185,25 @@ export function normalizeVirtualizationLabel(
 
   return map[lower] || raw;
 }
+
+/**
+ * 根据百分比返回阈值颜色的 Tailwind 类名
+ */
+export function getThresholdColor(percent: number): {
+  bar: string;
+  text: string;
+} {
+  if (percent >= 90) return { bar: "bg-trading-down", text: "text-trading-down" };
+  if (percent >= 70) return { bar: "bg-accent", text: "text-accent" };
+  return { bar: "bg-trading-up", text: "text-trading-up" };
+}
+
+/**
+ * 解析 uptime 字符串（"{seconds}s" 格式）为人类可读格式
+ */
+export function formatUptime(uptime: string, maxParts = 3): string {
+  if (!uptime) return "—";
+  const match = uptime.match(/^(\d+)s$/);
+  if (!match) return uptime;
+  return formatDurationEnShort(parseInt(match[1], 10), maxParts);
+}

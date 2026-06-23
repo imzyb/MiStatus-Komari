@@ -3,9 +3,10 @@
 import React from "react";
 import { Server } from "@/lib/api";
 import {
-  formatDurationEnShort,
   formatBytes,
   formatPercent,
+  formatUptime,
+  getThresholdColor,
 } from "@/lib/utils";
 import {
   StatusIndicator,
@@ -19,12 +20,11 @@ interface ServerListItemProps {
 }
 
 function ProgressBar({ percent }: { percent: number }) {
+  const colors = getThresholdColor(percent);
   return (
     <div className="w-10 sm:w-12 h-1.5 rounded-full bg-muted overflow-hidden flex-shrink-0">
       <div
-        className={`h-full rounded-full transition-[width] duration-300 ${
-          percent >= 90 ? "bg-trading-down" : percent >= 70 ? "bg-accent" : "bg-trading-up"
-        }`}
+        className={`h-full rounded-full transition-[width] duration-300 ${colors.bar}`}
         style={{ width: `${Math.min(percent, 100)}%` }}
       />
     </div>
@@ -39,22 +39,26 @@ const ServerListItem: React.FC<ServerListItemProps> = React.memo(
     const memPercent = formatPercent(server.memory_used, server.memory_total);
     const diskPercent = formatPercent(server.hdd_used, server.hdd_total);
 
-    const uptime = React.useMemo(() => {
-      if (!server.uptime) return "—";
-      const match = server.uptime.match(/^(\d+)s$/);
-      if (!match) return server.uptime;
-      return formatDurationEnShort(parseInt(match[1], 10), 2);
-    }, [server.uptime]);
+    const uptime = React.useMemo(() => formatUptime(server.uptime, 2), [server.uptime]);
+
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+      if (showDetails && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        openDetail(server);
+      }
+    }, [showDetails, openDetail, server]);
 
     return (
       <div
         className={
-          "flex items-center gap-2 px-4 py-3 rounded-xl bg-card shadow-sm transition-all duration-200 text-xs" +
-          (showDetails ? " hover:shadow-md active:scale-[0.99] cursor-pointer" : "")
+          "flex items-center gap-2 px-4 py-3 rounded-2xl bg-card shadow-sm transition-all duration-200 text-xs" +
+          (showDetails ? " hover:shadow-md active:scale-[0.99] cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none" : "")
         }
         onClick={showDetails ? () => openDetail(server) : undefined}
+        onKeyDown={handleKeyDown}
         role={showDetails ? "button" : undefined}
         tabIndex={showDetails ? 0 : undefined}
+        aria-label={showDetails ? `查看 ${server.alias || server.name} 详情` : undefined}
       >
         <div className="flex items-center gap-2 min-w-0 w-[35%] sm:w-[25%]">
           <StatusIndicator isOnline={isOnline} />

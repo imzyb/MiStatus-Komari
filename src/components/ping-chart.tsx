@@ -17,9 +17,9 @@ interface PingChartProps {
 }
 
 const DEFAULT_TASK_CONFIG: Record<number, TaskConfigItem> = {
-  1: { label: "联通", color: "#00b578" },
-  2: { label: "电信", color: "#ff6a00" },
-  3: { label: "移动", color: "#ff3b30" },
+  1: { label: "联通", color: "var(--trading-up, #34c759)" },
+  2: { label: "电信", color: "var(--accent, #ff6a00)" },
+  3: { label: "移动", color: "var(--trading-down, #ff3b30)" },
 };
 
 const ISP_ORDER = [1, 2, 3];

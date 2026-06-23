@@ -6,6 +6,7 @@ export function useAnimatedNumber(target: number, duration = 400, minDelta = 1):
   const [current, setCurrent] = useState(target);
   const prevRef = useRef(target);
   const frameRef = useRef<number | null>(null);
+  const lastRenderedRef = useRef(target);
 
   useEffect(() => {
     const from = prevRef.current;
@@ -13,6 +14,7 @@ export function useAnimatedNumber(target: number, duration = 400, minDelta = 1):
     if (from === to) return;
     if (Math.abs(to - from) < minDelta) {
       prevRef.current = to;
+      lastRenderedRef.current = to;
       setCurrent(to);
       return;
     }
@@ -22,11 +24,16 @@ export function useAnimatedNumber(target: number, duration = 400, minDelta = 1):
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCurrent(Math.round(from + (to - from) * eased));
+      const rounded = Math.round(from + (to - from) * eased);
+      if (rounded !== lastRenderedRef.current) {
+        lastRenderedRef.current = rounded;
+        setCurrent(rounded);
+      }
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(step);
       } else {
         prevRef.current = to;
+        lastRenderedRef.current = to;
       }
     };
 

@@ -8,7 +8,7 @@ export default function NotFound() {
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="text-center space-y-6 max-w-sm">
-          <p className="text-9xl font-bold tracking-tighter text-primary/10 select-none">404</p>
+          <p className="text-7xl sm:text-9xl font-bold tracking-tighter text-primary/10 select-none">404</p>
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">页面未找到</h1>
             <p className="text-sm text-muted-foreground">

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { config } from "@/lib/config";
 import { useSiteInfo } from "@/contexts/site-info-context";
-import { useServers } from "@/contexts/servers-context";
+import { useServersStatus } from "@/contexts/servers-context";
 import { ClientThemeToggle } from "@/components/client-theme-toggle";
 import { useThemeSettings } from "@/contexts/theme-settings-context";
 
@@ -30,7 +30,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
   fallbackTitle = config.siteTitle,
 }) => {
   const { siteInfo } = useSiteInfo();
-  const { isConnected, reconnectCount } = useServers();
+  const { isConnected, reconnectCount } = useServersStatus();
   const { settings } = useThemeSettings();
   const siteTitle = siteInfo?.sitename?.trim() || fallbackTitle;
   const [scrolled, setScrolled] = useState(false);

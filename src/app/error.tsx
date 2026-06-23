@@ -14,7 +14,7 @@ export default function Error({
   return (
     <div className="flex min-h-screen bg-background flex-col items-center justify-center p-6">
       <div className="text-center space-y-6 max-w-sm">
-        <p className="text-9xl font-bold tracking-tighter text-trading-down/10 select-none">!</p>
+        <p className="text-7xl sm:text-9xl font-bold tracking-tighter text-trading-down/10 select-none">!</p>
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">出错了</h1>
           <p className="text-sm text-muted-foreground">抱歉，加载过程中出现了错误。</p>

@@ -12,7 +12,7 @@ export const ServerListView: React.FC<ServerListViewProps> = React.memo(
   function ServerListView({ servers }) {
     if (servers.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-14 text-muted-foreground/50 space-y-2">
+        <div className="flex flex-col items-center justify-center py-14 text-muted-foreground/50 space-y-2 animate-fade-in">
           <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <rect x="2" y="3" width="20" height="18" rx="3" />
             <path d="M2 9h20" />

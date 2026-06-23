@@ -29,6 +29,71 @@ import {
   Activity,
 } from "lucide-react";
 
+interface ChartState {
+  seriesByType: Record<LoadType, LoadHistoryPoint[]>;
+  availableLoadTypes: LoadType[];
+  isLoading: boolean;
+  error: string | null;
+  selectedLoadType: LoadType;
+  selectedHours: number;
+  hoverIndex: number | null;
+}
+
+type ChartAction =
+  | { type: "RESET"; defaultLoadType: LoadType; initialHours: number }
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; seriesByType: Record<LoadType, LoadHistoryPoint[]>; availableLoadTypes: LoadType[]; selectedLoadType: LoadType }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "SET_SELECTED_TYPE"; loadType: LoadType; seriesByType: Record<LoadType, LoadHistoryPoint[]>; availableLoadTypes?: LoadType[] }
+  | { type: "SET_SELECTED_HOURS"; hours: number }
+  | { type: "SET_HOVER_INDEX"; index: number | null }
+  | { type: "SYNC_DEFAULTS"; defaultLoadType: LoadType; serverId: string }
+  | { type: "SYNC_HOURS"; hours: number };
+
+function chartReducer(state: ChartState, action: ChartAction): ChartState {
+  switch (action.type) {
+    case "RESET":
+      return {
+        ...state,
+        seriesByType: createEmptySeriesMap(),
+        availableLoadTypes: [],
+        error: null,
+        isLoading: false,
+        hoverIndex: null,
+      };
+    case "FETCH_START":
+      return { ...state, isLoading: true, error: null };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        isLoading: false,
+        error: null,
+        seriesByType: action.seriesByType,
+        availableLoadTypes: action.availableLoadTypes,
+        selectedLoadType: action.selectedLoadType,
+      };
+    case "FETCH_ERROR":
+      return { ...state, isLoading: false, error: action.error };
+    case "SET_SELECTED_TYPE":
+      return {
+        ...state,
+        selectedLoadType: action.loadType,
+        seriesByType: action.seriesByType,
+        ...(action.availableLoadTypes ? { availableLoadTypes: action.availableLoadTypes } : {}),
+      };
+    case "SET_SELECTED_HOURS":
+      return { ...state, selectedHours: action.hours, hoverIndex: null };
+    case "SET_HOVER_INDEX":
+      return { ...state, hoverIndex: action.index };
+    case "SYNC_DEFAULTS":
+      return { ...state, selectedLoadType: action.defaultLoadType };
+    case "SYNC_HOURS":
+      return { ...state, selectedHours: action.hours };
+    default:
+      return state;
+  }
+}
+
 interface ServerLoadChartProps {
   serverId: string;
   active: boolean;
@@ -106,18 +171,17 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
   variant = "compact",
   footerLabel,
 }) => {
-  const [seriesByType, setSeriesByType] =
-    React.useState<Record<LoadType, LoadHistoryPoint[]>>(createEmptySeriesMap);
-  const [availableLoadTypes, setAvailableLoadTypes] = React.useState<
-    LoadType[]
-  >([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [selectedLoadType, setSelectedLoadType] =
-    React.useState<LoadType>(defaultLoadType);
-  const [selectedHours, setSelectedHours] =
-    React.useState<number>(initialHours);
-  const [hoverIndex, setHoverIndex] = React.useState<number | null>(null);
+  const [state, dispatch] = React.useReducer(chartReducer, {
+    seriesByType: createEmptySeriesMap(),
+    availableLoadTypes: [],
+    isLoading: false,
+    error: null,
+    selectedLoadType: defaultLoadType,
+    selectedHours: initialHours,
+    hoverIndex: null,
+  });
+
+  const { seriesByType, availableLoadTypes, isLoading, error, selectedLoadType, selectedHours, hoverIndex } = state;
 
   const chartRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -125,13 +189,10 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
   const isFetchingRef = React.useRef(false);
 
   const resetSeriesState = React.useCallback(() => {
-    setSeriesByType(createEmptySeriesMap());
-    setAvailableLoadTypes([]);
-    setError(null);
-    setIsLoading(false);
+    dispatch({ type: "RESET", defaultLoadType, initialHours });
     hasRequestedRef.current = false;
     isFetchingRef.current = false;
-  }, []);
+  }, [defaultLoadType, initialHours]);
 
   const fetchRecords = React.useCallback(
     async (force = false): Promise<void> => {
@@ -140,8 +201,7 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
 
       try {
         isFetchingRef.current = true;
-        setIsLoading(true);
-        setError(null);
+        dispatch({ type: "FETCH_START" });
 
         // 命中缓存则直接使用（避免重复网络与计算）
         const serverCache = loadCache.get(serverId);
@@ -149,7 +209,6 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
 
         if (cacheEntry && cacheEntry.records.length > 0 && !force) {
           const nextAvailableTypes = cacheEntry.availableTypes;
-          setAvailableLoadTypes(nextAvailableTypes);
 
           // 确保当前选择的曲线已计算
           const cachedSeries = cacheEntry.seriesByType[selectedLoadType];
@@ -161,17 +220,21 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
             );
             cacheEntry.seriesByType[selectedLoadType] = ensuredSeries;
           }
-          setSeriesByType({
-            ...createEmptySeriesMap(),
-            [selectedLoadType]: ensuredSeries,
-          });
 
-          setSelectedLoadType((previous) => {
-            if (nextAvailableTypes.length === 0) return previous;
-            if (nextAvailableTypes.includes(previous)) return previous;
-            if (nextAvailableTypes.includes(defaultLoadType))
-              return defaultLoadType;
-            return nextAvailableTypes[0];
+          let resolvedType = selectedLoadType;
+          if (nextAvailableTypes.length > 0) {
+            if (!nextAvailableTypes.includes(selectedLoadType)) {
+              resolvedType = nextAvailableTypes.includes(defaultLoadType)
+                ? defaultLoadType
+                : nextAvailableTypes[0];
+            }
+          }
+
+          dispatch({
+            type: "FETCH_SUCCESS",
+            seriesByType: { ...createEmptySeriesMap(), [selectedLoadType]: ensuredSeries },
+            availableLoadTypes: nextAvailableTypes,
+            selectedLoadType: resolvedType,
           });
         } else {
           const response = (await rpcAdapter.getRecords({
@@ -205,26 +268,28 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
             : [];
           newEntry.seriesByType[selectedLoadType] = ensuredSeries;
 
-          setAvailableLoadTypes(nextAvailableTypes);
-          setSeriesByType({
-            ...createEmptySeriesMap(),
-            [selectedLoadType]: ensuredSeries,
-          });
-          setSelectedLoadType((previous) => {
-            if (nextAvailableTypes.length === 0) return previous;
-            if (nextAvailableTypes.includes(previous)) return previous;
-            if (nextAvailableTypes.includes(defaultLoadType))
-              return defaultLoadType;
-            return nextAvailableTypes[0];
+          let resolvedType = selectedLoadType;
+          if (nextAvailableTypes.length > 0) {
+            if (!nextAvailableTypes.includes(selectedLoadType)) {
+              resolvedType = nextAvailableTypes.includes(defaultLoadType)
+                ? defaultLoadType
+                : nextAvailableTypes[0];
+            }
+          }
+
+          dispatch({
+            type: "FETCH_SUCCESS",
+            seriesByType: { ...createEmptySeriesMap(), [selectedLoadType]: ensuredSeries },
+            availableLoadTypes: nextAvailableTypes,
+            selectedLoadType: resolvedType,
           });
         }
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to fetch load history";
-        setError(message);
+        dispatch({ type: "FETCH_ERROR", error: message });
       } finally {
         isFetchingRef.current = false;
-        setIsLoading(false);
       }
     },
     [serverId, selectedHours, defaultLoadType, selectedLoadType]
@@ -235,11 +300,11 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
   }, [serverId, selectedHours, resetSeriesState]);
 
   React.useEffect(() => {
-    setSelectedHours(initialHours);
+    dispatch({ type: "SYNC_HOURS", hours: initialHours });
   }, [initialHours]);
 
   React.useEffect(() => {
-    setSelectedLoadType(defaultLoadType);
+    dispatch({ type: "SYNC_DEFAULTS", defaultLoadType, serverId });
   }, [defaultLoadType, serverId]);
 
   React.useEffect(() => {
@@ -253,18 +318,17 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
   // 负载类型切换处理（按需计算并缓存）
   const handleLoadTypeChange = React.useCallback(
     (newLoadType: LoadType) => {
-      setSelectedLoadType(newLoadType);
-
       const serverCache = loadCache.get(serverId);
       const cacheEntry = serverCache?.get(selectedHours);
-      if (!cacheEntry) return;
+
+      if (!cacheEntry) {
+        dispatch({ type: "SET_SELECTED_TYPE", loadType: newLoadType, seriesByType: { ...createEmptySeriesMap(), [newLoadType]: [] } });
+        return;
+      }
 
       const cachedSeries = cacheEntry.seriesByType[newLoadType];
       if (cachedSeries) {
-        setSeriesByType({
-          ...createEmptySeriesMap(),
-          [newLoadType]: cachedSeries,
-        });
+        dispatch({ type: "SET_SELECTED_TYPE", loadType: newLoadType, seriesByType: { ...createEmptySeriesMap(), [newLoadType]: cachedSeries } });
         return;
       }
 
@@ -273,9 +337,10 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
       // 若该类型此前未标记为可用但现在有数据，则补充
       if (computed.length && !cacheEntry.availableTypes.includes(newLoadType)) {
         cacheEntry.availableTypes = [...cacheEntry.availableTypes, newLoadType];
-        setAvailableLoadTypes(cacheEntry.availableTypes);
+        dispatch({ type: "SET_SELECTED_TYPE", loadType: newLoadType, seriesByType: { ...createEmptySeriesMap(), [newLoadType]: computed }, availableLoadTypes: cacheEntry.availableTypes });
+        return;
       }
-      setSeriesByType({ ...createEmptySeriesMap(), [newLoadType]: computed });
+      dispatch({ type: "SET_SELECTED_TYPE", loadType: newLoadType, seriesByType: { ...createEmptySeriesMap(), [newLoadType]: computed } });
     },
     [serverId, selectedHours]
   );
@@ -341,25 +406,25 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
   const handleHoursChange = React.useCallback(
     (hoursValue: number) => {
       if (hoursValue === selectedHours) return;
-      setSelectedHours(hoursValue);
+      dispatch({ type: "SET_SELECTED_HOURS", hours: hoursValue });
     },
     [selectedHours]
   );
 
   React.useEffect(() => {
-    setHoverIndex(null);
+    dispatch({ type: "SET_HOVER_INDEX", index: null });
   }, [selectedLoadType, selectedHours, serverId]);
 
   React.useEffect(() => {
-    setHoverIndex((previous) => {
-      if (previous == null) return previous;
-      if (!chartPoints.length) return null;
-      if (previous >= chartPoints.length) {
-        return chartPoints.length - 1;
-      }
-      return previous;
-    });
-  }, [chartPoints.length]);
+    if (hoverIndex == null) return;
+    if (!chartPoints.length) {
+      dispatch({ type: "SET_HOVER_INDEX", index: null });
+      return;
+    }
+    if (hoverIndex >= chartPoints.length) {
+      dispatch({ type: "SET_HOVER_INDEX", index: chartPoints.length - 1 });
+    }
+  }, [chartPoints.length, hoverIndex]);
 
   const handlePointerMove = React.useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -377,15 +442,15 @@ export const ServerLoadChart: React.FC<ServerLoadChartProps> = ({
         0,
         Math.min(chartPoints.length - 1, targetIndex)
       );
-      setHoverIndex((previous) =>
-        previous === safeIndex ? previous : safeIndex
-      );
+      if (hoverIndex !== safeIndex) {
+        dispatch({ type: "SET_HOVER_INDEX", index: safeIndex });
+      }
     },
-    [chartPoints.length]
+    [chartPoints.length, hoverIndex]
   );
 
   const handlePointerLeave = React.useCallback(() => {
-    setHoverIndex(null);
+    dispatch({ type: "SET_HOVER_INDEX", index: null });
   }, []);
 
   const hasAvailableCategories = availableLoadTypes.length > 0;
@@ -549,7 +614,7 @@ className={`relative mt-3 flex items-center justify-center overflow-hidden round
                   transform: "translate(-50%, -120%)",
                 }}
               >
-                <div className="rounded-2xl bg-white dark:bg-[#2c2c2c] shadow-md px-2.5 py-1 text-[10px]">
+                <div className="rounded-2xl bg-card shadow-md px-2.5 py-1 text-[10px]">
                   <div className="text-[9px] text-muted-foreground">
                     {selectedLabel}
                   </div>

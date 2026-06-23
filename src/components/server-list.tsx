@@ -50,7 +50,7 @@ export const ServerList: React.FC<ServerListProps> = React.memo(function ServerL
 
   if (filteredServers.length === 0 && searchQuery.trim()) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-3">
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-3 animate-fade-in">
         <svg className="h-12 w-12 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />

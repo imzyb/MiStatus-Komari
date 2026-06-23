@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin } from 'lucide-react';
-import { useState, Suspense, lazy, useEffect, useMemo, useRef } from "react";
+import { useState, Suspense, lazy, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import { useRegionData } from "@/hooks/use-region-data";
 import { ServerListSkeleton } from "./server-list-skeleton";
 import { ViewToggle, type ViewMode } from "./view-toggle";
@@ -36,6 +36,8 @@ export const ClientServerSection: React.FC = () => {
 
   const { regions, regionGroups, isLoading } = useRegionData(selectedRegion);
 
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
   const regionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const g of regionGroups) {
@@ -62,18 +64,18 @@ export const ClientServerSection: React.FC = () => {
   };
 
   const filteredRegionGroups = useMemo(() => {
-    if (!searchQuery.trim()) return regionGroups;
+    if (!deferredSearchQuery.trim()) return regionGroups;
     return regionGroups
       .map((g) => ({
         ...g,
-        servers: filterServers(g.servers, searchQuery),
+        servers: filterServers(g.servers, deferredSearchQuery),
       }))
       .filter((g) => g.servers.length > 0);
-  }, [regionGroups, searchQuery]);
+  }, [regionGroups, deferredSearchQuery]);
 
   return (
     <ServerDetailProvider showDetails={settings.showDetails}>
-      <div className={`space-y-4 min-h-[300px] md:min-h-[600px] ${!isLoading ? 'animate-fade-in' : ''}`}>
+      <div className={`space-y-4 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] ${!isLoading ? 'animate-fade-in' : ''}`}>
         <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 sm:min-h-[36px]">
           <h2
             className="text-xl font-bold tracking-tight flex-shrink-0"
@@ -127,7 +129,7 @@ export const ClientServerSection: React.FC = () => {
             ) : (
               <ServerList
                 viewMode={viewMode}
-                searchQuery={searchQuery}
+                searchQuery={deferredSearchQuery}
               />
             )}
           </div>
