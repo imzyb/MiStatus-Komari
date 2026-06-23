@@ -12,9 +12,9 @@ const { promises: fsp, constants: fsConstants } = fs;
 
 // 配置路径
 const sourceDir = path.join(__dirname, '..', 'out');
-const themeDir = path.join(__dirname, '..', '..', 'komari-theme-server-sentry');
+const themeDir = path.join(__dirname, '..', '..', 'komari-theme-mistatus');
 const distDir = path.join(themeDir, 'dist');
-const zipPath = path.join(__dirname, '..', 'komari-theme-server-sentry.zip');
+const zipPath = path.join(__dirname, '..', 'komari-theme-mistatus.zip');
 
 const DEFAULT_MAX_ZIP_SIZE_MB = 5;
 const maxZipSizeEnvValue = process.env.MAX_THEME_ZIP_MB ?? process.env.MAX_THEME_SIZE_MB;
