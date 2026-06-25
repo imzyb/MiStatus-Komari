@@ -58,9 +58,9 @@ export const RealTimeNetworkPanel: React.FC<RealTimeNetworkPanelProps> =
     );
 
     return (
-      <div className="p-3 rounded-2xl bg-card border border-hairline/70 flex flex-col h-full shadow-sm">
+      <div className="p-3 rounded-2xl bg-card border border-hairline/70 shadow-sm">
         <PanelHeader icon={<Wifi className="h-3.5 w-3.5" />} label="实时网络" />
-        <div className="flex-1 flex flex-col justify-center space-y-1">
+        <div className="space-y-1">
           <PanelRow
             arrow={<TrafficArrow direction="down" className="text-sm" />}
             label="下载" value={formattedDownload}
@@ -89,9 +89,9 @@ export const TotalTrafficPanel: React.FC<TotalTrafficPanelProps> = React.memo(
     );
 
     return (
-      <div className="p-3 rounded-2xl bg-card border border-hairline/70 flex flex-col h-full shadow-sm">
+      <div className="p-3 rounded-2xl bg-card border border-hairline/70 shadow-sm">
         <PanelHeader icon={<HardDrive className="h-3.5 w-3.5" />} label="总流量" />
-        <div className="flex-1 flex flex-col justify-center space-y-1">
+        <div className="space-y-1">
           <PanelRow
             arrow={<TrafficArrow direction="down" className="text-sm" />}
             label="接收" value={formattedDownload}

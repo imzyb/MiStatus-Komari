@@ -45,12 +45,12 @@ export const LatencyPanel: React.FC<LatencyPanelProps> = React.memo(
     const hasAny = ping10010 !== undefined || ping189 !== undefined || ping10086 !== undefined;
 
     return (
-      <div className="p-3 rounded-2xl bg-card border border-hairline/70 flex flex-col h-full shadow-sm">
+      <div className="p-3 rounded-2xl bg-card border border-hairline/70 shadow-sm">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Activity className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">延迟</span>
         </div>
-        <div className="flex-1 flex flex-col justify-center gap-1.5">
+        <div className="space-y-1">
           {hasAny ? (
             LATENCY_ITEMS.map(({ key, label }) => {
               const val = values[key];
