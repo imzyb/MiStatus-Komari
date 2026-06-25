@@ -33,7 +33,7 @@ const PanelRow: React.FC<PanelRowProps> = React.memo(
     return (
       <div className="flex items-center text-xs leading-5">
         <span className="flex-shrink-0 text-muted-foreground">{arrow}</span>
-        <span className="font-medium ml-1 w-6 flex-shrink-0">{label}</span>
+        <span className="font-medium ml-1 w-8 flex-shrink-0">{label}</span>
         <span className="font-medium text-foreground/70 font-mono whitespace-nowrap ml-auto" suppressHydrationWarning>
           {value}
         </span>

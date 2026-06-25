@@ -57,7 +57,7 @@ export const LatencyPanel: React.FC<LatencyPanelProps> = React.memo(
               return (
                 <div key={key} className="flex items-center gap-1.5 text-xs leading-5">
                   <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${qualityColor(val)}`} />
-                  <span className="text-muted-foreground w-6 flex-shrink-0">{label}</span>
+                  <span className="text-muted-foreground w-8 flex-shrink-0">{label}</span>
                   <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden mx-1">
                     <div
                       className={`h-full rounded-full ${qualityColor(val)} transition-[width] duration-300`}
