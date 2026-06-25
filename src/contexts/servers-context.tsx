@@ -221,8 +221,6 @@ export function ServersProvider({
         onConnected: () => {
           setIsConnected(true);
           setReconnectCount(0);
-          // WebSocket 连接成功后，拉取 RPC snapshot 数据填充初始列表
-          fetchRpcSnapshot();
         },
         onDisconnected: () => {
           setIsConnected(false);
@@ -330,14 +328,15 @@ export function ServersProvider({
 
     wsHandler.connect();
     wsCleanupRef.current = wsHandler.cleanup;
-  }, [enableWebSocket, refreshInterval, fetchRpcSnapshot]);
+  }, [enableWebSocket, refreshInterval]);
 
   // 手动刷新
   const refresh = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     await fetchNodes();
-  }, [fetchNodes]);
+    await fetchRpcSnapshot();
+  }, [fetchNodes, fetchRpcSnapshot]);
 
   // 切换 RPC 模式
   const toggleRpc = useCallback(() => {
@@ -347,6 +346,7 @@ export function ServersProvider({
   // 初始化
   useEffect(() => {
     fetchNodes();
+    fetchRpcSnapshot();
     connectWebSocket();
 
     return () => {
@@ -356,7 +356,7 @@ export function ServersProvider({
       }
       cleanup();
     };
-  }, [fetchNodes, connectWebSocket, cleanup]);
+  }, [fetchNodes, fetchRpcSnapshot, connectWebSocket, cleanup]);
 
   // RPC 模式变化时重新获取节点信息
   useEffect(() => {
