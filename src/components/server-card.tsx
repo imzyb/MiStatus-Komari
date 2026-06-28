@@ -18,7 +18,6 @@ import {
   StatusBadge,
   RealTimeNetworkPanel,
   TotalTrafficPanel,
-  LatencyPanel,
 } from "./server";
 
 interface ServerCardProps {
@@ -100,12 +99,6 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
             value={server.swap_used}
             total={server.swap_total || 1}
             formatter={swapFormatter}
-          />
-
-          <LatencyPanel
-            ping10010={server.ping_10010}
-            ping189={server.ping_189}
-            ping10086={server.ping_10086}
           />
 
           {/* 网络面板 */}

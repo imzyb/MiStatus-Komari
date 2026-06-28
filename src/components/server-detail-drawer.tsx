@@ -93,8 +93,8 @@ export const ServerDetailDrawer: React.FC = React.memo(
             )}
           </div>
 
-          <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
-            <section className="space-y-2">
+          <div className="p-2.5 sm:p-4 space-y-3">
+            <section className="pt-1 space-y-2">
               <h3 className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                 <Activity className="h-3.5 w-3.5" />
                 延迟监测
