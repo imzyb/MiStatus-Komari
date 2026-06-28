@@ -198,6 +198,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
     const [peakShaving, setPeakShaving] = useState(false);
     const [chartMode, setChartMode] = useState<"multi" | "single">("multi");
+    const [autoRefresh, setAutoRefresh] = useState(true);
     const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
     const svgRef = useRef<SVGSVGElement>(null);
     const clipId = React.useId();
@@ -229,9 +230,10 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     useEffect(() => { fetch(hours); }, [fetch, hours]);
     useEffect(() => {
+      if (!autoRefresh) return;
       const timer = setInterval(() => fetch(hoursRef.current), AUTO_REFRESH_MS);
       return () => clearInterval(timer);
-    }, [fetch]);
+    }, [fetch, autoRefresh]);
 
     const grouped = useMemo(() => {
       if (!result?.records) return {};
@@ -474,6 +476,20 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       return m;
     }, [allTaskIds, grouped]);
 
+    const shaveRate: Record<number, number> = useMemo(() => {
+      const r: Record<number, number> = {};
+      if (!peakShaving) return r;
+      for (const id of allTaskIds) {
+        const raw = grouped[id];
+        const shaved = sampled[id];
+        if (!raw || !shaved) continue;
+        const rawLen = raw.length;
+        const shavedLen = shaved.length;
+        r[id] = rawLen > 0 ? ((rawLen - shavedLen) / rawLen * 100) : 0;
+      }
+      return r;
+    }, [allTaskIds, grouped, sampled, peakShaving]);
+
     if (loading && !result) {
       return (
         <div className="flex flex-col items-center justify-center h-72 space-y-3">
@@ -529,6 +545,15 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <span className="text-[11px] text-muted-foreground">刷新</span>
+              <div
+                onClick={() => setAutoRefresh((p) => !p)}
+                className={`relative w-7 h-4 rounded-full transition-colors duration-200 ${autoRefresh ? "bg-primary" : "bg-muted-foreground/30"}`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${autoRefresh ? "translate-x-3" : ""}`} />
+              </div>
+            </label>
             <button type="button"
               onClick={() => setChartMode((m) => m === "multi" ? "single" : "multi")}
               className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -568,6 +593,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             const timeoutCount = pts ? pts.filter((p) => isTimeout(p.value)).length : 0;
             const timeoutRate = totalPts > 0 ? (timeoutCount / totalPts * 100) : 0;
             const isHidden = hiddenIds.has(id);
+            const sr = shaveRate[id] || 0;
             return (
               <div key={id}
                 onClick={() => toggleIdVisibility(id)}
@@ -583,6 +609,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                 {timeoutRate > 0 && timeoutRate > (info?.loss || 0) && (
                   <span className="font-mono text-[10px] text-trading-down">超时{timeoutRate.toFixed(1)}%</span>
                 )}
+                {peakShaving && sr > 0 && <span className="font-mono text-[10px] text-muted-foreground">削{sr.toFixed(1)}%</span>}
                 {liveVal !== undefined && !isHidden && <span className="h-1 w-1 rounded-full bg-trading-up animate-pulse ml-0.5" title="实时" />}
               </div>
             );

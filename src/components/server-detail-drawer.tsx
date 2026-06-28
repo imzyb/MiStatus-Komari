@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, MapPin, Clock } from "lucide-react";
+import { X, MapPin, Clock, Activity } from "lucide-react";
 import { useServerDetail } from "@/contexts/server-detail-context";
 import { PingChart } from "./ping-chart";
 import { formatPercent, formatBytes, formatUptime, getThresholdColor } from "@/lib/utils";
@@ -67,7 +67,8 @@ export const ServerDetailDrawer: React.FC = React.memo(
             </div>
 
             {s.online && (
-              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-hairline/50">
+              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 mt-2 sm:mt-2.5 pt-2 sm:pt-2.5 border-t border-hairline/50">
+                <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium w-full mb-0.5">资源使用</span>
                 <div className="flex items-center gap-1 sm:gap-1.5">
                   <span className="text-[9px] sm:text-[10px] text-muted-foreground w-6 sm:w-7">CPU</span>
                   <MiniBar percent={cpuP} color={cpuColor} />
@@ -92,14 +93,20 @@ export const ServerDetailDrawer: React.FC = React.memo(
             )}
           </div>
 
-          <div className="p-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-5">
-            <PingChart
-                serverId={s.gid}
-                livePingMap={{ 1: s.ping_10010, 2: s.ping_189, 3: s.ping_10086 }}
-              />
+          <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
+            <section className="space-y-2">
+              <h3 className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                <Activity className="h-3.5 w-3.5" />
+                延迟监测
+              </h3>
+              <PingChart
+                  serverId={s.gid}
+                  livePingMap={{ 1: s.ping_10010, 2: s.ping_189, 3: s.ping_10086 }}
+                />
+            </section>
 
             {!s.online && (
-              <div className="flex items-center justify-center gap-2 mt-4 px-4 py-2 rounded-xl bg-muted/40">
+              <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-muted/40">
                 <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
                 <span className="text-xs text-muted-foreground">服务器离线，仅显示历史数据</span>
               </div>
