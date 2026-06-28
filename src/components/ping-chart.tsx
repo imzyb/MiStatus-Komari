@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { Activity, RefreshCw, ZoomOut } from "lucide-react";
+import { Activity, RefreshCw, ZoomOut, LayoutGrid, LayoutList } from "lucide-react";
 import { rpcAdapter } from "@/lib/rpc-adapter";
 import type { PingRecordsResult, BasicInfo } from "@/lib/rpc-types";
 
@@ -114,19 +114,28 @@ function samplePointsMax(points: { time: string; value: number }[]): { time: str
   return result;
 }
 
-function computeMedian(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
 function computeAvg(values: number[]): number {
   if (values.length === 0) return 0;
   return values.reduce((s, v) => s + v, 0) / values.length;
 }
 
-function TooltipContent({ hoverIdx, taskIds, sampled, taskConfig: tcfg, padL, padT, innerW, sampledLen }
+function computePeakShavingThreshold(values: number[]): { median: number; tolerancePercent: number } {
+  const filtered = values.filter((v) => v > 0);
+  if (filtered.length < 3) return { median: 0, tolerancePercent: 0.5 };
+  const sorted = [...filtered].sort((a, b) => a - b);
+  const trimCount = Math.floor(sorted.length * 0.1);
+  const trimmed = trimCount >= 1 ? sorted.slice(trimCount, sorted.length - trimCount) : sorted;
+  const mid = Math.floor(trimmed.length / 2);
+  const median = trimmed.length % 2 !== 0 ? trimmed[mid] : (trimmed[mid - 1] + trimmed[mid]) / 2;
+  let tolerancePercent = 0.5;
+  if (median > 100) tolerancePercent = 0.15;
+  else if (median > 50) tolerancePercent = 0.20;
+  else if (median > 30) tolerancePercent = 0.25;
+  else if (median > 10) tolerancePercent = 0.35;
+  return { median, tolerancePercent };
+}
+
+function TooltipContent({ hoverIdx, taskIds, sampled, taskConfig: tcfg, padL, padT, innerW, sampledLen, sampledPoints }
 : {
   hoverIdx: number;
   taskIds: number[];
@@ -136,6 +145,7 @@ function TooltipContent({ hoverIdx, taskIds, sampled, taskConfig: tcfg, padL, pa
   padT: number;
   innerW: number;
   sampledLen: number;
+  sampledPoints: { time: string; value: number }[] | undefined;
 }) {
   const items = taskIds.map((id) => {
     const pts = sampled[id];
@@ -147,19 +157,28 @@ function TooltipContent({ hoverIdx, taskIds, sampled, taskConfig: tcfg, padL, pa
 
   if (items.length === 0) return null;
 
+  const timeStr = sampledPoints && hoverIdx < sampledPoints.length
+    ? (() => { const d = new Date(sampledPoints[hoverIdx].time); return `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}:${d.getSeconds().toString().padStart(2,"0")}`; })()
+    : "";
+
   const x = padL + (hoverIdx / Math.max(sampledLen - 1, 1)) * innerW;
-  const boxW = 85, boxH = 16 + items.length * 15;
+  const boxW = 100 + (items.length > 2 ? 20 : 0), boxH = 24 + items.length * 16;
   let bx = x + 10;
   if (bx + boxW > padL + innerW) bx = x - boxW - 10;
 
   return (
     <g>
-      <rect x={bx} y={padT + 2} width={boxW} height={boxH} rx="6" fill="var(--background)" stroke="var(--border)" strokeWidth="1" opacity="0.95" />
-      <text x={bx + 6} y={padT + 13} fontSize="8" fill="var(--muted-foreground)" fontFamily="monospace">延迟</text>
+      <defs>
+        <filter id="tooltip-shadow">
+          <feDropShadow dx="0" dy="2" stdDeviation="6" floodColor="rgba(0,0,0,0.15)" />
+        </filter>
+      </defs>
+      <rect x={bx} y={padT + 2} width={boxW} height={boxH} rx="8" fill="var(--background)" fillOpacity="0.94" stroke="var(--border)" strokeWidth="1" filter="url(#tooltip-shadow)" />
+      {timeStr && <text x={bx + 8} y={padT + 14} fontSize="8" fill="var(--primary)" fontFamily="monospace" fontWeight="600">{timeStr}</text>}
       {items.map((item, i) => (
         <g key={i}>
-          <circle cx={bx + 10} cy={padT + 20 + i * 15} r="3" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} />
-          <text x={bx + 18} y={padT + 23 + i * 15} fontSize="9" fill="var(--foreground)" fontFamily="monospace">
+          <circle cx={bx + 8} cy={padT + 24 + i * 16} r="3" fill={isTimeout(item.value) ? "var(--trading-down, #ff3b30)" : item.color} />
+          <text x={bx + 16} y={padT + 27 + i * 16} fontSize="9" fill="var(--foreground)" fontFamily="monospace">
             {item.label} {formatValue(item.value)}
           </text>
         </g>
@@ -178,6 +197,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
     const [hours, setHours] = useState(12);
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
     const [peakShaving, setPeakShaving] = useState(false);
+    const [chartMode, setChartMode] = useState<"multi" | "single">("multi");
     const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
     const svgRef = useRef<SVGSVGElement>(null);
     const clipId = React.useId();
@@ -238,17 +258,16 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
       const m: Record<number, { time: string; value: number }[]> = {};
       for (const id of ISP_ORDER) {
         if (!grouped[id]) continue;
-        const pts = grouped[id];
+        let pts = grouped[id];
         if (peakShaving) {
           const valid = pts.filter((p) => !isTimeout(p.value)).map((p) => p.value);
-          if (valid.length < 3) { m[id] = pts; continue; }
-          const median = computeMedian(valid);
-          const tolerance = median * 2.5;
-          m[id] = pts.filter((p) => isTimeout(p.value) || Math.abs(p.value - median) <= tolerance);
-        } else {
-          m[id] = pts;
+          if (valid.length >= 3) {
+            const { median, tolerancePercent } = computePeakShavingThreshold(valid);
+            const tolerance = median * tolerancePercent;
+            pts = pts.filter((p) => isTimeout(p.value) || Math.abs(p.value - median) <= tolerance);
+          }
         }
-        m[id] = samplePointsMax(m[id]);
+        m[id] = samplePointsMax(pts);
       }
       return m;
     }, [grouped, peakShaving]);
@@ -510,6 +529,13 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <button type="button"
+              onClick={() => setChartMode((m) => m === "multi" ? "single" : "multi")}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={chartMode === "multi" ? "切换为单图模式" : "切换为聚合模式"}
+              title={chartMode === "multi" ? "单图模式" : "聚合模式"}>
+              {chartMode === "multi" ? <LayoutList className="h-3 w-3" /> : <LayoutGrid className="h-3 w-3" />}
+            </button>
             <label className="flex items-center gap-1.5 cursor-pointer select-none">
               <span className="text-[11px] text-muted-foreground">削峰</span>
               <div
@@ -563,131 +589,195 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           })}
         </div>
 
-        <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${allH}`} width="100%" className="w-full touch-none" role="img" aria-label="延迟监测曲线图"
-          style={{ height: `calc(56px + ${allH / CHART_W * 100}vw)`, maxHeight: `calc(72px + ${allH / CHART_W * 100}vw)` }}
-          onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onTouchMove={handleTouchMove} onTouchEnd={handleMouseLeave}>
-          <defs>
-            <clipPath id={clipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
-            <clipPath id={areaClipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
-            {visibleTaskIds.map((id) => {
-              const cfg = tcfg[id] || { color: "#888" };
-              const fillColor = cfg.color;
+        {chartMode === "multi" ? (
+          <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${allH}`} width="100%" className="w-full touch-none" role="img" aria-label="延迟监测曲线图"
+            style={{ height: `calc(56px + ${allH / CHART_W * 100}vw)`, maxHeight: `calc(72px + ${allH / CHART_W * 100}vw)` }}
+            onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onTouchMove={handleTouchMove} onTouchEnd={handleMouseLeave}>
+            <defs>
+              <clipPath id={clipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
+              <clipPath id={areaClipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
+              {visibleTaskIds.map((id) => {
+                const cfg = tcfg[id] || { color: "#888" };
+                const fillColor = cfg.color;
+                return (
+                  <linearGradient key={id} id={`${areaClipId}-${id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={fillColor} stopOpacity="0.2" />
+                    <stop offset="100%" stopColor={fillColor} stopOpacity="0.02" />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.015" rx="2" />
+            <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" rx="2" />
+            {yTicks.map((v) => {
+              const y = toY(v);
               return (
-                <linearGradient key={id} id={`${areaClipId}-${id}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={fillColor} stopOpacity="0.2" />
-                  <stop offset="100%" stopColor={fillColor} stopOpacity="0.02" />
-                </linearGradient>
-              );
-            })}
-          </defs>
-
-          <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.015" rx="2" />
-          <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" rx="2" />
-
-          {yTicks.map((v) => {
-            const y = toY(v);
-            return (
-              <g key={v}>
-                <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 3" />
-                <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">{v}</text>
-              </g>
-            );
-          })}
-
-          {timeLabels.map((t, i) => (
-            <text key={i} x={t.x} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
-          ))}
-
-          <g clipPath={`url(#areaClipId)`}>
-            {visibleTaskIds.map((id) => {
-              const areaD = paths.areas[id];
-              if (!areaD) return null;
-              return (
-                <path key={id} d={areaD} fill={`url(#${areaClipId}-${id})`} />
-              );
-            })}
-
-            {visibleTaskIds.map((id) => {
-              const cfg = tcfg[id] || { label: "", color: "#888" };
-              const pathD = paths.lines[id];
-              if (!pathD) return null;
-              const pts = sampled[id];
-              if (!pts) return null;
-              const { endIdx } = visibleRange;
-              const visiblePts = pts.slice(visibleRange.startIdx, endIdx);
-              if (visiblePts.length < 2) return null;
-              const lastX = toXGlobal(visiblePts.length - 1, visiblePts.length);
-              const lastY = toY(visiblePts[visiblePts.length - 1].value);
-              const lastVal = visiblePts[visiblePts.length - 1].value;
-              const statusColor = latencyQualityColor(lastVal);
-              const labelX = lastX + 5 > PAD_L + INNER_W - 30 ? lastX - 5 : lastX + 5;
-              const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
-              return (
-                <g key={id}>
-                  <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-                  <circle cx={lastX} cy={lastY} r="3.5" fill={statusColor} stroke="var(--background)" strokeWidth="1" />
-                  <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={statusColor} fontSize="9" fontFamily="monospace" fontWeight="600">
-                    {formatValue(lastVal)}
-                  </text>
+                <g key={v}>
+                  <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 3" />
+                  <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">{v}</text>
                 </g>
               );
             })}
-          </g>
-
-          {hoverIdx !== null && (
-            <>
-              <line x1={toXGlobal(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx)} x2={toXGlobal(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 3" />
-              {taskIds.map((id) => {
+            {timeLabels.map((t, i) => (
+              <text key={i} x={t.x} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
+            ))}
+            <g clipPath={`url(#areaClipId)`}>
+              {visibleTaskIds.map((id) => {
+                const areaD = paths.areas[id];
+                if (!areaD) return null;
+                return <path key={id} d={areaD} fill={`url(#${areaClipId}-${id})`} />;
+              })}
+              {visibleTaskIds.map((id) => {
+                const cfg = tcfg[id] || { label: "", color: "#888" };
+                const pathD = paths.lines[id];
+                if (!pathD) return null;
                 const pts = sampled[id];
-                if (!pts || hoverIdx >= pts.length) return null;
-                const val = pts[hoverIdx].value;
-                const cfg = tcfg[id] || { color: "#888" };
-                const localIdx = Math.max(0, Math.min(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx - 1));
-                const x = toXGlobal(localIdx, visibleRange.endIdx - visibleRange.startIdx);
+                if (!pts) return null;
+                const { endIdx } = visibleRange;
+                const visiblePts = pts.slice(visibleRange.startIdx, endIdx);
+                if (visiblePts.length < 2) return null;
+                const lastX = toXGlobal(visiblePts.length - 1, visiblePts.length);
+                const lastY = toY(visiblePts[visiblePts.length - 1].value);
+                const lastVal = visiblePts[visiblePts.length - 1].value;
+                const statusColor = latencyQualityColor(lastVal);
+                const labelX = lastX + 5 > PAD_L + INNER_W - 30 ? lastX - 5 : lastX + 5;
+                const labelAnchor = lastX + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
                 return (
-                  <circle key={id} cx={x} cy={toY(val)} r="3.5"
-                    fill={isTimeout(val) ? "var(--trading-down, #ff3b30)" : cfg.color} stroke="var(--background)" strokeWidth="2" />
+                  <g key={id}>
+                    <path d={pathD} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                    <circle cx={lastX} cy={lastY} r="3.5" fill={statusColor} stroke="var(--background)" strokeWidth="1" />
+                    <text x={labelX} y={lastY + 3} textAnchor={labelAnchor} fill={statusColor} fontSize="9" fontFamily="monospace" fontWeight="600">
+                      {formatValue(lastVal)}
+                    </text>
+                  </g>
                 );
               })}
-              <TooltipContent
-                hoverIdx={hoverIdx}
-                taskIds={taskIds}
-                sampled={sampled}
-                taskConfig={tcfg}
-                padL={PAD_L}
-                padT={PAD_T}
-                innerW={INNER_W}
-                sampledLen={sampledLen}
-              />
-            </>
-          )}
-
-          <rect x={PAD_L} y={SLIDER_Y} width={INNER_W} height={SLIDER_H} rx="4" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
-
-          <g clipPath={`url(#clipId)`}>
+            </g>
+            {hoverIdx !== null && (
+              <>
+                <line x1={toXGlobal(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx)} x2={toXGlobal(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx)} y1={PAD_T} y2={PAD_T + INNER_H} stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 3" />
+                {taskIds.map((id) => {
+                  const pts = sampled[id];
+                  if (!pts || hoverIdx >= pts.length) return null;
+                  const val = pts[hoverIdx].value;
+                  const cfg = tcfg[id] || { color: "#888" };
+                  const localIdx = Math.max(0, Math.min(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx - 1));
+                  const x = toXGlobal(localIdx, visibleRange.endIdx - visibleRange.startIdx);
+                  return (
+                    <circle key={id} cx={x} cy={toY(val)} r="3.5"
+                      fill={isTimeout(val) ? "var(--trading-down, #ff3b30)" : cfg.color} stroke="var(--background)" strokeWidth="2" />
+                  );
+                })}
+                <TooltipContent
+                  hoverIdx={hoverIdx}
+                  taskIds={taskIds}
+                  sampled={sampled}
+                  taskConfig={tcfg}
+                  padL={PAD_L}
+                  padT={PAD_T}
+                  innerW={INNER_W}
+                  sampledLen={sampledLen}
+                  sampledPoints={visibleTaskIds.length > 0 ? sampled[visibleTaskIds[0]] : undefined}
+                />
+              </>
+            )}
+            <rect x={PAD_L} y={SLIDER_Y} width={INNER_W} height={SLIDER_H} rx="4" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
+            <g clipPath={`url(#clipId)`}>
+              {visibleTaskIds.map((id) => {
+                const d = overviewPaths[id];
+                if (!d) return null;
+                const cfg = tcfg[id] || { color: "#888" };
+                return <path key={id} d={d} fill="none" stroke={cfg.color} strokeOpacity="0.5" strokeWidth="1" />;
+              })}
+            </g>
+            <rect x={sliderSelX} y={SLIDER_Y - 1} width={sliderSelW} height={SLIDER_H + 2} rx="5" fill="var(--primary)" fillOpacity="0.2" stroke="var(--primary)" strokeOpacity="0.5" strokeWidth="1"
+              style={{ cursor: "pointer" }}
+              onMouseDown={handleSliderMouseDown} />
+            {rangeEnd - rangeStart < 1 && (
+              <>
+                <rect x={sliderSelX - 3} y={SLIDER_Y - 2} width="6" height={SLIDER_H + 4} rx="3" fill="var(--primary)" opacity="0.8"
+                  style={{ cursor: "ew-resize" }}
+                  onMouseDown={(e) => { e.stopPropagation(); dragType.current = "handleLeft"; isDragging.current = true; dragStartX.current = e.clientX; dragStartRange.current = { s: rangeStart, e: rangeEnd }; }} />
+                <rect x={sliderSelX + sliderSelW - 3} y={SLIDER_Y - 2} width="6" height={SLIDER_H + 4} rx="3" fill="var(--primary)" opacity="0.8"
+                  style={{ cursor: "ew-resize" }}
+                  onMouseDown={(e) => { e.stopPropagation(); dragType.current = "handleRight"; isDragging.current = true; dragStartX.current = e.clientX; dragStartRange.current = { s: rangeStart, e: rangeEnd }; }} />
+              </>
+            )}
+          </svg>
+        ) : (
+          <div className="space-y-4">
             {visibleTaskIds.map((id) => {
-              const d = overviewPaths[id];
-              if (!d) return null;
-              const cfg = tcfg[id] || { color: "#888" };
-              return <path key={id} d={d} fill="none" stroke={cfg.color} strokeOpacity="0.5" strokeWidth="1" />;
+              const cfg = tcfg[id] || { label: "", color: "#888" };
+              const pts = sampled[id];
+              if (!pts || pts.length < 2) return null;
+              const { endIdx } = visibleRange;
+              const visiblePts = pts.slice(visibleRange.startIdx, endIdx);
+              if (visiblePts.length < 2) return null;
+              const lastVal = visiblePts[visiblePts.length - 1].value;
+              const validVals = allValidPoints[id] || [];
+              const avgMs = validVals.length > 0 ? computeAvg(validVals) : 0;
+              return (
+                <div key={id} className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cfg.color }} />
+                    <span className="font-medium text-foreground/70">{cfg.label}</span>
+                    {!isTimeout(lastVal) && (
+                      <span className={`font-mono font-medium ${latencyQuality(lastVal)}`}>{formatValue(lastVal)}</span>
+                    )}
+                    {avgMs > 0 && <span className="text-muted-foreground font-mono">均{avgMs.toFixed(0)}ms</span>}
+                  </div>
+                  <svg viewBox={`0 0 ${CHART_W} ${PAD_T + INNER_H + PAD_B}`} width="100%" className="w-full touch-none h-40 sm:h-48"
+                    onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onTouchMove={handleTouchMove} onTouchEnd={handleMouseLeave}>
+                    <defs>
+                      <clipPath id={`${clipId}-${id}`}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
+                      <linearGradient id={`${areaClipId}-${id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={cfg.color} stopOpacity="0.2" />
+                        <stop offset="100%" stopColor={cfg.color} stopOpacity="0.02" />
+                      </linearGradient>
+                    </defs>
+                    <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.015" rx="2" />
+                    <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" rx="2" />
+                    {yTicks.map((v) => {
+                      const y = toY(v);
+                      return (
+                        <g key={v}>
+                          <line x1={PAD_L} x2={PAD_L + INNER_W} y1={y} y2={y} stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 3" />
+                          <text x={PAD_L - 6} y={y + 3} textAnchor="end" fill="currentColor" opacity="0.4" fontSize="9" fontFamily="monospace">{v}</text>
+                        </g>
+                      );
+                    })}
+                    {timeLabels.map((t, i) => (
+                      <text key={i} x={t.x} y={PAD_T + INNER_H + 14} textAnchor="middle" fill="currentColor" opacity="0.4" fontSize="8" fontFamily="monospace">{t.label}</text>
+                    ))}
+                    <g clipPath={`url(#${clipId}-${id})`}>
+                      {paths.areas[id] && <path d={paths.areas[id]} fill={`url(#${areaClipId}-${id})`} />}
+                      {paths.lines[id] && <path d={paths.lines[id]} fill="none" stroke={cfg.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
+                      {(() => {
+                        const lx = toXGlobal(visiblePts.length - 1, visiblePts.length);
+                        const ly = toY(lastVal);
+                        const sc = latencyQualityColor(lastVal);
+                        const lvx = lx + 5 > PAD_L + INNER_W - 30 ? lx - 5 : lx + 5;
+                        const lva = lx + 5 > PAD_L + INNER_W - 30 ? "end" : "start";
+                        return (
+                          <g>
+                            <circle cx={lx} cy={ly} r="3.5" fill={sc} stroke="var(--background)" strokeWidth="1" />
+                            <text x={lvx} y={ly + 3} textAnchor={lva} fill={sc} fontSize="9" fontFamily="monospace" fontWeight="600">
+                              {formatValue(lastVal)}
+                            </text>
+                          </g>
+                        );
+                      })()}
+                      {hoverIdx !== null && pts[hoverIdx] && (
+                        <circle cx={toXGlobal(Math.max(0, Math.min(hoverIdx - visibleRange.startIdx, visibleRange.endIdx - visibleRange.startIdx - 1)), visibleRange.endIdx - visibleRange.startIdx)} cy={toY(pts[hoverIdx].value)} r="3.5"
+                          fill={isTimeout(pts[hoverIdx].value) ? "var(--trading-down, #ff3b30)" : cfg.color} stroke="var(--background)" strokeWidth="2" />
+                      )}
+                    </g>
+                  </svg>
+                </div>
+              );
             })}
-          </g>
-
-          <rect x={sliderSelX} y={SLIDER_Y - 1} width={sliderSelW} height={SLIDER_H + 2} rx="5" fill="var(--primary)" fillOpacity="0.2" stroke="var(--primary)" strokeOpacity="0.5" strokeWidth="1"
-            style={{ cursor: "pointer" }}
-            onMouseDown={handleSliderMouseDown} />
-
-          {rangeEnd - rangeStart < 1 && (
-            <>
-              <rect x={sliderSelX - 3} y={SLIDER_Y - 2} width="6" height={SLIDER_H + 4} rx="3" fill="var(--primary)" opacity="0.8"
-                style={{ cursor: "ew-resize" }}
-                onMouseDown={(e) => { e.stopPropagation(); dragType.current = "handleLeft"; isDragging.current = true; dragStartX.current = e.clientX; dragStartRange.current = { s: rangeStart, e: rangeEnd }; }} />
-              <rect x={sliderSelX + sliderSelW - 3} y={SLIDER_Y - 2} width="6" height={SLIDER_H + 4} rx="3" fill="var(--primary)" opacity="0.8"
-                style={{ cursor: "ew-resize" }}
-                onMouseDown={(e) => { e.stopPropagation(); dragType.current = "handleRight"; isDragging.current = true; dragStartX.current = e.clientX; dragStartRange.current = { s: rangeStart, e: rangeEnd }; }} />
-            </>
-          )}
-        </svg>
+          </div>
+        )}
       </div>
     );
   }
