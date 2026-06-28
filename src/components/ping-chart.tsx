@@ -617,8 +617,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         </div>
 
         {chartMode === "multi" ? (
-          <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${allH}`} width="100%" className="w-full touch-none" role="img" aria-label="延迟监测曲线图"
-            style={{ height: `calc(56px + ${allH / CHART_W * 100}vw)`, maxHeight: `calc(72px + ${allH / CHART_W * 100}vw)` }}
+          <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${allH}`} width="100%" className="w-full aspect-[608/260] touch-none" role="img" aria-label="延迟监测曲线图"
             onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onTouchMove={handleTouchMove} onTouchEnd={handleMouseLeave}>
             <defs>
               <clipPath id={clipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
