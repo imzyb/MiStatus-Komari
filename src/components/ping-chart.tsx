@@ -30,9 +30,25 @@ const PAD_L = 40, PAD_R = 8, PAD_T = 20, PAD_B = 36;
 const INNER_W = 560, INNER_H = 204;
 const CHART_W = PAD_L + INNER_W + PAD_R;
 const CHART_H = PAD_T + INNER_H + PAD_B;
-const Y_TICKS = [0, 50, 100, 200, 400, 800, 1600];
 const SLIDER_H = 16;
 const SLIDER_Y = PAD_T + INNER_H + 4;
+
+function niceMax(v: number): number {
+  if (v <= 50) return 100;
+  if (v <= 100) return 150;
+  if (v <= 200) return 300;
+  if (v <= 500) return Math.ceil(v / 100) * 100;
+  if (v <= 1000) return Math.ceil(v / 200) * 200;
+  return Math.ceil(v / 500) * 500;
+}
+
+function generateTicks(max: number): number[] {
+  const ticks = [0];
+  const step = max <= 150 ? 25 : max <= 300 ? 50 : max <= 500 ? 100 : max <= 1000 ? 200 : 500;
+  for (let v = step; v < max; v += step) ticks.push(v);
+  ticks.push(max);
+  return ticks;
+}
 
 const TIME_RANGES = [
   { hours: 6, label: "6H" }, { hours: 12, label: "12H" },
@@ -253,18 +269,32 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
 
     const livePingResolved = useMemo<Record<number, number | undefined>>(() => livePingMap ?? {}, [livePingMap]);
 
+    const yMax = useMemo(() => {
+      let maxVal = 0;
+      for (const id of taskIds) {
+        const pts = sampled[id];
+        if (!pts) continue;
+        for (const p of pts) {
+          if (!isTimeout(p.value) && p.value > maxVal) maxVal = p.value;
+        }
+      }
+      return Math.max(niceMax(maxVal), 100);
+    }, [taskIds, sampled]);
+
+    const yTicks = useMemo(() => generateTicks(yMax), [yMax]);
+
     const toXGlobal = (i: number, n: number) => PAD_L + (i / Math.max(n - 1, 1)) * INNER_W;
     const toY = (v: number): number => {
       if (isTimeout(v)) return PAD_T;
-      return PAD_T + INNER_H - (Math.min(Math.max(v, 0), Y_TICKS[Y_TICKS.length - 1]) / Y_TICKS[Y_TICKS.length - 1]) * INNER_H;
+      return PAD_T + INNER_H - (Math.min(Math.max(v, 0), yMax) / yMax) * INNER_H;
     };
 
     const paths = useMemo(() => {
       const pathResult: Record<number, string> = {};
       const areaResult: Record<number, string> = {};
       const yMin = PAD_T;
-      const yMax = PAD_T + INNER_H;
-      const limitY = (y: number) => Math.min(yMax, Math.max(yMin, y));
+      const yMaxPx = PAD_T + INNER_H;
+      const limitY = (y: number) => Math.min(yMaxPx, Math.max(yMin, y));
 
       for (const id of visibleTaskIds) {
         const pts = sampled[id];
@@ -272,7 +302,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         const { startIdx, endIdx } = visibleRange;
         const visiblePts = pts.slice(startIdx, endIdx);
         if (visiblePts.length < 2) continue;
-        const coords = visiblePts.map((p, i) => ({ x: toXGlobal(i, visiblePts.length), y: toY(p.value) }));
+        const coords = visiblePts.map((p, i) => ({ x: toXGlobal(i, visiblePts.length), y: isTimeout(p.value) ? PAD_T : PAD_T + INNER_H - (Math.min(Math.max(p.value, 0), yMax) / yMax) * INNER_H }));
         let d = `M ${coords[0].x},${coords[0].y}`;
         for (let i = 1; i < coords.length; i++) {
           const p0 = coords[Math.max(i - 2, 0)], p1 = coords[i - 1], p2 = coords[i], p3 = coords[Math.min(i + 1, coords.length - 1)];
@@ -288,7 +318,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         areaResult[id] = `${d} L ${coords[coords.length - 1].x},${bottomY} L ${coords[0].x},${bottomY} Z`;
       }
       return { lines: pathResult, areas: areaResult };
-    }, [visibleTaskIds, sampled, visibleRange]);
+    }, [visibleTaskIds, sampled, visibleRange, yMax]);
 
     const overviewPaths = useMemo(() => {
       const result: Record<number, string> = {};
@@ -300,7 +330,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         const ovY = SLIDER_Y;
         const coords = pts.map((p, i) => {
           const x = PAD_L + (i / Math.max(pts.length - 1, 1)) * ovW;
-          const y = ovY + ovH - (Math.min(Math.max(p.value, 0), Y_TICKS[Y_TICKS.length - 1]) / Y_TICKS[Y_TICKS.length - 1]) * ovH;
+          const y = ovY + ovH - (Math.min(Math.max(p.value, 0), yMax) / yMax) * ovH;
           return { x, y };
         });
         let d = `M ${coords[0].x},${coords[0].y}`;
@@ -310,7 +340,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
         result[id] = d;
       }
       return result;
-    }, [visibleTaskIds, sampled]);
+    }, [visibleTaskIds, sampled, yMax]);
 
     const timeLabels = useMemo(() => {
       if (visibleTaskIds.length === 0) return [];
@@ -554,7 +584,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="currentColor" fillOpacity="0.015" rx="2" />
           <rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1" rx="2" />
 
-          {Y_TICKS.map((v) => {
+          {yTicks.map((v) => {
             const y = toY(v);
             return (
               <g key={v}>
