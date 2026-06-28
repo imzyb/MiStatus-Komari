@@ -38,9 +38,9 @@ export const ServerDetailDrawer: React.FC = React.memo(
     const diskColor = getThresholdColor(diskP).bar;
 
     return (
-      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4">
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={closeDetail} />
-        <div className="relative w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up max-h-[88vh] sm:max-h-[92vh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
+        <div className="relative w-full max-w-2xl bg-card rounded-3xl shadow-2xl animate-scale-in max-h-[85vh] sm:max-h-[92vh] overflow-y-auto overscroll-contain">
           <div className="sticky top-0 bg-card/90 backdrop-blur-xl border-b border-hairline/50 px-3 sm:px-6 py-2 sm:py-2.5 z-10 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">

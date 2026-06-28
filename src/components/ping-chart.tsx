@@ -46,14 +46,14 @@ function formatValue(v: number): string {
 
 function latencyQuality(ms: number): string {
   if (ms < 50) return "text-trading-up";
-  if (ms < 200) return "text-accent";
+  if (ms < 150) return "text-accent";
   return "text-trading-down";
 }
 
 function latencyQualityColor(ms: number): string {
   if (isTimeout(ms)) return "var(--trading-down, #ff3b30)";
   if (ms < 50) return "var(--trading-up, #34c759)";
-  if (ms < 200) return "var(--accent, #ff6a00)";
+  if (ms < 150) return "var(--accent, #ff6a00)";
   return "var(--trading-down, #ff3b30)";
 }
 
@@ -336,6 +336,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
                     <span className={`font-mono font-medium ${isTimeout(lastVal) ? "text-trading-down" : latencyQuality(lastVal)}`}>{formatValue(lastVal)}</span>
                   )}
                   {info && <span className="text-muted-foreground font-mono text-[10px]">{info.min.toFixed(0)}~{info.max.toFixed(0)}ms</span>}
+                  {info && info.loss > 0 && <span className="font-mono text-[10px] text-trading-down">丢包{info.loss.toFixed(1)}%</span>}
                   {liveVal !== undefined && <span className="h-1 w-1 rounded-full bg-trading-up animate-pulse ml-0.5" title="实时" />}
                 </div>
               );
@@ -343,7 +344,7 @@ export const PingChart: React.FC<PingChartProps> = React.memo(
           </div>
         </div>
 
-        <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" className="w-full h-72 touch-none" role="img" aria-label="延迟监测曲线图"
+        <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" className="w-full h-56 sm:h-72 touch-none" role="img" aria-label="延迟监测曲线图"
           onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onTouchMove={handleTouchMove} onTouchEnd={handleMouseLeave}>
           <defs>
             <clipPath id={clipId}><rect x={PAD_L} y={PAD_T} width={INNER_W} height={INNER_H} /></clipPath>
